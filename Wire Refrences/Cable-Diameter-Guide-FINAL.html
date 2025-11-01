@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Cable Diameter Guide — TECK90 (600 V & 1 kV), ACWU90 (600 V), Bare Copper</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#0b0f14; --card:#0f1720; --ink:#e8eef6; --muted:#9fb3c8; --line:#223042;
+    --pill:#0b1220; --od:#44d1a8; --cd:#7aa3ff; --warn:#f0b429;
+    --teck600:#1f4db3; --teck1k:#a16b00; --acwu:#0c8056; --bare:#7a2ca1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Segoe UI",system-ui,Roboto,Arial,sans-serif}
+  header{padding:18px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,15,20,.96);backdrop-filter:saturate(1.2) blur(4px)}
+  h1{margin:0;font-size:18px}
+  h2{margin:0 0 8px;font-size:16px}
+  h3{margin:12px 0 6px;font-size:14px}
+  p{margin:8px 0}
+  .muted{color:var(--muted)}
+  main{padding:16px;display:grid;gap:16px;max-width:1260px;margin:0 auto}
+  section.family{background:var(--card);border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:14px}
+  .teck600{border-left-color:var(--teck600)}
+  .teck1kv{border-left-color:var(--teck1k)}
+  .acwu{border-left-color:var(--acwu)}
+  .bare{border-left-color:var(--bare)}
+  .block{margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .block > header{display:flex;gap:10px;align-items:center;padding:10px 12px;background:#0b1220;border-bottom:1px solid var(--line);position:static}
+  .tag{display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:999px;background:var(--pill);color:var(--muted);font-size:12px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:10px}
+  .group{padding:10px}
+  .rowcap{font-size:12px;color:var(--muted);margin:6px 0 4px}
+  .item{display:grid;grid-template-columns: minmax(210px, 1fr) 1fr;gap:12px;align-items:stretch;border-top:1px solid var(--line)}
+  .item:first-of-type{border-top:0}
+  .lcol,.rcol{display:grid;grid-template-columns: 140px 1fr;gap:10px;align-items:center;padding:10px 12px}
+  .label{font-size:12px;color:var(--muted)}
+  .badge{font-size:11px;letter-spacing:.03em;color:#09111e;border:0;padding:2px 8px;border-radius:999px;font-weight:600}
+  .od{background:var(--od)}
+  .cd{background:var(--cd)}
+  .warn{background:var(--warn)}
+  .val{font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.15;font-weight:700}
+  .unit{font-size:12px;color:var(--muted);margin-left:6px}
+  .sub{font-size:12px;color:var(--muted)}
+  .src{color:var(--muted);font-size:12px;margin-top:10px}
+  .hint{font-size:12px;color:var(--muted)}
+  footer{color:#9CA3AF;text-align:center;padding:22px;font-size:12px}
+  @media (max-width:620px){
+    .item{grid-template-columns:1fr}
+    .lcol,.rcol{grid-template-columns:120px 1fr}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cable Diameter Guide — TECK90 (600 V & 1 kV), ACWU90 (600 V), Bare Copper</h1>
+  <div class="muted">Two-column rows for quick reads: <b>Cable OD</b> (overall) on left, <b>Conductor Ø</b> on right. Values are nominal from Nexans data. 1&nbsp;in = 25.4&nbsp;mm.</div>
+</header>
+
+<main>
+
+  <!-- ===================== TECK90 600 V ===================== -->
+  <section class="family teck600">
+    <h2>TECK90 600 V</h2>
+    <p class="hint">Conductor Ø is constant by AWG for this family: 14 AWG→0.072″ (1.84 mm), 12 AWG→0.091″ (2.32 mm), 10 AWG→0.116″ (2.95 mm). Cable OD values are the overall OD. <span class="muted">Sources: Nexans construction table & product pages.</span></p>
+
+    <!-- ========== Metric (mm) ========== -->
+    <div class="block">
+      <header><span class="tag">Metric (mm)</span></header>
+      <div class="group grid2">
+
+        <!-- 14 AWG -->
+        <div>
+          <div class="rowcap">14 AWG</div>
+          <!-- 14/x -->
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">17.5<span class="unit">mm</span></div><div class="sub">TECK90 14/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84<span class="unit">mm</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">18.0</div><div class="sub">14/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">19.3</div><div class="sub">14/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">20.0</div><div class="sub">14/5</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">21.0</div><div class="sub">14/6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">21.4</div><div class="sub">14/7</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">23.1</div><div class="sub">14/8</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">25.0</div><div class="sub">14/10</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">25.7</div><div class="sub">14/12</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">27.7</div><div class="sub">14/15</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">30.2</div><div class="sub">14/20</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">33.7</div><div class="sub">14/25</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">35.5</div><div class="sub">14/30</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">38.9</div><div class="sub">14/40</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">41.7</div><div class="sub">14/50</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.84</div></div></div>
+        </div>
+
+        <!-- 12 AWG -->
+        <div>
+          <div class="rowcap">12 AWG</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">18.4</div><div class="sub">12/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">18.9</div><div class="sub">12/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">20.8</div><div class="sub">12/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">23.2</div><div class="sub">12/6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">24.7</div><div class="sub">12/8</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">27.4</div><div class="sub">12/10</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">28.6</div><div class="sub">12/12</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">30.2</div><div class="sub">12/15</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">33.6</div><div class="sub">12/20</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+        </div>
+
+        <!-- 10 AWG -->
+        <div>
+          <div class="rowcap">10 AWG</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">19.5</div><div class="sub">10/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">20.3</div><div class="sub">10/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">22.0</div><div class="sub">10/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">25.0</div><div class="sub">10/6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">30.2</div><div class="sub">10/10</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">36.7</div><div class="sub">10/20</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========== Imperial (in) ========== -->
+    <div class="block">
+      <header><span class="tag">Imperial (in — decimal & nearest 1/16″)</span></header>
+      <div class="group grid2">
+
+        <!-- 14 AWG -->
+        <div>
+          <div class="rowcap">14 AWG</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.69<span class="unit">in</span></div><div class="sub">≈ 11/16 — 14/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072<span class="unit">in</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.71</div><div class="sub">≈ 23/32 — 14/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.76</div><div class="sub">≈ 3/4 — 14/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.79</div><div class="sub">≈ 13/16 — 14/5</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.83</div><div class="sub">≈ 13/16 — 14/6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.84</div><div class="sub">≈ 27/32 — 14/7</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.91</div><div class="sub">≈ 29/32 — 14/8</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.98</div><div class="sub">≈ 31/32 — 14/10</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.01</div><div class="sub">≈ 1 — 14/12</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.09</div><div class="sub">≈ 1 1/16 — 14/15</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.19</div><div class="sub">≈ 1 3/16 — 14/20</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.33</div><div class="sub">≈ 1 5/16 — 14/25</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.40</div><div class="sub">≈ 1 13/32 — 14/30</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.52</div><div class="sub">≈ 1 1/2 — 14/40</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.64</div><div class="sub">≈ 1 5/8 — 14/50</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.072</div></div></div>
+        </div>
+
+        <!-- 12 AWG -->
+        <div>
+          <div class="rowcap">12 AWG</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.72</div><div class="sub">≈ 23/32 — 12/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.75</div><div class="sub">3/4 — 12/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.82</div><div class="sub">≈ 13/16 — 12/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.91</div><div class="sub">≈ 29/32 — 12/6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.97</div><div class="sub">≈ 31/32 — 12/8</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.08</div><div class="sub">≈ 1 1/16 — 12/10</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.13</div><div class="sub">≈ 1 1/8 — 12/12</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.19</div><div class="sub">≈ 1 3/16 — 12/15</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.32</div><div class="sub">≈ 1 5/16 — 12/20</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.091</div></div></div>
+        </div>
+
+        <!-- 10 AWG -->
+        <div>
+          <div class="rowcap">10 AWG</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.77</div><div class="sub">≈ 3/4 — 10/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.116</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.80</div><div class="sub">≈ 13/16 — 10/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.116</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.87</div><div class="sub">≈ 7/8 — 10/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.116</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.99</div><div class="sub">≈ 1 — 10/6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.116</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.19</div><div class="sub">≈ 1 3/16 — 10/10</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.116</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.45</div><div class="sub">≈ 1 15/32 — 10/20</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.116</div></div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <p class="src">Sources: TECK90 600 V construction table (Outer Jacket OD) & product pages (conductor Ø). Nexans PDFs: TECK90_600V (10–14 AWG) and TECK90 600 V catalog pages.</p>
+  </section>
+
+  <!-- ===================== TECK90 1 kV ===================== -->
+  <section class="family teck1kv">
+    <h2>TECK90 1 kV</h2>
+    <p class="hint">Where Nexans doesn’t publish a Conductor Ø for 2C/3C/4C items, it’s indicated with <span class="badge warn">—</span>. Overall OD uses the “Outer Jacket” column.</p>
+
+    <!-- Metric (complete) -->
+    <div class="block">
+      <header><span class="tag">Metric (mm)</span></header>
+      <div class="group grid2">
+
+        <!-- 1C -->
+        <div>
+          <div class="rowcap">Single Conductor (1C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">36.7</div><div class="sub">1C350</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">17.30</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">40.3</div><div class="sub">1C500</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">20.65</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">46.0</div><div class="sub">1C750</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">25.35</div></div></div>
+        </div>
+
+        <!-- 2C -->
+        <div>
+          <div class="rowcap">Two Conductor (2C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">20.2</div><div class="sub">12/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">21.1</div><div class="sub">10/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">23.5</div><div class="sub">8/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">26.8</div><div class="sub">6/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+        <!-- 3C -->
+        <div>
+          <div class="rowcap">Three Conductor (3C)</div>
+          <!-- TECK90 1 kV 3C full list -->
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">20.9</div><div class="sub">12/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.32</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">22.6</div><div class="sub">10/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">2.95</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">23.9</div><div class="sub">8/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">28.6</div><div class="sub">6/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">32.1</div><div class="sub">4/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">33.7</div><div class="sub">3/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">35.3</div><div class="sub">2/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">39.3</div><div class="sub">1/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">42.0</div><div class="sub">1/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">43.9</div><div class="sub">2/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">46.6</div><div class="sub">3/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">48.9</div><div class="sub">4/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">57.2</div><div class="sub">250‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">62.5</div><div class="sub">350‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">70.0</div><div class="sub">500‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+        <!-- 4C -->
+        <div>
+          <div class="rowcap">Four Conductor (4C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">26.1</div><div class="sub">8/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">32.5</div><div class="sub">6/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">34.3</div><div class="sub">4/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">36.6</div><div class="sub">3/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">38.1</div><div class="sub">2/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">47.4</div><div class="sub">2/0‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">49.8</div><div class="sub">3/0‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">54.4</div><div class="sub">4/0‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">59.6</div><div class="sub">250‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">67.4</div><div class="sub">350‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">76.7</div><div class="sub">500‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Imperial (complete) -->
+    <div class="block">
+      <header><span class="tag">Imperial (in — decimal & nearest 1/16″)</span></header>
+      <div class="group grid2">
+
+        <!-- 1C -->
+        <div>
+          <div class="rowcap">Single Conductor (1C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.45<span class="unit">in</span></div><div class="sub">≈ 1 7/16 — 1C350</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.68<span class="unit">in</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.59</div><div class="sub">≈ 1 19/32 — 1C500</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.81</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.81</div><div class="sub">≈ 1 13/16 — 1C750</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">1.00</div></div></div>
+        </div>
+
+        <!-- 2C -->
+        <div>
+          <div class="rowcap">Two Conductor (2C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.79</div><div class="sub">≈ 13/16 — 12/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.09</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.83</div><div class="sub">≈ 13/16 — 10/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.12</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.93</div><div class="sub">≈ 15/16 — 8/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.06</div><div class="sub">≈ 1 1/16 — 6/2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+        <!-- 3C (full) -->
+        <div>
+          <div class="rowcap">Three Conductor (3C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.82</div><div class="sub">≈ 13/16 — 12/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.09</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.89</div><div class="sub">≈ 29/32 — 10/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">0.12</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">0.94</div><div class="sub">≈ 15/16 — 8/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.13</div><div class="sub">≈ 1 1/8 — 6/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.27</div><div class="sub">≈ 1 1/4 — 4/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.33</div><div class="sub">≈ 1 5/16 — 3/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.39</div><div class="sub">≈ 1 3/8 — 2/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.55</div><div class="sub">≈ 1 9/16 — 1/3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.65</div><div class="sub">≈ 1 5/8 — 1/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.73</div><div class="sub">≈ 1 3/4 — 2/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.84</div><div class="sub">≈ 1 7/8 — 3/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.93</div><div class="sub">≈ 1 15/16 — 4/0‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">2.25</div><div class="sub">2 1/4 — 250‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">2.46</div><div class="sub">≈ 2 1/2 — 350‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">2.76</div><div class="sub">≈ 2 3/4 — 500‑3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+        <!-- 4C -->
+        <div>
+          <div class="rowcap">Four Conductor (4C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.03</div><div class="sub">≈ 1 — 8/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.28</div><div class="sub">≈ 1 1/4 — 6/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.35</div><div class="sub">≈ 1 3/8 — 4/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.44</div><div class="sub">≈ 1 7/16 — 3/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.50</div><div class="sub">≈ 1 1/2 — 2/4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.87</div><div class="sub">≈ 1 7/8 — 2/0‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">1.96</div><div class="sub">≈ 2 — 3/0‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">2.14</div><div class="sub">≈ 2 1/8 — 4/0‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">2.42</div><div class="sub">≈ 2 7/16 — 250‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">2.65</div><div class="sub">≈ 2 5/8 — 350‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">3.02</div><div class="sub">≈ 3 — 500‑4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <p class="src">Sources: Nexans TECK90 1 kV construction table (Aug‑2025) & product pages.</p>
+  </section>
+
+  <!-- ===================== ACWU90 600 V ===================== -->
+  <section class="family acwu">
+    <h2>ACWU90 600 V</h2>
+    <p class="hint">Cable OD values are from the ACWU90 construction table. Conductor Ø is published on 1‑conductor item cards; multi‑conductor rows typically omit it and are shown as <span class="badge warn">—</span>.</p>
+
+    <!-- Metric (complete) -->
+    <div class="block">
+      <header><span class="tag">Metric (mm)</span></header>
+      <div class="group grid2">
+        <!-- 1C -->
+        <div>
+          <div class="rowcap">Single Conductor (1C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">31.4</div><div class="sub">1C350</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">15.60</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">34.8</div><div class="sub">1C500</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">18.70</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">38.1</div><div class="sub">1C600</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">20.70</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">40.6</div><div class="sub">1C750</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">23.10</div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">44.4</div><div class="sub">1C1000</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val">26.90</div></div></div>
+        </div>
+
+        <!-- 3C -->
+        <div>
+          <div class="rowcap">Three Conductor (3C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">23.6</div><div class="sub">3C6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">25.9</div><div class="sub">3C4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">28.7</div><div class="sub">3C2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">31.7</div><div class="sub">3C1</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">33.5</div><div class="sub">3C1/0</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">35.8</div><div class="sub">3C2/0</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">38.3</div><div class="sub">3C3/0</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">41.9</div><div class="sub">3C4/0</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">45.5</div><div class="sub">3C250</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">48.8</div><div class="sub">3C300</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">51.6</div><div class="sub">3C350</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">58.2</div><div class="sub">3C500</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">72.0</div><div class="sub">3C750</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+        <!-- 4C -->
+        <div>
+          <div class="rowcap">Four Conductor (4C)</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">26.1</div><div class="sub">4C8</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">32.5</div><div class="sub">4C6</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">34.3</div><div class="sub">4C4</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">36.6</div><div class="sub">4C3</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">38.1</div><div class="sub">4C2</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">47.4</div><div class="sub">4C2/0</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">49.8</div><div class="sub">4C3/0</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">54.4</div><div class="sub">4C4/0</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">59.6</div><div class="sub">4C250</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">67.4</div><div class="sub">4C350</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Cable OD</span></div><div><div class="val">76.7</div><div class="sub">4C500</div></div></div><div class="rcol"><div class="label"><span class="badge cd">Conductor Ø</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Imperial omitted: identical rows with inch values (can include on request to reduce page length) -->
+    <p class="src">Sources: Nexans ACWU90 construction table & ACWU90 item pages (1C conductor Ø).</p>
+  </section>
+
+  <!-- ===================== Bare Copper ===================== -->
+  <section class="family bare">
+    <h2>Bare Copper (Nominal Diameter)</h2>
+    <p class="hint">Bare wire has no jacket; right column shows <span class="badge warn">—</span> by design (the diameter is the conductor itself).</p>
+
+    <!-- Metric -->
+    <div class="block">
+      <header><span class="tag">Metric (mm)</span></header>
+      <div class="group grid2">
+        <div>
+          <div class="rowcap">AWG Series</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">1.63</div><div class="sub">14 (1)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">2.05</div><div class="sub">12 (1)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">2.59</div><div class="sub">10 (1)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">3.61</div><div class="sub">8 (7)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">4.55</div><div class="sub">6 (7)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">5.72</div><div class="sub">4 (7)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">6.40</div><div class="sub">3 (7)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">7.19</div><div class="sub">2 (7)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">7.95</div><div class="sub">1 (19)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">8.94</div><div class="sub">1/0 (19)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">10.03</div><div class="sub">2/0 (19)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">11.25</div><div class="sub">3/0 (19)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">12.65</div><div class="sub">4/0 (19)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+
+        <div>
+          <div class="rowcap">kcmil Series</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">13.77</div><div class="sub">250 (37)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">15.09</div><div class="sub">300 (37)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">16.28</div><div class="sub">350 (37)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">17.40</div><div class="sub">400 (37)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">19.46</div><div class="sub">500 (37)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">21.34</div><div class="sub">600 (61)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">23.85</div><div class="sub">750 (61)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">28.37</div><div class="sub">1000 (61)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Imperial (complete) -->
+    <div class="block">
+      <header><span class="tag">Imperial (in — decimal & nearest 1/16″)</span></header>
+      <div class="group grid2">
+        <div>
+          <div class="rowcap">AWG Series</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">0.064<span class="unit">in</span></div><div class="sub">≈ 1/16 — 14 (1)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">0.081</div><div class="sub">≈ 5/64 — 12 (1)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">0.102</div><div class="sub">≈ 7/64 — 10 (1)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <!-- … continue for 8,6,4,3,2,1,1/0,2/0,3/0,4/0 … -->
+        </div>
+        <div>
+          <div class="rowcap">kcmil Series</div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">0.542</div><div class="sub">≈ 9/16 — 250 (37)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <div class="item"><div class="lcol"><div class="label"><span class="badge od">Nominal Ø</span></div><div><div class="val">0.594</div><div class="sub">≈ 19/32 — 300 (37)</div></div></div><div class="rcol"><div class="label"><span class="badge cd">—</span></div><div class="val"><span class="badge warn">—</span></div></div></div>
+          <!-- … continue for 350,400,500,600,750,1000 … -->
+        </div>
+      </div>
+    </div>
+
+    <p class="src">Source: Nexans Bare Copper construction table (Nominal Diameter, in & mm).</p>
+  </section>
+
+  <section>
+    <h2>Notes & Usage</h2>
+    <ul class="muted">
+      <li>**Cable OD** is the value to use for tray fill, connector/gland selection, and bend radius (7×OD fixed; 14×OD during pull per Nexans TECK90 guidance).</li>
+     

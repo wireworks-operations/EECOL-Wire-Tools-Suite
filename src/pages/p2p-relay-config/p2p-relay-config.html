@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" id="csp-meta" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self' ws://localhost:8765/gun wss://localhost:8765/gun wss://gun-sync.acidgreenservers.com/gun;">
+    <script>
+        // Dynamic CSP generation for configurable relay servers
+        function updateCSPWithRelayServers() {
+            try {
+                const relayConfig = localStorage.getItem('eecol-relay-servers');
+                if (!relayConfig) return; // Use default CSP
+
+                const relayServers = JSON.parse(relayConfig);
+                if (!Array.isArray(relayServers) || relayServers.length === 0) return;
+
+                // Extract hostnames from relay URLs
+                const relayHosts = [];
+                relayServers.forEach(url => {
+                    try {
+                        const urlObj = new URL(url);
+                        const wsUrl = urlObj.protocol === 'http:' ? `ws://${urlObj.host}` : `wss://${urlObj.host}`;
+                        const wssUrl = `wss://${urlObj.host}`;
+                        if (!relayHosts.includes(wsUrl)) relayHosts.push(wsUrl);
+                        if (!relayHosts.includes(wssUrl)) relayHosts.push(wssUrl);
+                    } catch (e) {
+                        console.warn('Invalid relay URL format:', url);
+                    }
+                });
+
+                if (relayHosts.length === 0) return;
+
+                // Update CSP to include relay servers
+                const cspMeta = document.getElementById('csp-meta');
+                if (cspMeta) {
+                    let cspContent = cspMeta.content;
+                    // Replace connect-src directive to include relay hosts
+                    const connectSrcMatch = cspContent.match(/connect-src\s+([^;]+);/);
+                    if (connectSrcMatch) {
+                        const existingConnectSrc = connectSrcMatch[1].trim();
+                        const newConnectSrc = existingConnectSrc + ' ' + relayHosts.join(' ');
+                        cspContent = cspContent.replace(/connect-src\s+[^;]+;/, `connect-src ${newConnectSrc};`);
+                        cspMeta.content = cspContent;
+                        console.log('CSP updated with relay servers:', relayHosts);
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to update CSP with relay servers:', error);
+            }
+        }
+
+        // Update CSP immediately when script runs
+        updateCSPWithRelayServers();
+    </script>
+    <title>EECOL P2P Relay Configuration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../assets/css/cutting-records.css">
+    <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
+    <link rel="manifest" href="../../assets/manifest.json">
+    <meta name="theme-color" content="#0058B3">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EECOL Tools">
+    <link rel="apple-touch-icon" href="../../assets/icons/icon-192x192.png">
+    <script src="../../core/database/indexeddb.js"></script>
+    <script src="../../utils/modals.js"></script>
+    <script src="../../core/database/gun-sync.js"></script>
+</head>
+<body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
+
+
+
+    <!-- Main Container -->
+    <div id="relayConfigPage" class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16 relative">
+
+        <!-- Header -->
+        <div class="flex justify-center mb-1 relative">
+
+            <!-- P2P Sync Status Indicator -->
+            <div id="p2p-sync-status" class="p2p-sync-status disconnected">
+                <span class="sync-icon">🔌</span>
+                <span class="sync-text">Offline</span>
+            </div>
+
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-black mb-3 text-center header-gradient">
+            EECOL P2P Relay Configuration
+        </h1>
+        <p class="mb-5 text-center text-sm font-medium header-gradient">
+           Configure and test peer-to-peer relay server connections for data synchronization.
+        </p>
+
+        <div class="flex-1 overflow-y-auto">
+            <div class="flex flex-col pb-4">
+                <div class="space-y-6">
+
+                    <!-- Auth Status -->
+                    <div class="p-2 bg-yellow-50/70 border-l-4 border-yellow-500 rounded-lg shadow-md">
+                        <p class="text-xs font-semibold text-yellow-800">IndexedDB Mode - Enhanced Data Persistence</p>
+                        <p class="text-xs font-mono text-gray-700 break-all">
+                            User ID: <span class="font-bold">LocalUser</span>
+                        </p>
+                        <p class="text-xs text-gray-600 mt-1">Data is saved to IndexedDB with P2P sync capability.</p>
+                    </div>
+
+                    <!-- Current Relay Status -->
+                    <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-md">
+                        <h3 class="text-lg font-bold mb-3 text-center header-gradient">🔗 Current Relay Status</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div class="text-center">
+                                <div class="text-2xl mb-1" id="connection-status-icon">🔴</div>
+                                <div class="font-bold text-xl" id="connection-status-text">Disconnected</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl mb-1" id="peers-status-icon">👥</div>
+                                <div class="font-bold text-xl" id="peers-count">0</div>
+                                <div class="text-sm text-gray-600">Peers Connected</div>
+                            </div>
+                        </div>
+                        <button id="test-connection" class="w-full px-4 py-2 bg-green-600 text-white rounded-xl shadow-lg hover:bg-green-700 transition duration-200">
+                            Test Relay Connection
+                        </button>
+                    </div>
+
+                    <!-- Relay Server Configuration -->
+                    <div class="p-4 bg-white rounded-xl shadow-md border border-gray-200">
+                        <h3 class="text-lg font-bold mb-3 text-center header-gradient">⚙️ Relay Server Configuration</h3>
+
+                        <div class="mb-4">
+                            <label for="relay-url" class="block text-sm font-semibold mb-2 header-gradient">Relay Server URL</label>
+                            <input type="url"
+                                   id="relay-url"
+                                   placeholder="https://gun-sync.acidgreenservers.com/gun"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   required />
+                            <p class="text-xs text-gray-500 mt-1">
+                                Enter the P2P relay server URL. Must end with '/gun' and support WebSocket connections.
+                            </p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button id="save-config" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition duration-200">
+                                💾 Save Configuration
+                            </button>
+                            <button id="load-config" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-xl shadow-lg hover:bg-gray-700 transition duration-200">
+                                📂 Load Current
+                            </button>
+                        </div>
+
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="text-sm font-semibold text-blue-800 mb-2">📋 Configuration Notes</h4>
+                            <ul class="text-xs text-blue-700 space-y-1">
+                                <li>• URL must be accessible via HTTPS/WSS</li>
+                                <li>• Gun.js requires '/gun' endpoint path</li>
+                                <li>• Changes apply immediately after saving</li>
+                                <li>• Valid: https://relay.example.com/gun</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Connection History/Logs -->
+                    <div class="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg shadow-md">
+                        <h3 class="text-lg font-bold mb-3 text-center header-gradient">📋 Connection Log</h3>
+                        <div id="connection-log" class="bg-white p-3 rounded-lg border max-h-64 overflow-y-auto">
+                            <div class="text-sm text-gray-600 italic">Test connection or save configuration to see activity...</div>
+                        </div>
+                        <button id="clear-log" class="mt-2 w-full px-4 py-2 bg-red-600 text-white rounded-xl shadow-lg hover:bg-red-700 transition duration-200">
+                            🗑️ Clear Log
+                        </button>
+                    </div>
+
+                    <!-- Advanced Options -->
+                    <div class="p-4 bg-white rounded-xl shadow-md border border-gray-200">
+                        <label class="flex items-center space-x-2 cursor-pointer mb-3">
+                            <input type="checkbox" id="show-advanced" class="form-checkbox h-5 w-5 text-blue-600">
+                            <span class="text-sm font-semibold header-gradient">Show Advanced Options</span>
+                        </label>
+
+                        <div id="advanced-options" class="hidden space-y-3">
+                            <div>
+                                <label for="connection-timeout" class="block text-xs font-semibold mb-1 header-gradient">Connection Timeout (seconds)</label>
+                                <input type="number"
+                                       id="connection-timeout"
+                                       value="10"
+                                       min="1"
+                                       max="60"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
+                            </div>
+
+                            <div>
+                                <label for="max-retry-attempts" class="block text-xs font-semibold mb-1 header-gradient">Max Retry Attempts</label>
+                                <input type="number"
+                                       id="max-retry-attempts"
+                                       value="3"
+                                       min="1"
+                                       max="10"
+                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
+                            </div>
+
+                            <div class="text-xs text-gray-600 bg-yellow-50 p-2 rounded border border-yellow-200">
+                                ⚠️ Advanced settings affect connection reliability. Use default values unless you know what you're doing.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Footer inside main box -->
+        <div class="mt-auto pt-4 border-t border-blue-200">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex space-x-3">
+                    <a href="../index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
+                    <a href="../p2p-sync-status/p2p-sync-status.html" class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">🔄 P2P Status</a>
+                    <a href="../useful-tool/useful-tool.html" class="px-3 py-1.5 bg-purple-600 border-2 border-purple-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-purple-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-purple-600 focus:ring-opacity-50 text-xs no-underline">Is This Useful?</a>
+                </div>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.1</p>
+            </div>
+            <p class="font-medium text-[#0058B3] text-center select-none mb-1">
+                Made With ❤️ By: Lucas and Cline 🤖
+            </p>
+            <p class="text-xs font-semibold header-gradient text-center select-none">
+                EECOL Wire Tools 2025 - Enterprise Edition
+            </p>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Alerts/Confirmations -->
+    <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="modalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="modalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eecol-logo-tilt">
+                    <defs>
+                        <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#004a99;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2"/>
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)"/>
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-center mb-3 header-gradient" id="modalTitle">Notification</h3>
+            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...</div>
+            <div class="flex justify-center space-x-3" id="modalButtons">
+                <!-- Buttons will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../../assets/js/p2p-relay-config.js"></script>
+</body>
+</html>

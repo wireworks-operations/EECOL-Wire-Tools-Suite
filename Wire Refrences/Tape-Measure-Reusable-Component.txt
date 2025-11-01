@@ -1,0 +1,307 @@
+// tape-scale.js
+// <tape-scale inches="1"
+//              metric="true"
+//              metric-unit="mm|cm"
+//              cm-label-step="1"
+//              mm-label-step="5"
+//              imperial-feet="auto|on|off"
+//              feet-label-step="1"
+//              mode="fractions|decimals|both"
+//              compact="false"
+//              height="180"
+//              marker="0.0"></tape-scale>
+
+const tpl = document.createElement('template');
+tpl.innerHTML = `
+<style>
+:host { display:block; }
+.wrapper {
+  background: #132031;
+  border: 1px solid #243246;
+  border-radius: 12px;
+  padding: .75rem;
+  box-sizing: border-box;
+  color: #e6edf3;
+  font-family: system-ui, Segoe UI, Inter, Roboto, Arial, sans-serif;
+}
+.strip      { fill: #0f1a26; stroke: #223244; }
+.strip-mm   { fill: #141924; stroke: #223244; }
+.label { fill: #e6edf3; font-size: 12px; text-anchor: middle; dominant-baseline: hanging; }
+.sub   { fill: #9fb1c1; font-size: 11px; text-anchor: middle; dominant-baseline: hanging; }
+.bold  { stroke: #ffffff; }
+.med   { stroke: #a4d3ff; }
+.thin  { stroke: #6ea8d9; }
+.bold-mm { stroke: #ffe08a; }
+.med-mm  { stroke: #ffd062; }
+.thin-mm { stroke: #eab54e; }
+.marker  { stroke: #ff6b6b; stroke-width: 3; shape-rendering: crispEdges; }
+.foot    { stroke: #7ee787; stroke-width: 5; shape-rendering: crispEdges; }
+.legend {
+  display:flex; flex-wrap: wrap; gap: .4rem .8rem; align-items:center; margin-top: .25rem;
+  color:#a9b6c3; font-size:.9rem;
+}
+.badge { display:inline-flex; align-items:center; gap:.35rem; }
+.sw { width:20px; height:0; border-top: 4px solid currentColor; }
+.small .label { font-size: 11px; }
+.small .sub   { font-size: 10px; }
+</style>
+<div class="wrapper">
+  <svg id="svg" width="100%" part="svg"></svg>
+  <div id="legend" class="legend" part="legend"></div>
+</div>
+`;
+
+class TapeScale extends HTMLElement {
+  static get observedAttributes() {
+    return [
+      'inches','metric','mode','compact','height',
+      'mm-label-step','metric-unit','cm-label-step',
+      'imperial-feet','feet-label-step','marker'
+    ];
+  }
+  constructor(){
+    super();
+    this._root = this.attachShadow({mode:'open'});
+    this._root.appendChild(tpl.content.cloneNode(true));
+    this.svg = this._root.getElementById('svg');
+    this.legend = this._root.getElementById('legend');
+    this._resize = new ResizeObserver(()=>this.render());
+    this._resize.observe(this);
+  }
+  connectedCallback(){ this.render(); }
+  disconnectedCallback(){ this._resize.disconnect(); }
+  attributeChangedCallback(){ this.render(); }
+
+  // --- attributes ---
+  get inches(){ return Math.max(1, parseInt(this.getAttribute('inches')||'1',10)); }
+  get metric(){ return (this.getAttribute('metric')||'true') !== 'false'; }
+  get mode(){ return (this.getAttribute('mode')||'fractions'); }
+  get compact(){ return (this.getAttribute('compact')||'false') === 'true'; }
+  get height(){ const h=parseInt(this.getAttribute('height')||'180',10); return Math.max(60,h); }
+  get mmStep(){ const s=parseInt(this.getAttribute('mm-label-step')||'5',10); return Math.min(50, Math.max(1,s)); }
+  get metricUnit(){ const u=(this.getAttribute('metric-unit')||'mm').toLowerCase(); return (u==='cm'?'cm':'mm'); }
+  get cmStep(){ const s=parseFloat(this.getAttribute('cm-label-step')||'1'); return Math.max(0.1, s); }
+  get imperialFeet(){ const v=(this.getAttribute('imperial-feet')||'auto').toLowerCase(); return ['auto','on','off'].includes(v)?v:'auto'; }
+  get feetStep(){ const s=parseInt(this.getAttribute('feet-label-step')||'1',10); return Math.max(1,s); }
+  get markerIn(){ return Math.max(0, parseFloat(this.getAttribute('marker')||'0')); }
+
+  // --- util ---
+  _gcd(a,b){ return b?this._gcd(b,a%b):Math.abs(a); }
+  _frac(n,d){
+    const g=this._gcd(n,d); n/=g; d/=g;
+    const map={'1/2':'½','1/4':'¼','3/4':'¾','1/8':'⅛','3/8':'⅜','5/8':'⅝','7/8':'⅞'};
+    const key=`${n}/${d}`; return map[key]||key;
+  }
+  _addText(x,y,txt,cls='label'){
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', x); t.setAttribute('y', y);
+    t.setAttribute('class', cls); t.textContent = txt;
+    return t;
+  }
+
+  render(){
+    const W = this.clientWidth || 800;
+    const pad = 10;
+    const rows = this.metric ? 2 : 1;
+    const rowH = Math.max(60, Math.floor((this.height - (rows-1)*10) / rows));
+    const totalH = rows*rowH + (rows-1)*10;
+
+    this.svg.setAttribute('viewBox', `0 0 ${W} ${totalH}`);
+    this.svg.setAttribute('height', `${totalH}`);
+    this.svg.innerHTML='';
+
+    // groups
+    const gStripIn = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const gIn      = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const gLblIn   = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const gFoot    = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+    const gStripMM = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const gMM      = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const gLblMM   = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+    const gMarker  = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+    // geometry
+    const inchTop = 0;
+    const inchBaseline = inchTop + rowH - 20;
+    const mmTop = rows===2 ? (rowH + 10) : 0;
+    const mmBaseline = mmTop + rowH - 20;
+
+    // background strips
+    const mkRect = (y,h,cls)=>{
+      const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x', pad); r.setAttribute('y', y+10);
+      r.setAttribute('width', W - 2*pad); r.setAttribute('height', h-30);
+      r.setAttribute('rx', 8); r.setAttribute('class', cls); return r;
+    };
+    gStripIn.appendChild(mkRect(inchTop, rowH, 'strip'));
+    if (this.metric) gStripMM.appendChild(mkRect(mmTop, rowH, 'strip-mm'));
+
+    // --- INCH ticks/labels ---
+    const totalSixteenths = this.inches * 16;
+    const spanPx = (W-2*pad);
+    const xIn = i => pad + spanPx * (i/totalSixteenths);
+
+    const tickIn = (i)=>{
+      let cls='thin', h=24, sw=2;
+      if (i%16===0) { cls='bold'; h=52; sw=5; }
+      else if (i%8===0) { cls='med'; h=44; sw=4; }
+      else if (i%4===0) { cls='med'; h=40; sw=3; }
+      else if (i%2===0) { cls='med'; h=32; sw=3; }
+      return {cls,h,sw};
+    };
+    for (let i=0;i<=totalSixteenths;i++){
+      const {cls,h,sw} = tickIn(i);
+      const x = xIn(i);
+      const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',x); ln.setAttribute('x2',x);
+      ln.setAttribute('y1',inchBaseline-h); ln.setAttribute('y2',inchBaseline);
+      ln.setAttribute('class',cls); ln.setAttribute('stroke-width',sw);
+      ln.setAttribute('shape-rendering','crispEdges');
+      gIn.appendChild(ln);
+    }
+    // inch labels
+    for (let i=0;i<=totalSixteenths;i++){
+      const atInch = (i%16===0);
+      const show = this.compact ? atInch || (i%8===0 && this.inches===1) : (i%2===0 || atInch);
+      if (!show) continue;
+      const x = xIn(i);
+      const whole = Math.floor(i/16);
+      const rem = i%16;
+      let primary='', secondary='';
+      if (this.mode==='fractions' || this.mode==='both'){
+        primary = rem===0 ? `${whole}″` : `${this._frac(rem,16)}″`;
+      }
+      if (this.mode==='decimals' || this.mode==='both'){
+        const val = i/16;
+        secondary = `${(+val.toFixed(4)).toString()}`;
+      }
+      if (primary)  gLblIn.appendChild(this._addText(x, inchBaseline+12, primary, 'label'));
+      if (secondary && this.mode==='both') gLblIn.appendChild(this._addText(x, inchBaseline+28, secondary, 'sub'));
+    }
+
+    // --- Feet markers/labels (optional) ---
+    const showFeet = (this.imperialFeet==='on') || (this.imperialFeet==='auto' && this.inches>=12);
+    if (showFeet){
+      const feetCount = Math.floor(this.inches/12);
+      for (let f=1; f<=feetCount; f++){
+        const i = f*12*16; // convert feet to sixteenths
+        const x = xIn(i);
+        const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1',x); ln.setAttribute('x2',x);
+        ln.setAttribute('y1',8); ln.setAttribute('y2',inchBaseline);
+        ln.setAttribute('class','foot');
+        gFoot.appendChild(ln);
+      }
+      // foot labels at step
+      for (let f=1; f<=feetCount; f+=this.feetStep){
+        const i = f*12*16, x = xIn(i);
+        gLblIn.appendChild(this._addText(x, inchBaseline-54, `${f} ft`, 'label'));
+      }
+    }
+
+    // --- METRIC row ---
+    if (this.metric){
+      const mmMax = this.inches * 25.4;
+      const xMM = mm => pad + spanPx * (mm/mmMax);
+      const tickMM = (mm)=>{
+        if (mm===0 || mm===mmMax) return {cls:'bold-mm',h:50,sw:5};
+        if (Number.isInteger(mm)) {
+          if (mm%10===0) return {cls:'bold-mm',h:42,sw:4};
+          if (mm%5===0)  return {cls:'med-mm', h:34,sw:3};
+          return {cls:'thin-mm',h:24,sw:2};
+        }
+        return {cls:'thin-mm',h:20,sw:2};
+      };
+
+      // draw integer mm ticks
+      for (let mm=0; mm<=Math.floor(mmMax); mm++){
+        const {cls,h,sw}=tickMM(mm);
+        const x=xMM(mm);
+        const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1',x); ln.setAttribute('x2',x);
+        ln.setAttribute('y1', mmBaseline-h); ln.setAttribute('y2', mmBaseline);
+        ln.setAttribute('class',cls); ln.setAttribute('stroke-width',sw);
+        ln.setAttribute('shape-rendering','crispEdges');
+        gMM.appendChild(ln);
+      }
+      // precise end (e.g., 25.4, 50.8…)
+      if (!Number.isInteger(mmMax)){
+        const {cls,h,sw}=tickMM(mmMax);
+        const x=xMM(mmMax);
+        const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1',x); ln.setAttribute('x2',x);
+        ln.setAttribute('y1', mmBaseline-h); ln.setAttribute('y2', mmBaseline);
+        ln.setAttribute('class',cls); ln.setAttribute('stroke-width',sw);
+        ln.setAttribute('shape-rendering','crispEdges');
+        gMM.appendChild(ln);
+      }
+
+      // metric labels (mm or cm)
+      if (this.metricUnit==='mm'){
+        for (let mm=0; mm<=Math.floor(mmMax); mm+=this.mmStep){
+          gLblMM.appendChild(this._addText(xMM(mm), mmBaseline+12, `${mm} mm`, 'label'));
+        }
+        const end = (+mmMax.toFixed(1)).toString().replace(/\.0$/,'');
+        gLblMM.appendChild(this._addText(xMM(mmMax), mmBaseline+12, `${end} mm`, 'label'));
+      } else {
+        const cmMax = mmMax/10;
+        const xCM = cm => xMM(cm*10);
+        for (let cm=0; cm<=cmMax; cm+=this.cmStep){
+          const c = +cm.toFixed(2);
+          gLblMM.appendChild(this._addText(xCM(c), mmBaseline+12, `${c} cm`, 'label'));
+        }
+        const end = (+cmMax.toFixed(2)).toString().replace(/\.00$/,'');
+        gLblMM.appendChild(this._addText(xCM(cmMax), mmBaseline+12, `${end} cm`, 'label'));
+      }
+    }
+
+    // marker
+    if (isFinite(this.markerIn)){
+      const m = Math.max(0, Math.min(this.inches, this.markerIn));
+      const x = pad + spanPx * (m/this.inches);
+      const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',x); ln.setAttribute('x2',x);
+      ln.setAttribute('y1',8); ln.setAttribute('y2', totalH-8);
+      ln.setAttribute('class','marker');
+      gMarker.appendChild(ln);
+    }
+
+    // append
+    this.svg.appendChild(gStripIn);
+    this.svg.appendChild(gIn);
+    this.svg.appendChild(gFoot);
+    this.svg.appendChild(gLblIn);
+    if (this.metric){
+      this.svg.appendChild(gStripMM);
+      this.svg.appendChild(gMM);
+      this.svg.appendChild(gLblMM);
+    }
+    this.svg.appendChild(gMarker);
+
+    // legend (hide on compact)
+    this.legend.innerHTML='';
+    if (!this.compact){
+      const metricBadges = this.metric ? (this.metricUnit==='mm'
+        ? `
+          <span class="badge" style="color:#ffe08a"><span class="sw"></span>Metric: 10 mm</span>
+          <span class="badge" style="color:#ffd062"><span class="sw"></span>Metric: 5 mm</span>
+          <span class="badge" style="color:#eab54e"><span class="sw"></span>Metric: 1 mm</span>`
+        : `
+          <span class="badge" style="color:#ffe08a"><span class="sw"></span>Metric: 1 cm</span>
+          <span class="badge" style="color:#ffd062"><span class="sw"></span>Metric: 5 mm</span>
+          <span class="badge" style="color:#eab54e"><span class="sw"></span>Metric: 1 mm</span>`
+      ) : '';
+      this.legend.innerHTML = `
+        <span class="badge" style="color:#fff"><span class="sw"></span>Inch: full inch</span>
+        <span class="badge" style="color:#a4d3ff"><span class="sw"></span>Inch: 1/2, 1/4, 1/8</span>
+        <span class="badge" style="color:#6ea8d9"><span class="sw"></span>Inch: 1/16</span>
+        ${this.imperialFeet!=='off' ? `<span class="badge" style="color:#7ee787"><span class="sw"></span>Foot markers</span>` : ``}
+        ${metricBadges}
+      `;
+      if (this.height <= 90) this.svg.classList.add('small'); else this.svg.classList.remove('small');
+    }
+  }
+}
+customElements.define('tape-scale', TapeScale);

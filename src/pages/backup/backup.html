@@ -1,0 +1,317 @@
+<!--V0.8.0.0 - Enterprise Authentication & P2P Sync
+Data Backup & Restore Guide - EECOL Wire Tools Suite Enterprise Edition
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="../../../../../../src/assets/manifest.json">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
+    <title>EECOL Wire Tools Suite - Enterprise Data Backup & Restore Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../../src/assets/css/eecol-theme.css">
+</head>
+<body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg">
+
+    <div class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16">
+
+        <!-- EECOL 'E' Logo -->
+        <div class="flex justify-center mb-1">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-black mb-3 text-center header-gradient">
+            Enterprise Data Backup & Restore Guide
+        </h1>
+        <p class="mb-5 text-center text-sm font-medium text-[#0058B3]">
+            Protect your enterprise data with advanced P2P sync and comprehensive backup strategies.
+        </p>
+
+        <div class="flex-1 overflow-y-auto">
+            <div class="space-y-6">
+
+                <!-- v0.8.0.1 Enterprise P2P Sync Notice -->
+                <div class="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 p-6 rounded-xl shadow-lg border-4 border-blue-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="text-5xl mr-4">🔗</div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-blue-900 mb-2">v0.8.0.1 ENTERPRISE P2P SYNC</h2>
+                                <p class="text-lg font-semibold text-blue-800">Decentralized Data Protection</p>
+                            </div>
+                        </div>
+                        <div class="text-5xl">💾</div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                        <div class="bg-white/70 p-2 rounded-lg">
+                            <div class="text-xl mb-1">🔄</div>
+                            <div class="text-xs font-bold text-blue-800">Real-Time Sync</div>
+                        </div>
+                        <div class="bg-white/70 p-2 rounded-lg">
+                            <div class="text-xl mb-1">🔐</div>
+                            <div class="text-xs font-bold text-blue-800">Encrypted Backup</div>
+                        </div>
+                        <div class="bg-white/70 p-2 rounded-lg">
+                            <div class="text-xl mb-1">🔄</div>
+                            <div class="text-xs font-bold text-blue-800">Device Sync</div>
+                        </div>
+                        <div class="bg-white/70 p-2 rounded-lg">
+                            <div class="text-xl mb-1">🏢</div>
+                            <div class="text-xs font-bold text-blue-800">Enterprise Ready</div>
+                        </div>
+                    </div>
+                    <p class="text-center text-base font-semibold text-blue-800 mt-4">Enterprise-grade data protection with decentralized P2P synchronization across all devices!</p>
+                </div>
+
+                <section class="p-6 bg-yellow-50 border border-yellow-200 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-yellow-800 mb-4 flex items-center">
+                        ⚠️ Enterprise Data Architecture Overview
+                    </h2>
+                    <p class="text-sm text-yellow-800 mb-4">
+                        <strong>v0.8.0.1 Enterprise Edition Features:</strong> Decentralized P2P data protection with zero external dependencies.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <p class="text-sm text-yellow-700">💾 <strong>IndexedDB Storage:</strong> Enterprise-grade local database with transaction safety</p>
+                            <p class="text-sm text-yellow-700">🔗 <strong>Gun.js P2P Sync:</strong> Encrypted peer-to-peer synchronization across devices</p>
+                            <p class="text-sm text-yellow-700">📱 <strong>PWA Architecture:</strong> Installable app with offline capabilities</p>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-sm text-yellow-700">🔒 <strong>Data Sovereignty:</strong> All data remains within local network boundaries</p>
+                            <p class="text-sm text-yellow-700">🚫 <strong>Zero External Dependencies:</strong> No cloud servers or third-party services</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2">
+                        <p class="text-sm text-yellow-700">🛡️ <strong>Protection Level:</strong> Military-grade encryption with conflict-free synchronization</p>
+                        <p class="text-sm text-yellow-700">💫 <strong>Offline-First:</strong> Full functionality without internet connectivity</p>
+                        <p class="text-sm text-yellow-700">🔄 <strong>Auto-Backup:</strong> Continuous P2P replication across authorized devices</p>
+                    </div>
+                </section>
+
+                <section class="p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#0058B3] mb-4 flex items-center">
+                        💾 Enterprise IndexedDB Storage Protection
+                    </h2>
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-[#0058B3]">v0.8.0.1 Enterprise Database Features:</h3>
+                        <ul class="list-disc list-inside text-sm text-gray-700 space-y-2">
+                            <li>✅ <strong>Transaction-Safe Storage:</strong> ACID-compliant database operations</li>
+                            <li>✅ <strong>Auto-Migration Support:</strong> Seamless schema updates without data loss</li>
+                            <li>✅ <strong>Data Validation:</strong> Built-in integrity checks and error recovery</li>
+                            <li>✅ <strong>Conflict Resolution:</strong> Automatic synchronization across concurrent sessions</li>
+                        </ul>
+
+                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-indigo-800 mb-2">🔄 P2P Synchronization Protection</h4>
+                            <div class="text-sm text-indigo-700 space-y-1">
+                                <p><strong>Real-Time Sync:</strong> Instant data replication across all connected devices</p>
+                                <p><strong>Network Encryption:</strong> End-to-end encrypted communication via Gun.js</p>
+                                <p><strong>Conflict-Free:</strong> CRDT-based reconciliation prevents data loss</p>
+                                <p><strong>Offline Queue:</strong> Sync automatically resumes when devices reconnect</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-blue-800 mb-2">📤 Enterprise Export System</h4>
+                            <div class="text-sm text-blue-700 space-y-1">
+                                <p><strong>Location:</strong> Tools → Various export buttons (Integrated system-wide)</p>
+                                <p><strong>Formats:</strong> CSV, JSON, PDF with enterprise encryption options</p>
+                                <p><strong>Content:</strong> All business records, operator data, audit trails</p>
+                                <p><strong>P2P Transfer:</strong> Secure device-to-device backup via synced data</p>
+                                <p><strong>Backup Frequency:</strong> Continuous P2P sync + weekly manual exports</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
+                <section class="p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#0058B3] mb-4 flex items-center">
+                        📱 PWA Installable App Backup Features
+                    </h2>
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-[#0058B3]">Enterprise PWA Data Protection:</h3>
+                        <ul class="list-disc list-inside text-sm text-gray-700 space-y-2">
+                            <li>📦 <strong>App-Specific Storage:</strong> Isolated durable storage separate from browser</li>
+                            <li>🔄 <strong>Background Sync:</strong> Automatic P2P sync when app is closed</li>
+                            <li>💾 <strong>Offline Vault:</strong> Complete data available without internet</li>
+                            <li>📡 <strong>Push Integration:</strong> Encrypted backup notifications across devices</li>
+                        </ul>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-purple-800 mb-2">🖥️ Desktop PWA Backup</h4>
+                                <p class="text-sm text-purple-700">
+                                   Installed as native desktop app with persistent storage. Automatic synchronization with local network devices via Gun.js discovery.
+                                </p>
+                            </div>
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-green-800 mb-2">📱 Mobile PWA Backup</h4>
+                                <p class="text-sm text-green-700">
+                                    Native mobile app installation with background sync and push notifications. Encrypted P2P replication with VPN corporate networks.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#0058B3] mb-4 flex items-center">
+                        🔄 Enterprise Data Restore - Step-by-Step Guide
+                    </h2>
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-[#0058B3]">P2P Device Synchronization:</h3>
+                        <ol class="list-decimal list-inside text-sm text-gray-700 space-y-2">
+                            <li>Ensure devices are connected to the same local network</li>
+                            <li>Authenticate operators on both devices (Admin privileges required)</li>
+                            <li>P2P connection established automatically via Gun.js discovery</li>
+                            <li>Select data sources for synchronization (Cutting Records, Inventory, etc.)</li>
+                            <li>Monitor real-time sync progress with conflict resolution</li>
+                        </ol>
+
+                        <h3 class="text-lg font-semibold text-[#0058B3]">From Enterprise Export:</h3>
+                        <ol class="list-decimal list-inside text-sm text-gray-700 space-y-2">
+                            <li>Access tool's export system (→ Enterprise CSV/JSON Export)</li>
+                            <li>Select record types and enterprise encryption options</li>
+                            <li>Download encrypted enterprise files with audit trails</li>
+                            <li>Use unified enterprise restore interface across all devices</li>
+                            <li>Verify data integrity with enterprise checksum validation</li>
+                        </ol>
+
+                        <h3 class="text-lg font-semibold text-[#0058B3]">IndexedDB Integrity Recovery:</h3>
+                        <ol class="list-decimal list-inside text-sm text-gray-700 space-y-2">
+                            <li>Access browser developer tools within installed PWA (F12)</li>
+                            <li>Use IndexedDB browser interface for enterprise database inspection</li>
+                            <li>Restore from active P2P network if available devices exist</li>
+                            <li>Kill and restart enterprise PWA to recover from auto-migrations</li>
+                        </ol>
+
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                            <h4 class="font-semibold text-red-800 mb-2">⚠️ Critical Enterprise Restore Notes</h4>
+                            <ul class="text-sm text-red-700 space-y-1">
+                                <li>• <strong>Network Requirements:</strong> P2P sync requires authenticated device connections</li>
+                                <li>• <strong>Operator Privileges:</strong> Admin operators required for enterprise-level restores</li>
+                                <li>• <strong>Encryption Keys:</strong> Data remains encrypted until properly authenticated</li>
+                                <li>• <strong>Conflict Resolution:</strong> System handles sync conflicts with audit preservation</li>
+                                <li>• <strong>Data Verification:</strong> All restored data includes cryptographic validation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-[#0058B3] mb-4 flex items-center">
+                        📅 Enterprise Backup Schedule & Requirements
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center p-4 border border-indigo-200 rounded-lg bg-indigo-50">
+                            <div class="text-2xl mb-2">🔄</div>
+                            <h4 class="font-semibold text-indigo-800">Real-Time</h4>
+                            <p class="text-sm text-indigo-700">Continuous P2P sync</p>
+                            <p class="text-xs text-indigo-600">Enterprise baseline</p>
+                        </div>
+                        <div class="text-center p-4 border border-blue-200 rounded-lg bg-blue-50">
+                            <div class="text-2xl mb-2">📊</div>
+                            <h4 class="font-semibold text-blue-800">Hourly</h4>
+                            <p class="text-sm text-blue-700">Data integrity check</p>
+                            <p class="text-xs text-blue-600">System verification</p>
+                        </div>
+                        <div class="text-center p-4 border border-green-200 rounded-lg bg-green-50">
+                            <div class="text-2xl mb-2">💿</div>
+                            <h4 class="font-semibold text-green-800">Weekly</h4>
+                            <p class="text-sm text-green-700">Enterprise CSV export</p>
+                            <p class="text-xs text-green-600">Compliance archiving</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="p-6 bg-green-50 border border-green-200 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                        ✅ Enterprise Backup Readiness Checklist
+                    </h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-green-700">Real-time P2P synchronization across authorized devices</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-green-700">Military-grade encryption protecting all enterprise data</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-green-700">Operator role-based access control and audit trails</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-green-700">Zero-external dependency enterprise P2P architecture</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-green-700">PWA installable apps with offline vault capabilities</span>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <!-- Footer inside main box - Same as index.html but only home button -->
+        <div class="mt-auto pt-4 border-t border-blue-200">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex space-x-2">
+                    <a href="../index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
+                    <a
+                        id="usefulBtnInside"
+                        href="../useful-tool/useful-tool.html"
+                        class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline"
+                    >
+                        About & Feedback
+                    </a>
+                </div>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.1</p>
+            </div>
+            <p class="font-medium text-[#0058B3] text-center select-none mb-1">
+                Made With ❤️ By: Lucas and Cline 🤖
+            </p>
+            <p class="text-xs font-semibold header-gradient text-center select-none">
+                EECOL Wire Tools 2025 - Enterprise Edition
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!-- Compact ruler showing feet markers for a 3‑ft span, metric labels in cm -->
+<tape-scale inches="36"
+            metric="true"
+            metric-unit="cm"
+            cm-label-step="1"
+            imperial-feet="on"
+            feet-label-step="1"
+            mode="fractions"
+            compact="true"
+            height="120"
+            marker="13.375">
+</tape-scale>

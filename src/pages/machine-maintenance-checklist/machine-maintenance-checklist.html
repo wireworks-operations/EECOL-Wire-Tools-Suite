@@ -1,0 +1,139 @@
+<!-- Machine Maintenance Checklist - EECOL Wire Tools Suite -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
+    <title>Machine Maintenance Checklist - EECOL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Core Dependencies -->
+    <script src="../../core/database/indexeddb.js"></script>
+    <script src="../../utils/modals.js"></script>
+    <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
+    <link rel="stylesheet" href="../../assets/css/machine-maintenance-checklist.css">
+</head>
+<body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg" id="mainContent">
+
+    <div class="flex-1 w-full bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl ml-0 border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col" id="printableContent">
+
+        <!-- EECOL 'E' Logo (SVG) -->
+        <div class="flex justify-center mb-1">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Tool Title Area -->
+        <h1 class="text-3xl font-black mb-3 text-center header-gradient" id="toolTitle">
+            Machine Maintenance Checklist
+        </h1>
+        <p class="mb-5 text-center text-sm font-medium text-[#0058B3]">
+            Daily Equipment Inspection & Maintenance Records
+        </p>
+
+        <!-- Top Inputs -->
+        <div class="flex justify-between mb-6 items-center">
+            <div>
+                Inspected By: <input type="text" id="globalInspectedBy" placeholder="Your Name" class="ml-2 p-2 border border-gray-300 rounded-lg shadow-inner">
+            </div>
+            <div>
+                Date: <input type="date" id="globalInspectionDate" class="ml-2 p-2 border border-gray-300 rounded-lg shadow-inner">
+            </div>
+        </div>
+
+        <!-- View Past Log and Print/Complete Buttons -->
+        <div class="flex justify-center gap-4 mb-6 no-print hidden sm:block">
+            <button id="viewPastLogBtn" class="px-6 py-3 bg-blue-500 border-2 border-blue-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-600 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 text-lg">
+                📅 View Past Log
+            </button>
+            <button id="printBtn" class="px-6 py-3 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-lg">
+                🖨️ Print Checklist
+            </button>
+            <button id="completeBtn" class="px-6 py-3 bg-green-600 border-2 border-green-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-green-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-600 focus:ring-opacity-50 text-lg">
+                ✅ Complete
+            </button>
+        </div>
+
+        <!-- Tool Layout Container -->
+        <div class="flex-1 overflow-y-auto">
+            <table class="checklist-table" id="mainChecklistTable">
+                <thead>
+                    <tr>
+                        <th class="item-cell">Inspection Points<br><br></th>
+                        <th class="item-cell">Manual<br>Hand<br>Coiler<br><div class="header-labels"><span class="ok-label">(OK)</span><span class="nok-label">(NG)</span></div></th>
+                        <th class="item-cell">Green<br>Elec<br>Coiler<br><div class="header-labels"><span class="ok-label">(OK)</span><span class="nok-label">(NG)</span></div></th>
+                        <th class="item-cell">Blue<br>Elec<br>Coiler<br><div class="header-labels"><span class="ok-label">(OK)</span><span class="nok-label">(NG)</span></div></th>
+                        <th class="item-cell">Telus<br>Machine<br><div class="header-labels"><span class="ok-label">(OK)</span><span class="nok-label">(NG)</span></div></th>
+                        <th class="item-cell">Big B1<br>Machine<br><div class="header-labels"><span class="ok-label">(OK)</span><span class="nok-label">(NG)</span></div></th>
+                        <th class="item-cell">Big B2<br>Machine<br><div class="header-labels"><span class="ok-label">(OK)</span><span class="nok-label">(NG)</span></div></th>
+                    </tr>
+                </thead>
+                <tbody id="checklistTableBody">
+                    <!-- Items will be populated by JavaScript -->
+                </tbody>
+            </table>
+
+            <div class="mt-4 page-break-before-avoid">
+                <label class="block text-sm font-semibold mb-1 header-gradient">Comments:</label>
+                <textarea id="comments" rows="2" placeholder="Additional notes..." class="w-full p-2 border border-gray-300 rounded-lg shadow-inner resize-none"></textarea>
+            </div>
+        </div>
+
+        <!-- Footer inside main box -->
+        <div class="mt-auto pt-4 border-t border-blue-200 no-print hidden sm:block">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex space-x-3">
+                    <a href="../index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
+                    <a href="../useful-tool/useful-tool.html" class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">Is This Tool Useful?</a>
+                    <a href="../machine-maintenance-checklist/machine-maintenance-checklist-multi.html" class="px-3 py-1.5 bg-teal-600 border-2 border-teal-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-teal-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-teal-600 focus:ring-opacity-50 text-xs">📋 Alternate Checklist</a>
+                </div>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.1</p>
+            </div>
+            <p class="font-medium text-[#0058B3] text-center select-none mb-1">
+                Made With ❤️ By: Lucas and Cline 🤖
+            </p>
+            <p class="text-xs font-semibold header-gradient text-center select-none">
+                EECOL Wire Tools 2025 - Enterprise Edition
+            </p>
+        </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Alerts/Confirmations -->
+    <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="modalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="modalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] eecol-logo-tilt">
+                    <defs>
+                        <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2"/>
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)"/>
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-center mb-3 header-gradient" id="modalTitle">Notification</h3>
+            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...</div>
+            <div class="center" id="modalInput" style="display: none;">
+                <input type="date" id="modalDateInput" class="w-full p-3 border border-gray-300 rounded-lg shadow-inner text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Select date...">
+            </div>
+            <div class="flex justify-center space-x-3 mt-6" id="modalButtons">
+                <!-- Buttons will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../../utils/mobile-menu.js"></script>
+    <script src="../../assets/js/machine-maintenance-checklist.js"></script>
+</body>
+</html>
