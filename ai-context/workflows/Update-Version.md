@@ -225,7 +225,7 @@ AFTER:  version: 'v0.8.0.2',
 ### Step-by-Step Process
 
 **1. Confirm Version Update:**
-```markdown
+```
 [2025-10-30 XX:XX:XX] VERSION UPDATE INITIATED
 Action: Update version from v0.8.0.1 to v0.8.0.2
 Scope: All HTML footers and JS mobile menus
@@ -269,7 +269,7 @@ grep -r "none\">v0.8.0.1<" src/pages/inventory-changelog-older/
 ```
 
 **5. Log Completion:**
-```markdown
+```
 [2025-10-30 XX:XX:XX] VERSION UPDATE COMPLETED
 Action: Updated version from v0.8.0.1 to v0.8.0.2
 Files Modified:
@@ -322,7 +322,7 @@ grep -r 'none">v0.8.0.1<' src/pages/inventory-changelog-older/
 ### If sed Command Fails
 
 **Problem:** sed command produces error
-```markdown
+```
 [2025-10-30 XX:XX:XX] VERSION UPDATE ERROR
 Action: sed command failed
 Error: [error message]
@@ -398,7 +398,7 @@ sed -i "s/version: 'v0.8.0.2'/version: 'v0.8.0.2',/g" [filepath]
 2. Move to Update-Changelog workflow for new entries
 
 ### Update CONTEXT.md
-```markdown
+```
 [2025-10-30 XX:XX:XX] VERSION UPDATE COMPLETE
 Action: Updated application version from v0.8.0.1 to v0.8.0.2
 Files Modified:
