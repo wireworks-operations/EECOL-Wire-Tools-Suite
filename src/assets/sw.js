@@ -11,8 +11,7 @@ const DYNAMIC_CACHE = 'eecol-dynamic-v1';
 const STATIC_ASSETS = [
   '/src/assets/css/eecol-theme.css',
   '/src/assets/js/index.js',
-  '/src/core/database/indexeddb.js',
-  '/src/core/database/gun-sync.js'
+  '/src/core/database/indexeddb.js'
 ];
 
 // Pages that should be cached for offline access

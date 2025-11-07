@@ -192,85 +192,18 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.1',
+        version: 'v0.8.0.2',
         menuItems: [
             { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '🔒 Privacy Policy', href: '../privacy/privacy.html', class: 'bg-purple-500 hover:bg-purple-600' },
             { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
-            { text: '🔄 P2P Sync', href: '../p2p-sync-status/p2p-sync-status.html', class: 'bg-cyan-600 hover:bg-cyan-700' },
             { text: '🛠️ Maintenance', href: '../maintenance/maintenance.html', class: 'bg-purple-600 hover:bg-purple-700' },
             { text: '📋 Changelog', href: '../changelog/changelog.html', class: 'bg-amber-500 hover:bg-amber-600' }
         ],
-        version: 'v0.8.0.1',
+        version: 'v0.8.0.2',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Wire Tools'
     });
-}
-
-// P2P Sync Status Indicator Function
-function updateSyncStatusIndicator(status) {
-    const indicator = document.getElementById('p2p-sync-status');
-    if (!indicator) return;
-
-    const iconSpan = indicator.querySelector('.sync-icon');
-    const textSpan = indicator.querySelector('.sync-text');
-
-    if (!iconSpan || !textSpan) return;
-
-    let statusText = '';
-    let statusClass = '';
-    let icon = '';
-
-    // Check sync mode first
-    if (status.syncMode === 'offline') {
-        statusClass = 'disconnected';
-        icon = '🔌';
-        statusText = 'Offline';
-    } else if (status.syncMode === 'connected') {
-        if (status.isConnected && status.peerCount > 0) {
-            statusClass = 'connecting';
-            icon = '⏳';
-            statusText = `${status.peerCount} peers (no sync)`;
-        } else {
-            statusClass = 'connecting';
-            icon = '⏳';
-            statusText = 'Connecting (no sync)';
-        }
-    } else if (status.syncMode === 'full') {
-        if (!status.isEnabled) {
-            statusClass = 'disabled';
-            icon = '🚫';
-            statusText = 'Disabled';
-        } else if (status.isConnected && status.peerCount > 0) {
-            statusClass = 'syncing';
-            icon = '🔄';
-            statusText = `${status.peerCount} peers`;
-        } else if (status.isConnected && status.peerCount === 0) {
-            statusClass = 'connecting';
-            icon = '⏳';
-            statusText = 'Connecting';
-        } else {
-            statusClass = 'disconnected';
-            icon = '🔌';
-            statusText = 'Offline';
-        }
-    } else {
-        statusClass = 'disconnected';
-        icon = '🔌';
-        statusText = 'Offline';
-    }
-
-    // Remove existing status classes
-    indicator.classList.remove('syncing', 'connecting', 'disconnected', 'disabled');
-
-    // Add new status class
-    indicator.classList.add(statusClass);
-
-    // Update icon and text
-    iconSpan.textContent = icon;
-    textSpan.textContent = statusText;
-
-    console.log(`🔄 P2P Status updated: ${statusClass} (${statusText})`);
 }
 
 // IndexedDB and P2P Sync initialization
@@ -298,38 +231,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.warn('IndexedDB is not supported. Falling back to localStorage.');
         }
 
-        // Initialize P2P Sync (new system)
-        if (typeof P2PSync !== 'undefined') {
-            window.p2pSync = new P2PSync();
-
-            // Initialize sync status indicator
-            window.p2pSync.onStatusChange((status) => {
-                updateSyncStatusIndicator(status);
-            });
-
-            // Initial status update
-            setTimeout(() => {
-                if (window.p2pSync.getSyncStatus) {
-                    updateSyncStatusIndicator(window.p2pSync.getSyncStatus());
-                }
-            }, 1000);
-
-
-
-            console.log('P2P Sync initialized successfully');
-
-            // Note: Gun.js library will load dynamically
-        } else {
-            console.warn('P2P Sync not available. Some features may be limited.');
-            // Still show offline status
-            updateSyncStatusIndicator({ isConnected: false, peerCount: 0, isSyncing: false, isEnabled: false });
-        }
-
     } catch (error) {
         console.error('Failed to initialize databases:', error);
         // Fall back to localStorage only mode
         console.log('Running in localStorage-only mode');
-        // Show offline status on error
-        updateSyncStatusIndicator({ isConnected: false, peerCount: 0, isSyncing: false });
     }
 });

@@ -68,13 +68,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.warn('⚠️ IndexedDB is not supported. Falling back to localStorage for inventory reports.');
         }
 
-        // Initialize P2P Sync
-        if (typeof P2PSync !== 'undefined') {
-            window.p2pSync = new P2PSync();
-            console.log('🔄 P2P Sync initialized successfully for inventory reports');
-        } else {
-            console.warn('⚠️ P2P Sync not available. Some features may be limited for inventory reports.');
-        }
 
         // Wait for Chart.js to load
         await loadChartJS();
@@ -723,13 +716,13 @@ function generatePDF() {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.1',
+        version: 'v0.8.0.2',
         menuItems: [
             { text: '📦 Inventory Records', href: '../inventory-records/inventory-records.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '📊 Live Statistics', href: '../live-statistics/live-statistics.html', class: 'bg-teal-600 hover:bg-teal-700' }
         ],
-        version: 'v0.8.0.1',
+        version: 'v0.8.0.2',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Inventory Reports'
     });

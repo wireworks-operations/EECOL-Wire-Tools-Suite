@@ -3,55 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" id="csp-meta" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self' ws://localhost:8765/gun wss://localhost:8765/gun wss://gun-sync.acidgreenservers.com/gun;">
-    <script>
-        // Dynamic CSP generation for configurable relay servers
-        function updateCSPWithRelayServers() {
-            try {
-                const relayConfig = localStorage.getItem('p2pRelayServers');
-                if (!relayConfig) return; // Use default CSP
-
-                const relayServers = JSON.parse(relayConfig);
-                if (!Array.isArray(relayServers) || relayServers.length === 0) return;
-
-                // Extract hostnames from relay URLs
-                const relayHosts = [];
-                relayServers.forEach(url => {
-                    try {
-                        const urlObj = new URL(url);
-                        const wsUrl = urlObj.protocol === 'http:' ? `ws://${urlObj.host}` : `wss://${urlObj.host}`;
-                        const wssUrl = `wss://${urlObj.host}`;
-                        if (!relayHosts.includes(wsUrl)) relayHosts.push(wsUrl);
-                        if (!relayHosts.includes(wssUrl)) relayHosts.push(wssUrl);
-                    } catch (e) {
-                        console.warn('Invalid relay URL format:', url);
-                    }
-                });
-
-                if (relayHosts.length === 0) return;
-
-                // Update CSP to include relay servers
-                const cspMeta = document.getElementById('csp-meta');
-                if (cspMeta) {
-                    let cspContent = cspMeta.content;
-                    // Replace connect-src directive to include relay hosts
-                    const connectSrcMatch = cspContent.match(/connect-src\s+([^;]+);/);
-                    if (connectSrcMatch) {
-                        const existingConnectSrc = connectSrcMatch[1].trim();
-                        const newConnectSrc = existingConnectSrc + ' ' + relayHosts.join(' ');
-                        cspContent = cspContent.replace(/connect-src\s+[^;]+;/, `connect-src ${newConnectSrc};`);
-                        cspMeta.content = cspContent;
-                        console.log('CSP updated with relay servers:', relayHosts);
-                    }
-                }
-            } catch (error) {
-                console.warn('Failed to update CSP with relay servers:', error);
-            }
-        }
-
-        // Update CSP immediately when script runs
-        updateCSPWithRelayServers();
-    </script>
+    <meta http-equiv="Content-Security-Policy" id="csp-meta" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'">
     <title>EECOL Wire Inventory Tracking System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../assets/css/cutting-records.css">
@@ -64,9 +16,7 @@
     <link rel="apple-touch-icon" href="../../assets/icons/icon-192x192.png">
     <script src="../../core/database/indexeddb.js"></script>
     <script src="../../utils/modals.js"></script>
-    <script src="../../utils/p2p-status.js"></script>
     <script src="../../utils/mobile-menu.js"></script>
-    <script src="../../core/database/gun-sync.js"></script>
 </head>
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
 
@@ -109,7 +59,7 @@
                         <p class="text-xs font-mono text-gray-700 break-all">
                             User ID: <span class="font-bold">LocalUser</span>
                         </p>
-                        <p class="text-xs text-gray-600 mt-1">Data is saved to IndexedDB with P2P sync capability.</p>
+                        <p class="text-xs text-gray-600 mt-1">Data is saved to IndexedDB.</p>
                         <p class="text-xs text-blue-600 mt-1 font-medium">💡 JSON Backup & Import: Use the "JSON Backup Export" and "JSON Backup Import" buttons to save/load complete data backups.</p>
                     </div>
 
@@ -419,31 +369,6 @@
                         />
                     </div>
 
-                    <!-- Sync Controls -->
-                    <div class="space-y-4">
-                        <div class="p-2 bg-purple-50/70 border-l-4 border-purple-500 rounded-lg shadow-md">
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" id="toggleSyncControls" class="form-checkbox h-4 w-4 text-purple-600" />
-                                <span class="text-sm font-semibold header-gradient">Show Sync Controls</span>
-                            </label>
-                        </div>
-
-                        <div id="syncControlsSection" class="hidden">
-                            <div class="flex justify-center items-center mt-4 flex-wrap gap-2">
-                                <div class="flex space-x-2 flex-wrap gap-2">
-                                    <button id="syncAllRecordsP2PBtn" class="p-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
-                                        Sync all Records Over P2P
-                                    </button>
-                                    <button id="syncNewRecordsP2PBtn" class="p-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 text-sm">
-                                        Sync new Records Over P2P
-                                    </button>
-                                    <button id="pullRecordsFromP2PBtn" class="p-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm">
-                                        Check P2P Sync Health
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Data Management Controls -->
                     <div class="space-y-4">
@@ -557,7 +482,7 @@
                         📈 Reports
                     </a>
                 </div>
-                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.1</p>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
             </div>
             <p class="font-medium text-[#0058B3] text-center select-none mb-1">
                 Made With ❤️ By: Lucas and Cline 🤖

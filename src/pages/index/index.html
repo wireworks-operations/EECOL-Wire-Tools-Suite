@@ -4,56 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Dynamic CSP generation based on relay server config -->
-    <meta http-equiv="Content-Security-Policy" id="csp-meta" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self' ws://localhost:8765/gun wss://localhost:8765/gun wss://gun-sync.acidgreenservers.com/gun;">
-    <script>
-        // Dynamic CSP generation for configurable relay servers
-        function updateCSPWithRelayServers() {
-            try {
-                const relayConfig = localStorage.getItem('p2pRelayServers');
-                if (!relayConfig) return; // Use default CSP
-
-                const relayServers = JSON.parse(relayConfig);
-                if (!Array.isArray(relayServers) || relayServers.length === 0) return;
-
-                // Extract hostnames from relay URLs
-                const relayHosts = [];
-                relayServers.forEach(url => {
-                    try {
-                        const urlObj = new URL(url);
-                        const wsUrl = urlObj.protocol === 'http:' ? `ws://${urlObj.host}` : `wss://${urlObj.host}`;
-                        const wssUrl = `wss://${urlObj.host}`;
-                        if (!relayHosts.includes(wsUrl)) relayHosts.push(wsUrl);
-                        if (!relayHosts.includes(wssUrl)) relayHosts.push(wssUrl);
-                    } catch (e) {
-                        console.warn('Invalid relay URL format:', url);
-                    }
-                });
-
-                if (relayHosts.length === 0) return;
-
-                // Update CSP to include relay servers
-                const cspMeta = document.getElementById('csp-meta');
-                if (cspMeta) {
-                    let cspContent = cspMeta.content;
-                    // Replace connect-src directive to include relay hosts
-                    const connectSrcMatch = cspContent.match(/connect-src\s+([^;]+);/);
-                    if (connectSrcMatch) {
-                        const existingConnectSrc = connectSrcMatch[1].trim();
-                        const newConnectSrc = existingConnectSrc + ' ' + relayHosts.join(' ');
-                        cspContent = cspContent.replace(/connect-src\s+[^;]+;/, `connect-src ${newConnectSrc};`);
-                        cspMeta.content = cspContent;
-                        console.log('CSP updated with relay servers:', relayHosts);
-                    }
-                }
-            } catch (error) {
-                console.warn('Failed to update CSP with relay servers:', error);
-            }
-        }
-
-        // Update CSP immediately when script runs
-        updateCSPWithRelayServers();
-    </script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'">
     <title>EECOL Wire Tools Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
@@ -75,8 +26,6 @@
     <meta name="apple-mobile-web-app-title" content="EECOL Tools">
     <link rel="apple-touch-icon" href="../../assets/icons/icon-192x192.png">
     <script src="../../core/database/indexeddb.js"></script>
-    <script src="../../core/database/gun-sync.js"></script>
-    <script src="../../utils/p2p-status.js"></script>
     <script src="../../utils/mobile-menu.js"></script>
 </head>
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg">
@@ -285,10 +234,10 @@
                     <a href="../backup/backup.html" class="px-3 py-1.5 bg-green-500 border-2 border-green-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-green-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 text-xs no-underline">💾 Backup Guide</a>
                 </div>
                 <div class="flex space-x-2 items-center">
-                    <a href="../p2p-sync-status/p2p-sync-status.html" class="px-3 py-1.5 bg-cyan-600 border-2 border-cyan-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-cyan-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-cyan-600 focus:ring-opacity-50 text-xs no-underline">🔄 P2P Sync</a>
+                    <a href="../database-config/database-config.html" class="px-3 py-1.5 bg-cyan-600 border-2 border-cyan-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-cyan-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-cyan-600 focus:ring-opacity-50 text-xs no-underline">🗃️ Database Config</a>
                     <a href="../maintenance/maintenance.html" class="px-3 py-1.5 bg-purple-600 border-2 border-purple-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-purple-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-purple-600 focus:ring-opacity-50 text-xs no-underline">🛠️ Maintenance</a>
                     <a href="../changelog/changelog.html" class="px-3 py-1.5 bg-amber-500 border-2 border-amber-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-amber-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-amber-500 focus:ring-opacity-50 text-xs no-underline">📋 Changelog</a>
-                    <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.1</p>
+                    <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
                 </div>
             </div>
             <p class="font-medium text-[#0058B3] text-center select-none mb-1">

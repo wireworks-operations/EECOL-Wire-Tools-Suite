@@ -66,13 +66,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.warn('⚠️ IndexedDB is not supported. Falling back to localStorage for live statistics.');
     }
 
-    // Initialize P2P Sync
-    if (typeof P2PSync !== 'undefined') {
-        window.p2pSync = new P2PSync();
-    } else {
-        console.warn('⚠️ P2P Sync not available. Some features may be limited for live statistics.');
-    }
-
     try {
         // Wait for Chart.js to load
         await loadChartJS();
@@ -943,7 +936,7 @@ if (typeof window !== 'undefined') {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.1',
+        version: 'v0.8.0.2',
         menuItems: [
             { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
@@ -951,7 +944,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '📦 Inventory Records', href: '../inventory-records/inventory-records.html', class: 'bg-purple-600 hover:bg-purple-700' }
 
         ],
-        version: 'v0.8.0.1',
+        version: 'v0.8.0.2',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Live Statistics'
     });

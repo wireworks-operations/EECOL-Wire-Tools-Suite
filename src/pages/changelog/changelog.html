@@ -76,6 +76,20 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                         </div>
                     </div>
 
+                <!-- Version 0.8.0.2 - Database Config Page Remake -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
+                    <div class="flex items-center mb-4">
+                        <div class="text-4xl mr-3">🗃️</div>
+                        <h2 class="text-xl font-bold text-[#0058B3]">Version 0.8.0.2 - Database Config Page Remake</h2>
+                    </div>
+                    <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
+                        <li><strong>Database Config Page Remake:</strong> Overhauled the Database Config page to align with the project's standard architecture and styling.</li>
+                        <li><strong>UI and Styling Fixes:</strong> Added the standard footer and navigation buttons, and linked the shared `style.css` stylesheet to ensure a consistent user experience.</li>
+                        <li><strong>Database Functionality Fixes:</strong> Refactored the page's JavaScript to use the global `window.eecolDB` instance and corrected the delete functionality, which was previously broken due to incorrect ID parsing.</li>
+                        <li><strong>Version Harmonization:</strong> Updated the version number in `package.json` from `2.0.0` to `0.8.0.2` to match the rest of the application.</li>
+                    </ul>
+                </div>
+
                 <!-- Version 0.8.0.1 - Reel Estimator Enhancement & Multi Cut Planner -->
                 <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-orange-500">
                     <div class="flex items-center mb-4">
@@ -141,11 +155,10 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                         <li><strong>(Multi Cut Planner) 🪟 Removed alert fallback:</strong> Eliminated browser alert fallback in modal function, using console warning instead</li>
                         <li><strong>(Global) 🔄 Renamed Stop Mark to Stop Mark Calculator in index pages:</strong> Updated navigation labels throughout the application for clearer tool identification and improved user experience</li>
                         <li><strong>(Reel Labels) ✅ Fixed critical infinite recursion and missing print functionality:</strong> Resolved stack overflow errors by implementing proper modal validation and HTML-based label generation with large readable fonts for professional warehouse reel identification</li>
-                        <li><strong>(Global) ✅ P2P sync status indicators removed:</strong> Eliminated all floating offline/online status notifications from main pages; cleaned 5 indicators across index.html, p2p-sync-status.html, src/pages/index/index.html, and src/pages/cutting-records.html while preserving P2P functionality</li>
                         <li><strong>(Reel Capacity Estimator) 📏 Tape measure fractional reference added:</strong> Integrated interactive tape measure component above wire diameter input showing fractional equivalents (1/16″ increments) and metric measurements (0-25mm) for quick visual reference with EECOL theming</li>
                         <li><strong>(Global) 🔄 Code modernization campaign completed:</strong> Replaced all browser alert() calls with EECOL-branded modal dialogs, removed 400+ debug console.log statements, and modernized 14 files across the entire application for professional production environment</li>
-                        <li><strong>(Global) ✅ Bug fixes & UX improvements:</strong> Removed floating P2P status indicators, added mobile menu consistency with v0.8.0.1 version tags, fixed multi-page checklist data sync, and removed PWA install prompts from calculator pages</li>
-                        <li><strong>(Global) 🧹 Authentication references cleanup:</strong> Removed authentication and account management references from UI files to avoid user confusion, preserving P2P sync functionality while maintaining clean professional appearance</li>
+                        <li><strong>(Global) ✅ Bug fixes & UX improvements:</strong> Added mobile menu consistency with v0.8.0.2 version tags, fixed multi-page checklist data sync, and removed PWA install prompts from calculator pages</li>
+                        <li><strong>(Global) 🧹 Authentication references cleanup:</strong> Removed authentication and account management references from UI files to avoid user confusion, while maintaining clean professional appearance</li>
                         <li><strong>(Reel Capacity Estimator) 🔄 Selective revert completed:</strong> Reverted multi-cut planner integration changes that broke reel estimators, restored functionality while preserving other improvements and utility components</li>
                     </ul>
 
@@ -192,7 +205,7 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                                     <div class="space-y-2 text-sm">
                                         <div>• <strong>Shipping Manifest:</strong> Added mobile hamburger menu with Home, Reel Labels, Useful Tool, and Cutting Records options</div>
                                         <div>• <strong>Reel Labels:</strong> Added mobile hamburger menu with Home, Shipping Manifest, Useful Tool, and Cutting Records options</div>
-                                        <div>• <strong>Version Consistency:</strong> Both menus configured with current version v0.8.0.1</div>
+                                        <div>• <strong>Version Consistency:</strong> Both menus configured with current version v0.8.0.2</div>
                                         <div>• <strong>Accessibility:</strong> Screen reader compatible with proper ARIA labels and keyboard navigation</div>
                                     </div>
                                 </div>
@@ -235,7 +248,7 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                         <div class="bg-gradient-to-r from-green-100 via-emerald-100 to-teal-100 p-8 rounded-xl mb-6 border-4 border-green-400 shadow-2xl">
                             <div class="flex items-center justify-between mb-6">
                                 <div class="flex items-center">
-                                    <div class="text-6xl mr-6">🔗</div>
+                                    <div class="text-6xl mr-6">💾</div>
                                     <div>
                                         <h3 class="text-4xl font-bold text-green-900 mb-3">COMPLETE BACKEND OVERHAUL!</h3>
                                         <p class="text-xl font-medium text-green-700">Ground-Up Rebuild with Enterprise-Grade Data Security</p>
@@ -250,11 +263,6 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                                     <div class="text-xs text-green-600">Reliable Data Persistence</div>
                                 </div>
                                 <div class="bg-white/60 p-3 rounded-lg">
-                                    <div class="text-3xl mb-2">🔗</div>
-                                    <div class="text-sm font-bold text-green-800">P2P Synchronization</div>
-                                    <div class="text-xs text-green-600">Decentralized Network Sync</div>
-                                </div>
-                                <div class="bg-white/60 p-3 rounded-lg">
                                     <div class="text-3xl mb-2">📱</div>
                                     <div class="text-sm font-bold text-green-800">Full PWA Support</div>
                                     <div class="text-xs text-green-600">Installable Desktop/Mobile App</div>
@@ -266,7 +274,7 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                                 </div>
                             </div>
                             <p class="text-center text-xl font-semibold text-green-800 mt-6">
-                                🚀 COMPLETE APPLICATION RECREATION FROM GROUND UP! Fully decentralized peer-to-peer connectivity eliminating outside server requirements! 🚀
+                                🚀 COMPLETE APPLICATION RECREATION FROM GROUND UP! Eliminating outside server requirements! 🚀
                             </p>
                         </div>
 
@@ -277,10 +285,10 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                                 <h3 class="text-lg font-bold text-teal-800">GROUND-UP APPLICATION RECREATION</h3>
                             </div>
                             <p class="text-sm font-semibold text-teal-700 mb-2">
-                                Complete Backend Overhaul with P2P Sync - No Third Party Backends
+                                Complete Backend Overhaul - No Third Party Backends
                             </p>
                             <p class="text-xs text-teal-600">
-                                🎯 Fully decentralized peer-to-peer network sync with VPN support. Complete database recreation with IndexedDB and full PWA installable app support!
+                                🎯 Complete database recreation with IndexedDB and full PWA installable app support!
                             </p>
                         </div>
 
@@ -288,46 +296,36 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                             <h3 class="text-lg font-bold mr-3"><span style="color: #333333;">🛠️</span> <span class="header-gradient">Version 0.8.0.0</span></h3>
                             <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">🛠️ COMPLETE BACKEND OVERHAUL</span>
                         </div>
-                        <p class="text-sm text-gray-700 mb-3">Major backend overhaul: Complete application recreation with new database architecture, P2P synchronization, and full PWA capabilities. 🚀</p>
+                        <p class="text-sm text-gray-700 mb-3">Major backend overhaul: Complete application recreation with new database architecture and full PWA capabilities. 🚀</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
                             <div class="flex flex-wrap gap-1">
                                 <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">💾 IndexedDB Backend</span>
-                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">🔗 P2P Synchronization</span>
                                 <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">📱 PWA App Support</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
-                                <span class="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-bold">✈️ VPN Sync Network</span>
                                 <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-bold">🔒 Enterprise Security</span>
                                 <span class="px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs font-bold">🚫 Third-Party Free</span>
                             </div>
                         </div>
                         <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
                             <li><strong>💾 IndexedDB Local Database:</strong> Complete recreation with reliable local data persistence, eliminating previous sync issues and race conditions</li>
-                            <li><strong>🔗 Fully Decentralized P2P Network Sync:</strong> Real-time peer-to-peer synchronization across local networks with encrypted connectivity</li>
                             <li><strong>📱 Full PWA Installable App Support:</strong> Installable desktop and mobile application with offline capabilities and push notifications</li>
-                            <li><strong>🛡️ Enterprise-Grade Data Security:</strong> Encrypted peer-to-peer communication with no third-party backend dependencies</li>
                             <li><strong>🏗️ Ground-Up Architecture Recreation:</strong> Complete rebuild of entire application with modern database architecture and security-first approach</li>
-                            <li><strong>🔄 VPN Sync Network Support:</strong> Secure P2P synchronization within corporate VPN networks with automatic peer discovery</li>
-                            <li><strong>⚡ Performance Optimization:</strong> Massive performance improvements through reliable local storage and optimized synchronization protocols</li>
-                            <li><strong>🔒 Zero External Dependencies:</strong> Completely self-contained application with all data processing and storage handled locally or through P2P networks</li>
-                            <li><strong>📡 Real-Time Collaboration:</strong> Live data synchronization between multiple devices and operators in real-time</li>
-                            <li><strong>📏 Backup-Free Data Security:</strong> All business-critical data remains within local network or device storage - no cloud backups required</li>
-                            <li><strong>🔧 Modular Architecture:</strong> Clean separation of database, sync, and UI layers for maintainability and extensibility</li>
+                            <li><strong>⚡ Performance Optimization:</strong> Massive performance improvements through reliable local storage.</li>
+                            <li><strong>🔒 Zero External Dependencies:</strong> Completely self-contained application with all data processing and storage handled locally.</li>
+                            <li><strong>🔧 Modular Architecture:</strong> Clean separation of database and UI layers for maintainability and extensibility</li>
                             <li><strong>🚀 Independent Operation:</strong> Functions completely independently without any internet connectivity or external server requirements</li>
-                            <li><strong>🛡️ Encrypted Communication:</strong> All P2P communication is end-to-end encrypted with enterprise-grade cryptography</li>
-                            <li><strong>📊 Conflict Resolution:</strong> Automatic detection and resolution of data conflicts in peer-to-peer synchronization scenarios</li>
                             <li><strong>📱 Cross-Platform PWA:</strong> Works identically on desktop, tablet, and mobile with native-like capabilities and performance</li>
-                            <li><strong>💫 Offline-First Design:</strong> Full functionality available offline with background synchronization when connectivity is restored</li>
-                            <li><strong>🎛️ Service Worker Integration:</strong> Background data synchronization, caching, and push notification handling</li>
+                            <li><strong>💫 Offline-First Design:</strong> Full functionality available offline.</li>
+                            <li><strong>🎛️ Service Worker Integration:</strong> Background caching and push notification handling</li>
                             <li><strong>🔄 Automatic Updates:</strong> Seamless application updates with zero-downtime deployment and data preservation</li>
                             <li><strong>🎯 Enterprise Authentication:</strong> Built-in user management and permission systems for multi-user shop environments</li>
-                            <li><strong>📈 Monitoring & Analytics:</strong> Built-in performance monitoring and sync success tracking for reliable operation</li>
+                            <li><strong>📈 Monitoring & Analytics:</strong> Built-in performance monitoring for reliable operation</li>
                             <li><strong>🛠️ Multi Cut Planner Tool:</strong> Brand new tool added to the tool suite for comprehensive multi-cut planning capabilities</li>
                             <li><strong>📱 Major Mobile UI Enhancements:</strong> New mobile menu implemented with enhanced support for narrow screens</li>
                             <li><strong>📱 Mobile-Friendly Layout Fixes:</strong> Fixed layouts across all pages for improved mobile usability and responsiveness</li>
                             <li><strong>📱 Complete PWA Functionality:</strong> Full application functionality successfully ported to the PWA version</li>
                             <li><strong>💾 IndexedDB Fully Operational:</strong> IndexedDB database system is now fully operational for reliable data persistence</li>
-                            <li><strong>⚠️ P2P Sync Status:</strong> P2P synchronization features not yet implemented in current release</li>
                             <li><strong>📱 Perfect Offline & Local Operation:</strong> Local and offline functionality works flawlessly without connectivity requirements</li>
                         </ul>
 
@@ -542,31 +540,6 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                             </p>
                         </div>
 
-                        <!-- Configurable P2P Relay Server -->
-                        <div class="bg-gradient-to-r from-cyan-50 via-sky-50 to-blue-50 p-4 rounded-lg mb-4 border-2 border-cyan-300">
-                            <div class="flex items-center mb-3">
-                                <div class="text-4xl mr-3">🔧</div>
-                                <h3 class="text-xl font-bold text-cyan-800">CONFIGURABLE P2P RELAY SYSTEM - Enterprise Network Management!</h3>
-                            </div>
-                            <div class="bg-white/70 p-4 rounded-lg mb-3">
-                                <div class="text-lg font-bold text-cyan-800 mb-2">🌐 Custom Relay Server Configuration</div>
-                                <div class="text-sm space-y-2">
-                                    <div>• <strong>Flexible Server Management:</strong> Easy configuration of custom relay servers for different network environments</div>
-                                    <div>• <strong>Windows Package Support:</strong> Self-contained Windows relay server package with Node.js included (unzip and run)</div>
-                                    <div>• <strong>Multi-Server Redundancy:</strong> Support for multiple relay servers with automatic failover capabilities</div>
-                                    <div>• <strong>Cloudflare Pages Compatible:</strong> P2P functionality preserved with strict CSP allowances for enterprise deployments</div>
-                                </div>
-                            </div>
-                            <ul class="text-sm text-cyan-700 space-y-1">
-                                <li>• <strong>Network Independence:</strong> Deploy relay servers anywhere - local network, cloud, or hybrid environments</li>
-                                <li>• <strong>Zero-Admin Windows Setup:</strong> One-click installation with no administrative privileges required</li>
-                                <li>• <strong>Security-First Design:</strong> Encrypted peer-to-peer communication with enterprise-grade cryptography</li>
-                                <li>• <strong>Real-Time Configuration:</strong> Live server switching with immediate connection updates and status monitoring</li>
-                            </ul>
-                            <p class="text-sm font-semibold text-cyan-700 mt-3">
-                                🔗 Enterprise P2P Infrastructure: Complete configurable relay system with Windows package, multi-server support, and Cloudflare Pages compatibility!
-                            </p>
-                        </div>
 
                         <!-- Architecture Overview -->
                         <div>
@@ -578,15 +551,13 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                                 <div class="text-lg font-bold text-emerald-700 mb-1">🔄 Complete System Architecture Recreation</div>
                                 <div class="text-sm grid grid-cols-1 gap-2">
                                     <div>• <strong>Database Layer:</strong> IndexedDB with migration support and data validation</div>
-                                    <div>• <strong>Sync Layer:</strong> Gun.js P2P with automatic conflict resolution and network detection</div>
                                     <div>• <strong>Application Layer:</strong> PWA with service workers, caching, and offline capabilities</div>
-                                    <div>• <strong>Communication Layer:</strong> Encrypted WebRTC for secure peer-to-peer data transfer</div>
                                 </div>
                             </div>
                             <ul class="text-sm space-y-1">
                                 <li>• <strong>Encrypted Data Storage:</strong> All sensitive information protected with enterprise-grade encryption</li>
-                                <li>• <strong>Network Independence:</strong> Operates without internet connectivity using local P2P networks</li>
-                                <li>• <strong>Automatic Backup:</strong> Continuous data replication across authorized devices accessible within the local network</li>
+                                <li>• <strong>Network Independence:</strong> Operates without internet connectivity.</li>
+                                <li>• <strong>Automatic Backup:</strong> Users can create backups of their local data.</li>
                                 <li>• <strong>Zero-Trust Architecture:</strong> Every data access and modification is authenticated and authorized</li>
                             </ul>
                             <p class="text-sm text-gray-700 mt-3">Complete ground-up recreation of the EECOL Wire Tools Suite with enterprise-grade architecture focused on data security, reliability, and performance.</p>
@@ -616,29 +587,6 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                             <p class="text-sm text-gray-700 mt-3">Full PWA implementation enabling native app-like installation and functionality across all devices.</p>
                         </div>
 
-                        <!-- Decentralized Network Features -->
-                        <div>
-                            <div class="flex items-center mb-3 mt-4">
-                                <div class="text-2xl mr-2">🔗</div>
-                                <h3 class="text-lg font-semibold text-purple-800">Decentralized P2P Network Features</h3>
-                            </div>
-                            <div class="bg-white p-3 rounded border mb-3">
-                                <div class="text-lg font-bold text-purple-700 mb-1">🌐 Network-Independent Operation</div>
-                                <div class="text-sm grid grid-cols-1 gap-2">
-                                    <div>• <strong>Local Network Discovery:</strong> Automatic peer detection within corporate networks</div>
-                                    <div>• <strong>VPN Support:</strong> Secure synchronization across VPN-connected devices</div>
-                                    <div>• <strong>Encrypted Communication:</strong> All peer-to-peer data transfer is end-to-end encrypted</div>
-                                    <div>• <strong>Conflict Resolution:</strong> Automatic detection and resolution of synchronization conflicts</div>
-                                </div>
-                            </div>
-                            <ul class="text-sm space-y-1">
-                                <li>• <strong>No Third-Party Servers:</strong> Complete elimination of external server dependencies</li>
-                                <li>• <strong>Offline Collaboration:</strong> Multiple users can work simultaneously and sync automatically</li>
-                                <li>• <strong>Data Sovereignty:</strong> All business data remains within local network boundaries</li>
-                                <li>• <strong>Real-Time Updates:</strong> Live synchronization across all connected devices</li>
-                            </ul>
-                            <p class="text-sm text-gray-700 mt-3">Fully decentralized peer-to-peer network eliminating external dependencies while maintaining secure, real-time collaboration.</p>
-                        </div>
 
                         <!-- Security Features -->
                         <div>
@@ -664,17 +612,15 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                             <p class="text-sm text-gray-700 mt-3">Enterprise-grade security implementation with no external dependencies and complete data protection.</p>
                         </div>
 
-                        <p class="text-sm text-gray-700 mb-3">Major backend overhaul: Complete application recreation with new database architecture, P2P synchronization, and full PWA capabilities. 🚀</p>
+                        <p class="text-sm text-gray-700 mb-3">Major backend overhaul: Complete application recreation with new database architecture and full PWA capabilities. 🚀</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
                             <div class="flex flex-wrap gap-1">
                                 <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">💾 IndexedDB Database</span>
-                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">🔗 P2P Network Sync</span>
                                 <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">📱 PWA App</span>
                             </div>
                             <div class="flex flex-wrap gap-1">
                                 <span class="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-bold">🔒 Enterprise Security</span>
                                 <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-bold">🚫 Third-Party Free</span>
-                                <span class="px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs font-bold">✈️ VPN Network Support</span>
                             </div>
                         </div>
                     </div>
@@ -1539,7 +1485,7 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                                 </ul>
                                 <p class="text-sm text-gray-700 mt-3">Added dedicated INA date quick update functionality to inventory tracking system, enabling efficient single-field modifications with full undo/redo support.</p>
                             </div>
-                            <!-- Custom Modal System Enhancement (TO BE ADDED TO EXISTING v0.8.0.1.6 section) -->
+                            <!-- Custom Modal System Enhancement (TO BE ADDED TO EXISTING v0.8.0.2.6 section) -->
                             <div>
                                 <div class="flex items-center mb-3 mt-4">
                                     <div class="text-2xl mr-2">🪟</div>
@@ -2023,9 +1969,9 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                     <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-gray-400 text-center">
                         <a href="../changelog-older/changelog-older.html" class="inline-flex items-center px-6 py-3 bg-gray-500 border-2 border-gray-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-gray-600 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-50 no-underline">
                             <span class="text-xl mr-2">📖</span>
-                            View Historical Archive (Pre-P2P Versions)
+                            View Historical Archive
                         </a>
-                        <p class="text-sm text-gray-600 mt-3">Access the complete historical changelog of all previous versions before the v0.8.0.1 P2P overhaul.</p>
+                        <p class="text-sm text-gray-600 mt-3">Access the complete historical changelog of all previous versions.</p>
                     </div>
 
                 </section>
@@ -2046,7 +1992,7 @@ Complete Backend Overhaul - P2P Sync & PWA - EECOL Wire Tools
                         Is This Tool Useful?
                     </a>
                 </div>
-                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.1</p>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
             </div>
             <p class="font-medium text-[#0058B3] text-center select-none mb-1">
                 Made With ❤️ By: Lucas and Cline 🤖

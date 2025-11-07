@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'">
+    <title>Database Config - EECOL Wire Tools Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
+    <link rel="manifest" href="../../assets/manifest.json">
+    <meta name="theme-color" content="#0058B3">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EECOL Tools">
+    <link rel="apple-touch-icon" href="../../assets/icons/icon-192x192.png">
+    <script src="../../core/database/indexeddb.js"></script>
+    <script src="../../utils/modals.js"></script>
+    <script src="../../utils/mobile-menu.js"></script>
+</head>
+<body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg">
+
+    <!-- Main Container -->
+    <div class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16 relative">
+
+        <!-- Header -->
+        <div class="flex justify-center mb-1 relative">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-black mb-3 text-center header-gradient">
+            Database Configuration
+        </h1>
+        <p class="mb-4 text-center text-sm font-medium text-[#0058B3]">
+            Manage your local application data.
+        </p>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto">
+
+            <!-- Database Actions -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 card-border-blue mb-6">
+                <h2 class="text-xl font-bold text-[#0058B3] mb-4">Database Management</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button id="exportDbBtn" class="px-4 py-2 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600">Export to JSON</button>
+                    <button id="importDbBtn" class="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600">Import from JSON</button>
+                    <button id="deleteDbBtn" class="px-4 py-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600">Delete Database</button>
+                    <input type="file" id="importFileInput" class="hidden" accept=".json">
+                </div>
+            </div>
+
+            <!-- Record Management -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 card-border-blue">
+                <h2 class="text-xl font-bold text-[#0058B3] mb-4">Record Management</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Mark Converter -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#0058B3] mb-2">Mark Calculator Records</h3>
+                        <div id="markConverterList" class="h-64 overflow-y-auto border border-gray-300 rounded-lg p-2"></div>
+                        <button id="deleteSelectedMarkConverter" class="mt-2 px-4 py-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 w-full">Delete Selected</button>
+                    </div>
+
+                    <!-- Stop Mark Converter -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#0058B3] mb-2">Stop Mark Calculator Records</h3>
+                        <div id="stopmarkConverterList" class="h-64 overflow-y-auto border border-gray-300 rounded-lg p-2"></div>
+                        <button id="deleteSelectedStopmarkConverter" class="mt-2 px-4 py-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 w-full">Delete Selected</button>
+                    </div>
+
+                    <!-- Reel Capacity Estimator -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#0058B3] mb-2">Reel Configurations</h3>
+                        <div id="reelcapacityEstimatorList" class="h-64 overflow-y-auto border border-gray-300 rounded-lg p-2"></div>
+                        <button id="deleteSelectedReelcapacityEstimator" class="mt-2 px-4 py-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 w-full">Delete Selected</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer inside main box -->
+        <div class="mt-auto pt-4 border-t border-blue-200 hidden sm:block">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex space-x-3">
+                    <a href="../index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
+                    <a
+                        id="usefulBtnInside"
+                        href="../useful-tool/useful-tool.html"
+                        class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline"
+                    >
+                        Is This Tool Useful?
+                    </a>
+                    <a href="../backup/backup.html" class="px-3 py-1.5 bg-green-500 border-2 border-green-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-green-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 text-xs no-underline">💾 Backup Guide</a>
+                </div>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
+            </div>
+            <p class="font-medium text-[#0058B3] text-center select-none mb-1">
+                Made With ❤️ By: Lucas and Cline 🤖
+            </p>
+            <p class="text-xs font-semibold header-gradient text-center select-none">
+                EECOL Wire Tools 2025 - Enterprise Edition
+            </p>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 transition-opacity duration-300">
+        <div id="modalBackdrop" class="absolute inset-0"></div>
+        <div id="modalContent" class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform transition-all duration-300 scale-95 opacity-0 relative border-4 border-blue-500">
+            <div class="text-center">
+                <h3 class="text-lg font-bold text-gray-900" id="modalTitle"></h3>
+                <p class="mt-2 text-sm text-gray-600" id="modalMessage"></p>
+            </div>
+            <div class="mt-4 flex justify-end space-x-2" id="modalButtons">
+                <!-- Buttons are injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../../assets/js/database-config.js"></script>
+</body>
+</html>
