@@ -406,11 +406,55 @@ ported over functions of the AIO reel estimator, since its more advanced-->
                     <div id="reelEstimatorResultContainer" class="p-4 bg-white border-l-8 card-border-blue rounded-xl shadow-xl">
                         <h3 class="text-lg font-bold mb-3 text-[#0058B3] text-center">Reel Capacity Estimator</h3>
                         <div style="background-color: #e0f0ff; border-radius: 12px; padding: 16px; box-shadow: 0 0 10px rgba(0, 88, 179, 0.3);">
-                            <div class="space-y-2">
+                            <div class="space-y-3">
+                                <!-- PRIMARY WORKING CAPACITY - MOST PROMINENT -->
+                                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-3">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <p class="text-sm font-bold text-green-800">🟢 USABLE WORKING CAPACITY</p>
+                                            <p class="text-xs text-green-600 font-medium">Ready-to-use wire (dead wraps excluded)</p>
+                                        </div>
+                                        <p id="capacityWorking" class="text-xl font-black text-green-700">--</p>
+                                    </div>
+                                </div>
+
+                                <!-- SECONDARY CAPACITIES - LESS PROMINENT -->
+                                <div class="grid grid-cols-1 gap-2">
+                                    <div class="flex justify-between items-center bg-blue-50 border border-blue-200 rounded-lg p-2">
+                                        <div>
+                                            <p class="text-xs font-semibold text-blue-800">PHYSICAL TOTAL CAPACITY</p>
+                                            <p class="text-xs text-blue-600">Maximum possible (includes dead wraps)</p>
+                                        </div>
+                                        <p id="capacityTotal" class="text-sm font-bold text-blue-700">--</p>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-amber-50 border border-amber-200 rounded-lg p-2">
+                                        <div>
+                                            <p class="text-xs font-semibold text-amber-800">SAFETY-MARGIN CAPACITY</p>
+                                            <p class="text-xs text-amber-600">With freeboard clearance applied</p>
+                                        </div>
+                                        <p id="capacityAbsolute" class="text-sm font-bold text-amber-700">--</p>
+                                    </div>
+                                </div>
+
+                                <!-- EDUCATIONAL SECTION ABOUT DEAD WRAPS -->
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div class="flex items-start space-x-2">
+                                        <div class="text-blue-500 mt-0.5">ℹ️</div>
+                                        <div>
+                                            <p class="text-xs font-semibold text-gray-800 mb-1">Why Dead Wraps Matter</p>
+                                            <p class="text-xs text-gray-600 leading-relaxed">
+                                                The first 3 layers are "dead wraps" - physically present but unusable due to winding mechanics.
+                                                They ensure proper tension and stability for the working layers above. This is a fundamental
+                                                engineering requirement, not a capacity reduction.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Capacity Progress Bar -->
                                 <div class="mb-2">
                                     <div class="flex justify-between items-center mb-1">
-                                        <p class="text-xs font-semibold text-gray-700">Capacity Utilization</p>
+                                        <p class="text-xs font-semibold text-gray-700">Capacity Utilization (Working)</p>
                                         <p id="capacityPercentage" class="text-xs font-bold text-[#0058B3]">--%</p>
                                     </div>
                                     <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -419,25 +463,16 @@ ported over functions of the AIO reel estimator, since its more advanced-->
                                     </div>
                                 </div>
 
-                                <div class="flex justify-between items-center border-b pb-1">
-                                    <p class="text-xs font-semibold text-gray-700">Reel Absolute Total Capacity (<span id="efficiencyLabelTotal">80%</span> Efficiency):</p>
-                                    <p id="capacityTotal" class="text-sm font-extrabold text-[#0058B3]">--</p>
-                                </div>
-                                <div class="flex justify-between items-center border-b pb-1">
-                                    <p class="text-xs font-semibold text-gray-700">Freeboard Standard Max Capacity (Dead Wraps Included) (<span id="efficiencyLabelAbsolute">80%</span> Wind Efficiency):</p>
-                                    <p id="capacityAbsolute" class="text-sm font-extrabold text-[#0058B3]">--</p>
-                                </div>
-                                <div class="flex justify-between items-center border-b pb-1">
-                                     <p class="text-xs font-semibold text-gray-700">Freeboard Standard Max Capacity (Dead Wraps Excluded) (<span id="efficiencyLabelWorking">80%</span> Efficiency):</p>
-                                    <p id="capacityWorking" class="text-sm font-extrabold text-[#0058B3]">--</p>
-                                </div>
-                                <div class="flex justify-between items-center border-b pb-1">
-                                    <p class="text-xs font-semibold text-gray-700">Core/Cable Diameter Ratio (D<sub class="text-xs">c</sub>/d):</p>
-                                    <p id="DdRatio" class="text-sm font-extrabold text-[#0058B3]">--</p>
-                                </div>
-                                <div class="flex justify-between items-center border-b pb-1">
-                                    <p class="text-xs font-semibold text-gray-700">Target Achievement:</p>
-                                    <p id="targetAchievement" class="text-sm font-extrabold text-[#0058B3]">--</p>
+                                <!-- ADDITIONAL METRICS -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex justify-between items-center border-b pb-1">
+                                        <p class="text-xs font-semibold text-gray-700">Core/Cable Ratio:</p>
+                                        <p id="DdRatio" class="text-sm font-extrabold text-[#0058B3]">--</p>
+                                    </div>
+                                    <div class="flex justify-between items-center border-b pb-1">
+                                        <p class="text-xs font-semibold text-gray-700">Target Status:</p>
+                                        <p id="targetAchievement" class="text-xs font-bold text-[#0058B3]">--</p>
+                                    </div>
                                 </div>
                             </div>
 

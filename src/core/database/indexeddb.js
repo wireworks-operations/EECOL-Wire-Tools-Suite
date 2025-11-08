@@ -1,10 +1,24 @@
 /**
  * NEW EECOL Wire Tools Suite - IndexedDB Storage Layer
- * Enterprise-grade IndexedDB implementation for all data persistence
+ * Enterprise-grade IndexedDB implementation with singleton pattern for optimal resource management
  */
 
 class EECOLIndexedDB {
+  static instance = null;
+
+  static getInstance(version = 2) {
+    if (!EECOLIndexedDB.instance) {
+      EECOLIndexedDB.instance = new EECOLIndexedDB(version);
+    }
+    return EECOLIndexedDB.instance;
+  }
+
   constructor(version = 2) {
+    // Prevent direct instantiation - enforce singleton pattern
+    if (EECOLIndexedDB.instance) {
+      throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
+    }
+
     this.dbVersion = version;
     this.dbName = 'EECOLTools_v2';
     this.dbInitialized = this.initialize();

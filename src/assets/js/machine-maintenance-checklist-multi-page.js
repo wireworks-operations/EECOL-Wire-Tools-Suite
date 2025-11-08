@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize database if not already done (important for maintenance checklist pages)
     if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
         try {
-            window.eecolDB = new EECOLIndexedDB();
+            window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
         } catch (error) {
             console.error('Failed to initialize database for multi-page maintenance checklist:', error);

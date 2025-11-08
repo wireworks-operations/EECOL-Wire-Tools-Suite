@@ -1592,7 +1592,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize database if not already done (important for pages that don't load index.js)
     if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
         try {
-            window.eecolDB = new EECOLIndexedDB();
+            window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
         } catch (error) {
             console.error('Failed to initialize database:', error);

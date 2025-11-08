@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (!window.eecolDB) {
-        window.eecolDB = new EECOLIndexedDB();
+        window.eecolDB = EECOLIndexedDB.getInstance();
     }
 
     const db = window.eecolDB;

@@ -262,7 +262,7 @@ const wireMarkCalculator = {
             // Use IndexedDB class if available
             if (typeof EECOLIndexedDB !== 'undefined') {
                 console.log('✅ EECOLIndexedDB is available, creating instance...');
-                const eecolDB = new EECOLIndexedDB();
+                const eecolDB = EECOLIndexedDB.getInstance();
 
                 console.log('🔄 Waiting for database to be ready...');
                 await eecolDB.ready;

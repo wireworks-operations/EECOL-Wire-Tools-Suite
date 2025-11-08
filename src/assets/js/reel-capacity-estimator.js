@@ -95,10 +95,11 @@ import {
 
         const calculateCapacityBtn = document.getElementById('calculateCapacityBtn');
         const reelEstimatorResultContainer = document.getElementById('reelEstimatorResultContainer');
-        const capacityTotal = document.getElementById('capacityTotal');
         const capacityWorking = document.getElementById('capacityWorking');
+        const capacityTotal = document.getElementById('capacityTotal');
         const capacityAbsolute = document.getElementById('capacityAbsolute');
         const DdRatio = document.getElementById('DdRatio');
+        const targetAchievement = document.getElementById('targetAchievement');
         const capacityWarning = document.getElementById('capacityWarning');
         const layerList = document.getElementById('layerList');
 
@@ -114,23 +115,32 @@ import {
         const errorMessageDisplay = document.getElementById('errorMessage');
 
         function clearReelResults() {
-             capacityTotal.textContent = '--';
-             capacityWorking.textContent = '--';
-             capacityAbsolute.textContent = '--';
-             DdRatio.textContent = '--';
-             targetAchievement.textContent = '--';
-             layerList.innerHTML = '<p class="text-sm text-gray-500">Enter data and calculate to see layer breakdown.</p>';
-             capacityWarning.textContent = '';
+             if (capacityTotal) capacityTotal.textContent = '--';
+             if (capacityWorking) capacityWorking.textContent = '--';
+             if (capacityAbsolute) capacityAbsolute.textContent = '--';
+             if (DdRatio) DdRatio.textContent = '--';
+             if (targetAchievement) targetAchievement.textContent = '--';
+             if (layerList) layerList.innerHTML = '<p class="text-sm text-gray-500">Enter data and calculate to see layer breakdown.</p>';
+             if (capacityWarning) capacityWarning.textContent = '';
              // Clear dynamic elements
-             document.getElementById('capacityPercentage').textContent = '--%';
-             document.getElementById('capacityProgressBar').style.width = '0%';
-             document.getElementById('capacityProgressBar').className = 'progress-bar h-3 rounded-full';
-             document.getElementById('safetyWarnings').classList.add('hidden');
+             const capacityPercentage = document.getElementById('capacityPercentage');
+             if (capacityPercentage) capacityPercentage.textContent = '--%';
+             const capacityProgressBar = document.getElementById('capacityProgressBar');
+             if (capacityProgressBar) {
+                 capacityProgressBar.style.width = '0%';
+                 capacityProgressBar.className = 'progress-bar h-3 rounded-full';
+             }
+             const safetyWarnings = document.getElementById('safetyWarnings');
+             if (safetyWarnings) safetyWarnings.classList.add('hidden');
              // Clear provided specs
-             document.getElementById('providedCoreDiameter').textContent = '--';
-             document.getElementById('providedFlangeDiameter').textContent = '--';
-             document.getElementById('providedTraverseWidth').textContent = '--';
-             document.getElementById('providedTargetLength').textContent = '--';
+             const providedCoreDiameter = document.getElementById('providedCoreDiameter');
+             if (providedCoreDiameter) providedCoreDiameter.textContent = '--';
+             const providedFlangeDiameter = document.getElementById('providedFlangeDiameter');
+             if (providedFlangeDiameter) providedFlangeDiameter.textContent = '--';
+             const providedTraverseWidth = document.getElementById('providedTraverseWidth');
+             if (providedTraverseWidth) providedTraverseWidth.textContent = '--';
+             const providedTargetLength = document.getElementById('providedTargetLength');
+             if (providedTargetLength) providedTargetLength.textContent = '--';
         }
 
         function updateFreeboardInput(triggerCalc = true) {
@@ -275,6 +285,15 @@ import {
 
                 const SEGMENTS_PER_LAYER = Math.floor(W_m / (TURN_SPACING_FACTOR * d_m));
 
+                // First, calculate dead wraps length for the summary
+                let C_dead_m = 0;
+                for (let n = 1; n <= Math.min(DEAD_WRAPS, N_layers); n++) {
+                    const D_n_m = Dc_m + (2 * n - 1) * d_m;
+                    const L_n_m_theoretical = SEGMENTS_PER_LAYER * PI * D_n_m;
+                    const L_n_m = L_n_m_theoretical * efficiency;
+                    C_dead_m += L_n_m;
+                }
+
                 // Show all physical layers that actually fit in the freeboard-limited space
                 for (let n = 1; n <= N_layers; n++) {
                     const D_n_m = Dc_m + (2 * n - 1) * d_m;
@@ -301,20 +320,13 @@ import {
                     }
                 }
 
-                // Add summary line showing dead wraps total
-                const usableLayersCount = Math.max(0, N_layers - DEAD_WRAPS);
-                layersHtml += `<p class="text-xs font-bold text-gray-800 border-t border-gray-300 mt-2 pt-2">📊 Summary: ${DEAD_WRAPS} dead wrap layer(s) excluded, ${usableLayersCount} usable layer(s) available</p>`;
+                // Add placeholder for educational summary - will be filled after calculations
+                layersHtml += `<div id="capacityBreakdownSummary" class="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                    <!-- Summary will be inserted here after calculations -->
+                </div>`;
 
                 if(N_layers === 0) {
                     layersHtml = '<p class="text-sm text-gray-500">Zero full layers fit on the drum.</p>';
-                }
-
-                let C_dead_m = 0;
-                for (let n = 1; n <= Math.min(DEAD_WRAPS, N_layers); n++) {
-                    const D_n_m = Dc_m + (2 * n - 1) * d_m;
-                    const L_n_m_theoretical = SEGMENTS_PER_LAYER * PI * D_n_m;
-                    const L_n_m = L_n_m_theoretical * efficiency;
-                    C_dead_m += L_n_m;
                 }
 
                 const C_total_final_m = C_total_m_by_layer; // Freeboard-based total (was absolute total before)
@@ -326,20 +338,51 @@ import {
                 const C_working_ft = metersToFeet(C_working_final_m_safe);
                 const C_absolute_ft = metersToFeet(C_absolute_final_m);
 
-                capacityTotal.textContent = `${C_absolute_final_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_absolute_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
-                capacityWorking.textContent = `${C_working_final_m_safe.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_working_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
-                capacityAbsolute.textContent = `${C_total_final_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_total_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
-                DdRatio.textContent = `${Dd_ratio_value.toFixed(1)}:1`;
+                if (capacityTotal) capacityTotal.textContent = `${C_absolute_final_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_absolute_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
+                if (capacityWorking) capacityWorking.textContent = `${C_working_final_m_safe.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_working_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
+                if (capacityAbsolute) capacityAbsolute.textContent = `${C_total_final_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_total_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
+                if (DdRatio) DdRatio.textContent = `${Dd_ratio_value.toFixed(1)}:1`;
 
                 layerList.innerHTML = layersHtml;
 
+                // Fill in the capacity breakdown summary
+                const breakdownElement = document.getElementById('capacityBreakdownSummary');
+                if (breakdownElement) {
+                    const usableLayersCount = Math.max(0, N_layers - DEAD_WRAPS);
+                    const deadWrapsLength = C_dead_m;
+                    const deadWrapsLengthFt = metersToFeet(deadWrapsLength);
+
+                    breakdownElement.innerHTML = `
+                        <p class="text-xs font-bold text-blue-800 mb-1">🎯 Capacity Breakdown Summary</p>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-white p-2 rounded border">
+                                <span class="font-semibold text-red-600">Dead Wraps (3 layers):</span><br>
+                                <span class="font-bold">${deadWrapsLength.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
+                                <span class="text-gray-600">(${deadWrapsLengthFt.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
+                            </div>
+                            <div class="bg-white p-2 rounded border">
+                                <span class="font-semibold text-green-600">Usable Capacity:</span><br>
+                                <span class="font-bold">${C_working_final_m_safe.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
+                                <span class="text-gray-600">(${C_working_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-blue-700 mt-2 leading-relaxed">
+                            <strong>Why dead wraps?</strong> The first 3 layers provide structural stability and proper tension for the working layers above. This engineering requirement ensures safe, reliable winding operations.
+                        </p>
+                    `;
+                }
+
                 capacityWarning.textContent = `Note: Estimates include a ${efficiency * 100}% Winding Efficiency Factor.`;
 
-                // Update efficiency labels
-                document.getElementById('efficiencyLabelTotal').textContent = `${(efficiency * 100).toFixed(0)}%`;
-                document.getElementById('efficiencyLabelWorking').textContent = `${(efficiency * 100).toFixed(0)}%`;
-                document.getElementById('efficiencyLabelAbsolute').textContent = `${(efficiency * 100).toFixed(0)}%`;
-                document.getElementById('efficiencyLabelLayer').textContent = `${(efficiency * 100).toFixed(0)}%`;
+                // Update efficiency labels (with null checks)
+                const efficiencyLabelTotal = document.getElementById('efficiencyLabelTotal');
+                if (efficiencyLabelTotal) efficiencyLabelTotal.textContent = `${(efficiency * 100).toFixed(0)}%`;
+                const efficiencyLabelWorking = document.getElementById('efficiencyLabelWorking');
+                if (efficiencyLabelWorking) efficiencyLabelWorking.textContent = `${(efficiency * 100).toFixed(0)}%`;
+                const efficiencyLabelAbsolute = document.getElementById('efficiencyLabelAbsolute');
+                if (efficiencyLabelAbsolute) efficiencyLabelAbsolute.textContent = `${(efficiency * 100).toFixed(0)}%`;
+                const efficiencyLabelLayer = document.getElementById('efficiencyLabelLayer');
+                if (efficiencyLabelLayer) efficiencyLabelLayer.textContent = `${(efficiency * 100).toFixed(0)}%`;
 
                 // Update dynamic elements
                 updateDynamicElements(C_total_final_m, C_working_final_m_safe, C_working_final_m_safe, Dd_ratio_value, F_m, d_m);
@@ -532,9 +575,12 @@ import {
             const W_insulation = 340.5 * (d_in ** 2 - dc_in ** 2) * G_insulation;
             const W_total = W_conductor + W_insulation;
 
-            document.getElementById('conductorWeight').textContent = `${W_conductor.toFixed(2)} lbs/1000 ft`;
-            document.getElementById('insulationWeight').textContent = `${W_insulation.toFixed(2)} lbs/1000 ft`;
-            document.getElementById('totalCableWeight').textContent = `${W_total.toFixed(2)} lbs/1000 ft`;
+            const conductorWeight = document.getElementById('conductorWeight');
+            if (conductorWeight) conductorWeight.textContent = `${W_conductor.toFixed(2)} lbs/1000 ft`;
+            const insulationWeight = document.getElementById('insulationWeight');
+            if (insulationWeight) insulationWeight.textContent = `${W_insulation.toFixed(2)} lbs/1000 ft`;
+            const totalCableWeight = document.getElementById('totalCableWeight');
+            if (totalCableWeight) totalCableWeight.textContent = `${W_total.toFixed(2)} lbs/1000 ft`;
 
             const weightSection = document.getElementById('weightEstimationSection');
             if (weightSection) weightSection.style.display = 'block';
@@ -556,7 +602,7 @@ async function loadReelConfigurations() {
             return;
         }
 
-        const db = new EECOLIndexedDB();
+        const db = EECOLIndexedDB.getInstance();
         await db.ready;
 
         // Get all reel capacity estimator configurations

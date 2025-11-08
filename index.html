@@ -254,7 +254,8 @@
     <script src="src/assets/js/index.js"></script>
     <script>
         // Register Service Worker for PWA functionality
-        if ('serviceWorker' in navigator) {
+        // Only register if running on HTTP/HTTPS (not file:// protocol)
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('src/assets/sw.js')
                     .then(registration => {
@@ -275,13 +276,24 @@
                                 });
                             }
                         });
-
-
                     })
                     .catch(error => {
                         console.error('❌ Service Worker registration failed:', error);
+                        // Log additional context for debugging
+                        console.log('Service Worker registration context:', {
+                            protocol: location.protocol,
+                            hostname: location.hostname,
+                            pathname: location.pathname
+                        });
                     });
             });
+        } else {
+            // Running from file:// protocol or Service Worker not supported
+            if (location.protocol === 'file:') {
+                console.log('ℹ️ Service Worker not registered - running from file:// protocol. For full PWA functionality, serve via HTTP/HTTPS.');
+            } else if (!('serviceWorker' in navigator)) {
+                console.log('ℹ️ Service Worker not supported in this browser.');
+            }
         }
     </script>
 

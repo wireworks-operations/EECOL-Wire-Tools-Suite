@@ -406,7 +406,7 @@ document.getElementById('calculateBtn').addEventListener('click', () => {
                 try {
                     // Use IndexedDB instead of localStorage
                     if (typeof EECOLIndexedDB !== 'undefined') {
-                        const eecolDB = new EECOLIndexedDB();
+                        const eecolDB = EECOLIndexedDB.getInstance();
                         await eecolDB.ready;
                         await eecolDB.saveStopMarkConverter(data);
 

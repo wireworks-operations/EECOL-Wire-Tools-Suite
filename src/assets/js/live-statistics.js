@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Initialize IndexedDB first
     if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
-        window.eecolDB = new EECOLIndexedDB();
+        window.eecolDB = EECOLIndexedDB.getInstance();
         await window.eecolDB.ready;
 
         // Run migration from localStorage if needed

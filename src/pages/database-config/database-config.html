@@ -109,16 +109,29 @@
         </div>
     </div>
 
-    <!-- Custom Modal -->
-    <div id="customModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 transition-opacity duration-300">
-        <div id="modalBackdrop" class="absolute inset-0"></div>
-        <div id="modalContent" class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform transition-all duration-300 scale-95 opacity-0 relative border-4 border-blue-500">
-            <div class="text-center">
-                <h3 class="text-lg font-bold text-gray-900" id="modalTitle"></h3>
-                <p class="mt-2 text-sm text-gray-600" id="modalMessage"></p>
+    <!-- Custom Modal for Alerts/Confirmations -->
+    <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="modalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="modalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eecol-logo-tilt">
+                    <defs>
+                        <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#004a99;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2"/>
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)"/>
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                </svg>
             </div>
-            <div class="mt-4 flex justify-end space-x-2" id="modalButtons">
-                <!-- Buttons are injected here -->
+            <h3 class="text-lg font-bold text-center mb-3 header-gradient" id="modalTitle">Notification</h3>
+            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...</div>
+            <div class="flex justify-center space-x-3" id="modalButtons">
+                <!-- Buttons will be dynamically added here -->
             </div>
         </div>
     </div>

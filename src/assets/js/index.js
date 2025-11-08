@@ -209,10 +209,10 @@ if (typeof initMobileMenu === 'function') {
 // IndexedDB and P2P Sync initialization
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // Initialize IndexedDB (new system)
+        // Initialize IndexedDB (new system) - using singleton pattern
         if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
-            // Make DB available globally for other scripts
-            window.eecolDB = new EECOLIndexedDB();
+            // Make DB available globally for other scripts using singleton
+            window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
 
             console.log('IndexedDB initialized successfully for EECOL Tools Suite');

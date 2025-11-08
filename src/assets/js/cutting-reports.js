@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Initialize IndexedDB first
         if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
             console.log('📦 Initializing IndexedDB for cutting reports...');
-            window.eecolDB = new EECOLIndexedDB();
+            window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
             console.log('✅ IndexedDB initialized successfully for cutting reports');
 

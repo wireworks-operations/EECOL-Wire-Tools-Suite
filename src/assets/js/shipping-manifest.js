@@ -236,7 +236,7 @@ async function loadReelConfigurations() {
             return;
         }
 
-        const db = new EECOLIndexedDB();
+        const db = EECOLIndexedDB.getInstance();
         await db.ready;
 
         // Get all reel capacity estimator configurations
