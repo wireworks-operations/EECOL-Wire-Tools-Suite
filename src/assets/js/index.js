@@ -4,24 +4,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusIcon = document.getElementById('status-icon');
     const notificationText = document.getElementById('notification-text');
 
-    // Get maintenance data from new IndexedDB system
-    if (window.eecolDB) {
-        window.eecolDB.get('maintenanceLogs', 'daily_check').then(data => {
-            if (!data || !data.completedAt) {
-                // No data or not completed, show based on time
-                const now = new Date();
-                const currentHour = now.getHours();
-                if (currentHour < 13) {
-                    // Yellow: before 1 PM
-                    showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-                } else {
-                    // Red: after 1 PM
-                    showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-                }
-                return;
-            }
-
+    // Function to update maintenance notification
+    async function updateMaintenanceNotification() {
+        // Wait for database to be ready
+        if (window.eecolDB) {
             try {
+                await window.eecolDB.ready;
+                const data = await window.eecolDB.get('maintenanceLogs', 'daily_check');
+
+                if (!data || !data.completedAt) {
+                    // No data or not completed, show based on time
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    if (currentHour < 13) {
+                        // Yellow: before 1 PM
+                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
+                    } else {
+                        // Red: after 1 PM
+                        showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
+                    }
+                    return;
+                }
+
                 // Get completion date and time
                 const completedAt = new Date(data.completedAt);
                 const completionDate = completedAt.toISOString().split('T')[0];
@@ -49,11 +53,71 @@ document.addEventListener('DOMContentLoaded', function() {
                         showNotification('❌', 'bg-red-100 border-red-500', `Last completed: ${formatDate(completedAt)} - Overdue: Complete daily maintenance checklist`);
                     }
                 }
-            } catch (e) {
-                console.error('Error parsing maintenance data:', e);
+            } catch (error) {
+                console.error('Error reading from IndexedDB:', error);
+                // Fallback to old localStorage if new DB fails
+                const maintenanceData = localStorage.getItem('machineMaintenanceChecklist');
+                if (!maintenanceData) {
+                    // No data, show yellow/red based on time
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    if (currentHour < 13) {
+                        // Yellow: before 1 PM
+                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
+                    } else {
+                        // Red: after 1 PM
+                        showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
+                    }
+                    return;
+                }
+
+                try {
+                    const data = JSON.parse(maintenanceData);
+                    if (!data.completedAt) {
+                        // Data but not completed, same as no data
+                        const now = new Date();
+                        const currentHour = now.getHours();
+                        if (currentHour < 13) {
+                            showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
+                        } else {
+                            showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
+                        }
+                        return;
+                    }
+
+                    // Get completion date and time
+                    const completedAt = new Date(data.completedAt);
+                    const completionDate = completedAt.toISOString().split('T')[0];
+                    const completionHour = completedAt.getHours();
+                    const now = new Date();
+                    const currentDate = now.toISOString().split('T')[0];
+                    const currentHour = now.getHours();
+
+                    if (completionDate === currentDate) {
+                        // Completed today
+                        if (completionHour < 13) {
+                            // Green: completed before 1 PM
+                            showNotification('✅', 'bg-green-100 border-green-500', `Last completed: ${formatDate(completedAt)} (completed before 1 PM)`);
+                        } else {
+                            // Yellow: completed after 1 PM
+                            showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} (completed after 1 PM deadline)`);
+                        }
+                    } else {
+                        // Not completed today
+                        if (currentHour < 13) {
+                            // Yellow: still time today
+                            showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} - Complete today by 1 PM PST`);
+                        } else {
+                            // Red: overdue
+                            showNotification('❌', 'bg-red-100 border-red-500', `Last completed: ${formatDate(completedAt)} - Overdue: Complete daily maintenance checklist`);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing maintenance data:', e);
+                }
             }
-        }).catch(() => {
-            // Fallback to old localStorage if new DB fails
+        } else {
+            // Fallback to localStorage if database not available
             const maintenanceData = localStorage.getItem('machineMaintenanceChecklist');
             if (!maintenanceData) {
                 // No data, show yellow/red based on time
@@ -113,67 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (e) {
                 console.error('Error parsing maintenance data:', e);
             }
-        });
-    } else {
-        // Fallback to localStorage if database not available
-        const maintenanceData = localStorage.getItem('machineMaintenanceChecklist');
-        if (!maintenanceData) {
-            // No data, show yellow/red based on time
-            const now = new Date();
-            const currentHour = now.getHours();
-            if (currentHour < 13) {
-                // Yellow: before 1 PM
-                showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-            } else {
-                // Red: after 1 PM
-                showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-            }
-            return;
-        }
-
-        try {
-            const data = JSON.parse(maintenanceData);
-            if (!data.completedAt) {
-                // Data but not completed, same as no data
-                const now = new Date();
-                const currentHour = now.getHours();
-                if (currentHour < 13) {
-                    showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-                } else {
-                    showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-                }
-                return;
-            }
-
-            // Get completion date and time
-            const completedAt = new Date(data.completedAt);
-            const completionDate = completedAt.toISOString().split('T')[0];
-            const completionHour = completedAt.getHours();
-            const now = new Date();
-            const currentDate = now.toISOString().split('T')[0];
-            const currentHour = now.getHours();
-
-            if (completionDate === currentDate) {
-                // Completed today
-                if (completionHour < 13) {
-                    // Green: completed before 1 PM
-                    showNotification('✅', 'bg-green-100 border-green-500', `Last completed: ${formatDate(completedAt)} (completed before 1 PM)`);
-                } else {
-                    // Yellow: completed after 1 PM
-                    showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} (completed after 1 PM deadline)`);
-                }
-            } else {
-                // Not completed today
-                if (currentHour < 13) {
-                    // Yellow: still time today
-                    showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} - Complete today by 1 PM PST`);
-                } else {
-                    // Red: overdue
-                    showNotification('❌', 'bg-red-100 border-red-500', `Last completed: ${formatDate(completedAt)} - Overdue: Complete daily maintenance checklist`);
-                }
-            }
-        } catch (e) {
-            console.error('Error parsing maintenance data:', e);
         }
     }
 
@@ -187,6 +190,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
         return date.toLocaleDateString('en-US', options);
     }
+
+    // Initial load
+    updateMaintenanceNotification();
+
+    // Refresh when page becomes visible (user navigates back)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            updateMaintenanceNotification();
+        }
+    });
 });
 
 // Initialize mobile menu for this page
