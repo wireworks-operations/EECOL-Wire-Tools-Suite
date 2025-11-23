@@ -16,18 +16,10 @@
     "docker:build": "docker build -t eecol-tools .",
     "docker:run": "docker run -p 3000:80 eecol-tools"
   },
-  "dependencies": {
-    "crypto-js": "^4.1.1",
-    "uuid": "^9.0.0"
-  },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@babel/preset-env": "^7.20.0",
     "@babel/preset-typescript": "^7.18.0",
-    "@types/crypto-js": "^4.1.1",
-    "@types/jest": "^29.2.0",
-    "@types/node": "^18.11.0",
-    "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "babel-loader": "^9.1.0",
@@ -58,11 +50,10 @@
   "keywords": [
     "wire-cutting",
     "inventory",
-    "collaboration",
     "indexeddb",
     "manufacturing"
   ],
-  "author": "EECOL Tools Team <tools@eecol.com>",
+  "author": "EECOL Tools Team <lucas.kara@eecol.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/eecol/eecol-wire-tools-suite-v2/issues"

@@ -61,10 +61,7 @@ const db = new EECOLIndexedDB({
 - `maintenanceLogs` - Equipment maintenance records
 - `settings` - App configuration and preferences
 
-### **P2P Synchronization (Gun.js)**
-**Status**: Gun.js P2P infrastructure implemented but non-functional sync mechanics
 
-The application includes Gun.js P2P infrastructure but sync mechanics are currently not operational and do not synchronize any data between devices.
 
 ### **PWA Features**
 - **Service Workers**: Background caching and offline functionality
@@ -88,6 +85,28 @@ npm start
 npx http-server
 ```
 
+### **Docker (In Progress)**
+The project includes Docker support for containerized deployment.
+```bash
+# Build the image
+npm run docker:build
+
+# Run the container
+npm run docker:run
+```
+
+### **Development Commands**
+```bash
+# Build for production
+npm run build
+
+# Run linting
+npm run lint
+
+# Run type checking
+npm run type-check
+```
+
 ### **Access the Application**
 - Open `http://localhost:8080` (or your server port)
 - The app works completely offline once loaded
@@ -109,7 +128,7 @@ npx http-server
 
 ### **Known Issues**
 - ❌ **Multi-Cut Planner**: Multi-cut planner reverted to placeholder due to breaking changes that took place
-- ⚠️ **P2P Sync**: Gun.js P2P infrastructure implemented but non-functional sync mechanics
+
 - ⚠️ **Live Statistics**: Has localStorage fallback crash in some scenarios
 
 ### **Recent Updates & Roadmap**
@@ -135,7 +154,7 @@ For detailed roadmap and planned features, see [ai-context/memory-bank/roadmap.m
 ### **Project Structure**
 ```
 src/
-├── core/database/          # IndexedDB and Gun.js sync
+├── core/database/          # IndexedDB storage
 ├── pages/                  # HTML pages and JavaScript
 ├── assets/                 # CSS, icons, shared resources
 ├── utils/                  # Helper utilities
@@ -143,11 +162,12 @@ src/
 ```
 
 ### **Key Technologies**
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3, Tailwind CSS
+- **Build**: Webpack
 - **Storage**: IndexedDB used as main storage, with localStorage as fallback if IndexedDB isn't working
 - **PWA**: Service Workers, Web App Manifest
 - **Charts**: Chart.js for data visualization
-- **Sync**: Gun.js P2P infrastructure implemented but non-functional sync mechanics
+
 
 ### **Contributing**
 - Follow the established patterns in existing tools
@@ -160,4 +180,6 @@ src/
 
 ## 📄 **License**
 
-This project is proprietary software for EECOL Wire Tools operations.
+This project is licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2025 EECOL Tools Team
