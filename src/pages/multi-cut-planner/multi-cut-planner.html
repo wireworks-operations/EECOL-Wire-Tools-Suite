@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
     <title>EECOL Multi-Cut Planner</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
     <!-- Core Dependencies -->
     <script src="../../utils/modals.js"></script>
     <script src="../../utils/mobile-menu.js"></script>
     <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
-    <link rel="stylesheet" href="../../assets/css/multi-cut-planner.css">
 </head>
+
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
 
-    <div class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16">
+    <div
+        class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16">
 
         <!-- EECOL 'E' Logo (SVG) -->
         <div class="flex justify-center mb-1">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
-                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
-                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
-                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2" />
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor" />
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
             </svg>
         </div>
 
@@ -32,7 +39,7 @@
             EECOL Multi-Cut Planner
         </h1>
         <p class="mb-5 text-center text-sm font-medium text-[#0058B3]" id="toolSubtitle">
-            Optimize your wire cutting plans to minimize waste and maximize efficiency.
+            Plan multiple reel cuts, estimate capacity, and generate stop marks.
         </p>
 
         <!-- Tool Layout Container -->
@@ -41,95 +48,138 @@
 
                 <!-- Left Column: Inputs -->
                 <div id="leftColumn" class="lg:w-1/2 space-y-6">
-                    <!-- Wire Specifications Section -->
+
+                    <!-- Source Configuration -->
                     <div class="shadow-md rounded-xl p-4 bg-white">
-                        <h3 class="text-lg font-bold text-[#0058B3] mb-3">Wire/Cable Specifications</h3>
-                        <div class="input-group">
-                            <label for="wireDiameter" class="block text-xs font-semibold mb-1 text-[#0058B3]">Wire/Cable Diameter (d)</label>
-                            <div class="flex flex-col md:flex-row gap-1">
-                                <!-- Primary input row -->
-                                <div class="flex space-x-1">
-                                    <input type="number" id="wireDiameter" value="0.25" step="0.00001" class="flex-1 p-2 border border-gray-300 rounded-lg shadow-inner text-sm">
-                                    <select id="wireDiameterUnit" class="w-auto p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium text-[#0058B3] text-sm">
-                                        <option value="in">Inches (in)</option>
-                                        <option value="cm">Centimeters (cm)</option>
-                                        <option value="mm">Millimeters (mm)</option>
-                                    </select>
-                                </div>
-                                <!-- Preset dropdowns row (stacks below on mobile/tablet) -->
-                                <div class="flex space-x-1">
-                                    <select id="wireDiameterPresetInch" class="flex-1 p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium text-[#0058B3] text-sm">
-                                        <option value="">Inch Presets</option>
-                                        <option value="0.1875">3/16"</option>
-                                        <option value="0.25" selected>1/4"</option>
-                                        <option value="0.3125">5/16"</option>
-                                        <option value="0.375">3/8"</option>
-                                        <option value="0.4375">7/16"</option>
-                                        <option value="0.5">1/2"</option>
-                                        <option value="0.5625">9/16"</option>
-                                        <option value="0.625">5/8"</option>
-                                        <option value="0.75">3/4"</option>
-                                        <option value="0.875">7/8"</option>
-                                        <option value="1">1"</option>
-                                        <option value="1.125">1-1/8"</option>
-                                        <option value="1.25">1-1/4"</option>
-                                        <option value="1.375">1-3/8"</option>
-                                        <option value="1.5">1-1/2"</option>
-                                        <option value="1.625">1-5/8"</option>
-                                        <option value="1.75">1-3/4"</option>
-                                        <option value="1.875">1-7/8"</option>
-                                        <option value="2">2"</option>
-                                        <option value="2.125">2-1/8"</option>
-                                        <option value="2.25">2-1/4"</option>
-                                        <option value="2.375">2-3/8"</option>
-                                        <option value="2.5">2-1/2"</option>
-                                    </select>
-                                    <select id="wireDiameterPresetMm" class="flex-1 p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium text-[#0058B3] text-sm">
-                                        <option value="">MM Presets</option>
-                                        <option value="8">8mm</option>
-                                        <option value="9">9mm</option>
-                                        <option value="10">10mm</option>
-                                        <option value="11">11mm</option>
-                                        <option value="12">12mm</option>
-                                        <option value="13">13mm</option>
-                                        <option value="14">14mm</option>
-                                        <option value="16">16mm</option>
-                                        <option value="18">18mm</option>
-                                        <option value="19">19mm</option>
-                                        <option value="20">20mm</option>
-                                        <option value="22">22mm</option>
-                                        <option value="24">24mm</option>
-                                        <option value="26">26mm</option>
-                                        <option value="28">28mm</option>
-                                        <option value="32">32mm</option>
-                                        <option value="36">36mm</option>
-                                        <option value="40">40mm</option>
-                                    </select>
+                        <h3 class="text-lg font-bold text-[#0058B3] mb-3 flex items-center gap-2">
+                            <i data-lucide="settings" class="w-5 h-5"></i> Source & Wire Config
+                        </h3>
+
+                        <div class="space-y-4">
+                            <!-- Unit Toggle -->
+                            <div class="flex bg-gray-100 p-1 rounded-lg w-min border border-gray-300">
+                                <button id="btnMetric"
+                                    class="px-3 py-1 rounded text-sm font-medium bg-[#0058B3] text-white transition">Metric
+                                    (mm/m)</button>
+                                <button id="btnImperial"
+                                    class="px-3 py-1 rounded text-sm font-medium text-gray-500 hover:text-[#0058B3] transition">Imperial
+                                    (in/ft)</button>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-[#0058B3]">Counter Start
+                                    Mark</label>
+                                <div class="relative">
+                                    <input type="number" id="startMark" value="0"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm focus:ring-2 focus:ring-[#0058B3] focus:border-transparent outline-none">
+                                    <span class="absolute right-3 top-2 text-gray-500 text-sm unit-length">m</span>
                                 </div>
                             </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-[#0058B3]">Wire Diameter</label>
+                                <div class="relative">
+                                    <input type="number" id="wireDiameter" value="1.5" step="0.01"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm focus:ring-2 focus:ring-[#0058B3] focus:border-transparent outline-none">
+                                    <span class="absolute right-3 top-2 text-gray-500 text-sm unit-dim">mm</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Used for capacity fill estimation.</p>
+                            </div>
                         </div>
-                    <div class="shadow-md rounded-xl p-4 bg-white">
-                        <h3 class="text-lg font-bold text-[#0058B3] mb-3">Available Reels</h3>
-                        <div id="reelList" class="space-y-2">
-                            <!-- Reel inputs will be added here dynamically -->
-                        </div>
-                        <button id="addReelBtn" class="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-lg shadow-md transition duration-200 ease-in-out">+ Add Reel</button>
-                    </div>
-                    <div class="shadow-md rounded-xl p-4 bg-white">
-                        <h3 class="text-lg font-bold text-[#0058B3] mb-3">Required Cuts</h3>
-                        <div id="cutList" class="space-y-2">
-                            <!-- Cut inputs will be added here dynamically -->
-                        </div>
-                    <div class="shadow-md rounded-xl p-4 bg-white">
-                        <button id="calculateBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold p-3 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 text-sm">Calculate</button>
                     </div>
 
-                <!-- Right Column: Results -->
-                <div id="rightColumn" class="lg:w-1/2 mt-4 lg:mt-0 space-y-4">
-                    <div class="shadow-md rounded-xl p-4 bg-white">
-                        <h3 class="text-lg font-bold text-[#0058B3] mb-3">Optimized Cutting Plan</h3>
-                        <div id="results-container"></div>
+                    <!-- Add New Reel Form -->
+                    <div class="shadow-md rounded-xl p-4 bg-white relative overflow-hidden">
+                        <h3 class="text-lg font-bold text-[#0058B3] mb-3 flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-green-600"></i> Add Target Reel
+                        </h3>
+
+                        <div class="space-y-4 relative z-10">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-[#0058B3]">Target Cut Length</label>
+                                <div class="relative">
+                                    <input type="number" id="targetLength" placeholder="300"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+                                    <span class="absolute right-3 top-2 text-gray-500 text-sm unit-length">m</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-[#0058B3]">Flange (OD)</label>
+                                    <input type="number" id="reelFlange" placeholder="30"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm focus:ring-2 focus:ring-[#0058B3] outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-[#0058B3]">Barrel (ID)</label>
+                                    <input type="number" id="reelBarrel" placeholder="15"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm focus:ring-2 focus:ring-[#0058B3] outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-[#0058B3]">Traverse (W)</label>
+                                    <input type="number" id="reelTraverse" placeholder="24"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm focus:ring-2 focus:ring-[#0058B3] outline-none">
+                                </div>
+                            </div>
+
+                            <button id="addReelBtn"
+                                class="w-full bg-[#0058B3] hover:bg-[#004494] text-white font-bold py-2 rounded-lg shadow-md transition duration-200 ease-in-out flex justify-center items-center gap-2">
+                                Add Reel to Plan <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Quick Stats -->
+                    <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                        <h3 class="text-xs font-bold text-[#0058B3] uppercase tracking-wider mb-3">Session Totals</h3>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <div class="text-3xl font-black text-[#0058B3]" id="totalLengthDisp">0</div>
+                                <div class="text-xs text-gray-500 unit-length">total meters processed</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-bold text-[#0058B3]" id="totalReelsDisp">0</div>
+                                <div class="text-xs text-gray-500">reels</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: The Plan -->
+                <div id="rightColumn" class="lg:w-1/2 mt-4 lg:mt-0 space-y-4">
+
+                    <!-- Reel List Container -->
+                    <div
+                        class="shadow-md rounded-xl bg-white border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
+                        <div class="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                            <h2 class="font-bold text-[#0058B3] flex items-center gap-2">
+                                <i data-lucide="list-ordered" class="w-5 h-5"></i> Cut Sequence
+                            </h2>
+                            <div class="flex gap-2">
+                                <button onclick="window.print()" class="text-gray-500 hover:text-[#0058B3] transition"
+                                    title="Print">
+                                    <i data-lucide="printer" class="w-5 h-5"></i>
+                                </button>
+                                <button id="clearAllBtn" class="text-gray-500 hover:text-red-500 transition"
+                                    title="Reset">
+                                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="reelList">
+                            <!-- Empty State -->
+                            <div id="emptyState"
+                                class="h-full flex flex-col items-center justify-center text-gray-400 py-12">
+                                <i data-lucide="disc" class="w-16 h-16 mb-4 opacity-20"></i>
+                                <p class="text-lg font-medium">No reels planned yet.</p>
+                                <p class="text-sm">Configure a source and add a target reel to begin.</p>
+                            </div>
+                            <!-- Dynamic Reels will go here -->
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -138,8 +188,12 @@
         <div class="mt-auto pt-4 border-t border-blue-200 hidden sm:block">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex space-x-3">
-                    <a href="../index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
-                    <a href="../useful-tool/useful-tool.html" class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">Is This Tool Useful?</a>
+                    <a href="../index/index.html"
+                        class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠
+                        Home</a>
+                    <a href="../useful-tool/useful-tool.html"
+                        class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">Is
+                        This Tool Useful?</a>
                 </div>
                 <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
             </div>
@@ -154,4 +208,5 @@
 
     <script src="../../assets/js/multi-cut-planner.js"></script>
 </body>
+
 </html>
