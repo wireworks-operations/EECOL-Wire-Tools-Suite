@@ -830,7 +830,7 @@ if (typeof window !== 'undefined') {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.2',
+        version: 'v0.8.0.3',
         menuItems: [
             { text: '✂️ Cutting Records', href: '../cutting-records/cutting-records.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },

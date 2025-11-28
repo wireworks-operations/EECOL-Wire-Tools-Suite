@@ -4,12 +4,14 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
 -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <!-- PWA Manifest -->
     <link rel="manifest" href="../../../../src/assets/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
     <title>EECOL Wire Mark Calculator</title>
     <!-- Shared CSS Theme -->
     <link rel="stylesheet" href="../../../../src/assets/css/eecol-theme.css">
@@ -17,6 +19,7 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Core Dependencies -->
+    <script src="../../../../src/utils/theme-loader.js"></script>
     <script src="../../../../src/core/database/indexeddb.js"></script>
     <script src="../../../../src/utils/modals.js"></script>
     <script src="../../../../src/utils/mobile-menu.js"></script>
@@ -24,19 +27,24 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
 
     <!-- PWA Core removed - install prompts only on index pages -->
 </head>
+
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg">
 
     <!-- Main Container -->
-    <div class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16">
+    <div
+        class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-white p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16">
 
         <!-- Header -->
         <div class="flex justify-center mb-1">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
-                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
-                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
-                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2" />
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor" />
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
             </svg>
         </div>
 
@@ -57,7 +65,8 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
 
                     <!-- Start Mark -->
                     <div class="mb-4">
-                        <label for="startMark" class="block text-xs font-semibold mb-1 text-[#0058B3]">Start Mark</label>
+                        <label for="startMark" class="block text-xs font-semibold mb-1 text-[#0058B3]">Start
+                            Mark</label>
                         <input type="number" id="startMark" placeholder="0" min="0" max="99999"
                             class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm bg-white">
                     </div>
@@ -71,8 +80,10 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
 
                     <!-- Unit Selection -->
                     <div class="mb-4">
-                        <label for="markUnit" class="block text-xs font-semibold mb-1 text-[#0058B3]">Unit (for Start and End Marks)</label>
-                        <select id="markUnit" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium text-[#0058B3] text-sm">
+                        <label for="markUnit" class="block text-xs font-semibold mb-1 text-[#0058B3]">Unit (for Start
+                            and End Marks)</label>
+                        <select id="markUnit"
+                            class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium text-[#0058B3] text-sm">
                             <option value="m">Meters (m)</option>
                             <option value="ft">Feet (ft)</option>
                         </select>
@@ -87,28 +98,45 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
                 </div>
 
                 <!-- Result Display -->
-                <div id="resultContainer" class="bg-white p-6 rounded-xl shadow-lg border-l-8 card-border-blue text-center hidden">
-                    <h3 class="text-lg font-bold mb-3 text-[#0058B3] text-center">Calculation Results</h3>
-                    <div style="background-color: #e0f0ff; border-radius: 12px; padding: 16px; box-shadow: 0 0 10px rgba(0, 88, 179, 0.3);">
-                        <p id="resultTextPrimary" class="text-md font-semibold mb-2 text-[#0058B3]">Length Between Marks</p>
-                        <p id="resultText" class="text-3xl font-extrabold mb-1 text-[#0058B3]">0.00 m</p>
-                        <p id="resultTextSecondary" class="text-md font-semibold mb-3 text-[#0058B3]"></p>
-                        <p class="text-xs text-gray-700 mt-2">Calculation based on mark difference</p>
+                <div id="resultContainer" class="p-4 bg-white border-l-8 card-border-blue rounded-xl shadow-xl hidden">
+                    <h3 class="text-lg font-bold mb-4 text-[#0058B3] text-center">Wire Mark Analysis</h3>
+
+                    <!-- Primary Result: Length Between Marks -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-center">
+                        <p id="resultTextPrimary" class="text-sm font-bold text-gray-600 mb-1">Length Between Marks</p>
+                        <p id="resultText" class="text-3xl font-black text-[#0058B3]">0.00 m</p>
+                        <p id="resultTextSecondary" class="text-sm font-medium text-gray-500 mt-1"></p>
+                    </div>
+
+                    <!-- Mechanism Explanation -->
+                    <div id="mechanismExplanation" class="mt-2 p-3 bg-blue-50/50 border border-blue-100 rounded-lg">
+                        <h4 class="text-xs font-bold text-[#0058B3] mb-1 flex items-center">
+                            <span class="mr-1">⚙️</span> Calculation Method
+                        </h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            <strong>Difference Calculation:</strong> The absolute difference between the Start Mark and
+                            End Mark.<br>
+                            This represents the total length of wire that passed through the counter between these two
+                            points.
+                        </p>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="mt-4 flex justify-center space-x-2">
-                        <button id="printResultsBtn" class="px-4 py-2 bg-[#0058B3] text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[#0058B3] focus:ring-opacity-50 text-sm">
+                        <button id="printResultsBtn"
+                            class="px-4 py-2 bg-[#0058B3] text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[#0058B3] focus:ring-opacity-50 text-sm">
                             Print Results
                         </button>
-                        <button id="saveForCuttingRecordsBtn" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-emerald-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-emerald-600 focus:ring-opacity-50 text-sm disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <button id="saveForCuttingRecordsBtn"
+                            class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-emerald-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-emerald-600 focus:ring-opacity-50 text-sm disabled:bg-gray-400 disabled:cursor-not-allowed">
                             Save for Cutting Records
                         </button>
                     </div>
                 </div>
 
                 <!-- Error Message -->
-                <div id="errorBox" class="bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg hidden shadow-md p-4">
+                <div id="errorBox"
+                    class="bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg hidden shadow-md p-4">
                     <p class="font-medium text-sm">Input Error:</p>
                     <p id="errorMessage" class="text-xs mt-1"></p>
                 </div>
@@ -120,10 +148,14 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
         <div class="mt-auto pt-4 border-t border-blue-200 hidden sm:block">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex space-x-2">
-                    <a href="../../../src/pages/index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
-                    <a href="../../../src/pages/useful-tool/useful-tool.html" class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">Is This Tool Useful?</a>
+                    <a href="../../../src/pages/index/index.html"
+                        class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠
+                        Home</a>
+                    <a href="../../../src/pages/useful-tool/useful-tool.html"
+                        class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">Is
+                        This Tool Useful?</a>
                 </div>
-                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.3</p>
             </div>
             <p class="font-medium text-[#0058B3] text-center select-none mb-1">
                 Made With ❤️ By: Lucas and Cline 🤖
@@ -137,24 +169,30 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
     <!-- Custom Modal for Alerts/Confirmations -->
     <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="modalBackdrop"></div>
-        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="modalContent">
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="modalContent">
             <div class="flex items-center justify-center mb-4">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eecol-logo-tilt">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
                     <defs>
                         <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#004a99;stop-opacity:1" />
                         </linearGradient>
                     </defs>
-                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2"/>
-                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)"/>
-                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
                 </svg>
             </div>
             <h3 class="text-lg font-bold text-center mb-3 header-gradient" id="modalTitle">Notification</h3>
-            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...</div>
+            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...
+            </div>
             <div class="flex justify-center space-x-3" id="modalButtons">
                 <!-- Buttons will be dynamically added here -->
             </div>
@@ -162,5 +200,7 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
     </div>
 
     <script src="../../assets/js/wire-mark-calculator.js"></script>
+    <script src="../../../../src/utils/dark-mode.js"></script>
 </body>
+
 </html>

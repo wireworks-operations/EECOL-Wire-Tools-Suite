@@ -1,6 +1,6 @@
 {
   "name": "new-eecol-wire-tools",
-  "version": "0.8.0.2",
+  "version": "0.8.0.3",
   "description": "Enterprise-grade EECOL Wire Tools Suite with local data management.",
   "main": "src/pages/index/index.html",
   "scripts": {
@@ -23,7 +23,7 @@
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "babel-loader": "^9.1.0",
-    "cypress": "^12.0.0",
+    "cypress": "^12.17.4",
     "eslint": "^8.28.0",
     "html-webpack-plugin": "^5.5.0",
     "http-server": "^14.1.1",

@@ -17,10 +17,44 @@ let mobileMenuOpen = false;
 function initMobileMenu(options = {}) {
     const {
         menuItems = [],
-        version = 'v0.8.0.2',
+        version = 'v0.8.0.3',
         credits = 'Made With ❤️ By: Lucas and Cline 🤖',
         title = 'EECOL Wire Tools'
     } = options;
+
+    // Load Dark Mode Script dynamically if not present
+    if (typeof window.DarkMode === 'undefined' && !document.querySelector('script[src*="dark-mode.js"]')) {
+        const script = document.createElement('script');
+        // Determine path based on current location
+        // If we are in src/pages/x/x.html, utils is at ../../utils/
+        // If we are in index.html, utils is at src/utils/
+        const isRoot = window.location.pathname.endsWith('index.html') && !window.location.pathname.includes('/pages/');
+        const path = isRoot ? 'src/utils/dark-mode.js' : '../../utils/dark-mode.js';
+
+        // Simple heuristic: if window.location.href contains '/pages/', we need ../../
+        // If it's just index.html at root, we need src/utils/
+
+        // Let's rely on how mobile-menu.js itself is included usually?
+        // No, mobile-menu.js doesn't know its own path easily without some tricks.
+        // We'll use the relative path that seems most common or try to detect.
+
+        // Better yet: check the script tag that loaded mobile-menu.js
+        const scripts = document.getElementsByTagName('script');
+        let basePath = '../../utils/'; // default for pages
+        for (let s of scripts) {
+            if (s.src.includes('mobile-menu.js')) {
+                basePath = s.src.replace('mobile-menu.js', '');
+                break;
+            }
+        }
+
+        script.src = basePath + 'dark-mode.js';
+        script.onload = () => {
+            // Re-render menu to include toggle if needed, or update toggle state
+            if (window.DarkMode) window.DarkMode.updateToggleIcons();
+        };
+        document.head.appendChild(script);
+    }
 
     // Create mobile menu HTML
     createMobileMenu(menuItems, version, credits, title);
@@ -100,6 +134,11 @@ function createMobileMenu(menuItems, version, credits, title) {
 
                 <!-- Footer Info -->
                 <div class="p-6 border-t border-blue-200 text-center">
+                    <!-- Mobile Dark Mode Toggle -->
+                    <button id="mobileDarkModeToggle" class="mb-4 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center justify-center mx-auto w-full max-w-[200px] transition-colors">
+                        🌙 Dark Mode
+                    </button>
+
                     <p class="text-xs text-gray-500 font-mono mb-2">${version}</p>
                     <p class="font-medium text-[#0058B3] text-sm mb-1">${credits}</p>
                     <p class="text-xs font-semibold header-gradient">EECOL Wire Tools 2025 - Enterprise Edition</p>
@@ -111,6 +150,18 @@ function createMobileMenu(menuItems, version, credits, title) {
     // Inject elements into DOM
     document.body.insertAdjacentHTML('beforeend', hamburgerButton);
     document.body.insertAdjacentHTML('beforeend', mobileMenu);
+
+    // Setup listener for mobile dark mode toggle if script is ready
+    const mobileToggle = document.getElementById('mobileDarkModeToggle');
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', () => {
+            if (window.DarkMode) {
+                window.DarkMode.toggle();
+            } else {
+                console.warn('Dark Mode script not loaded yet');
+            }
+        });
+    }
 }
 
 /**

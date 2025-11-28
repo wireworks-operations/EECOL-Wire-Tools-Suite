@@ -1,15 +1,18 @@
-<!--V0.8.0.2 - Local Data Management
+<!--V0.8.0.3 - Local Data Management
 Maintenance & Todos - EECOL Wire Tools Suite
 -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:;">
     <link rel="manifest" href="../../../src/assets/manifest.json">
     <title>EECOL Wire Tools Suite - Maintenance & Todos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../utils/theme-loader.js"></script>
     <link rel="stylesheet" href="../../../src/assets/css/eecol-theme.css">
     <style>
         /* Status indicators */
@@ -17,28 +20,35 @@ Maintenance & Todos - EECOL Wire Tools Suite
             background-color: #10b981;
             color: white;
         }
+
         .status-in-progress {
             background-color: #f59e0b;
             color: white;
         }
+
         .status-planned {
             background-color: #6b7280;
             color: white;
         }
     </style>
 </head>
+
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
 
-    <div class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col">
+    <div
+        class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-white p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col">
 
         <!-- EECOL 'E' Logo (SVG) -->
         <div class="flex justify-center mb-1">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
-                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
-                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
-                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2" />
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor" />
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
             </svg>
         </div>
 
@@ -47,12 +57,14 @@ Maintenance & Todos - EECOL Wire Tools Suite
             Maintenance & Todos
         </h1>
         <p class="mb-5 text-center text-sm font-medium text-[#0058B3]" id="toolSubtitle">
-            Enterprise Code Quality Review & Development Documentation - v0.8.0.2 PWA Architecture
+            Enterprise Code Quality Review & Development Documentation - v0.8.0.3 PWA Architecture
         </p>
 
         <!-- Quick Navigation -->
         <div class="flex justify-center mb-6">
-            <a href="../../../src/pages/index/index.html" class="px-4 py-2 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 no-underline">🏠 Home</a>
+            <a href="../../../src/pages/index/index.html"
+                class="px-4 py-2 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 no-underline">🏠
+                Home</a>
         </div>
 
         <!-- Tool Layout Container -->
@@ -61,13 +73,14 @@ Maintenance & Todos - EECOL Wire Tools Suite
                 Made With ❤️ By: Lucas and Cline 🤖
             </p>
 
-            <!-- v0.8.0.2 Local Data Management Notice -->
-            <div class="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 p-6 rounded-xl shadow-lg border-4 border-green-300 mb-6">
+            <!-- v0.8.0.3 Local Data Management Notice -->
+            <div
+                class="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 p-6 rounded-xl shadow-lg border-4 border-green-300 mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
                         <div class="text-5xl mr-4">🚀</div>
                         <div>
-                            <h2 class="text-2xl font-bold text-green-900 mb-2">v0.8.0.2 LOCAL DATA MANAGEMENT</h2>
+                            <h2 class="text-2xl font-bold text-green-900 mb-2">v0.8.0.3 LOCAL DATA MANAGEMENT</h2>
                             <p class="text-lg font-semibold text-green-800">Professional-Grade PWA Implementation</p>
                         </div>
                     </div>
@@ -87,7 +100,8 @@ Maintenance & Todos - EECOL Wire Tools Suite
                         <div class="text-xs font-bold text-green-800">Data Management</div>
                     </div>
                 </div>
-                <p class="text-center text-base font-semibold text-green-800 mt-4">Full control over your local application data!</p>
+                <p class="text-center text-base font-semibold text-green-800 mt-4">Full control over your local
+                    application data!</p>
             </div>
 
             <!-- Code Quality Status Overview -->
@@ -121,20 +135,74 @@ Maintenance & Todos - EECOL Wire Tools Suite
                 </div>
             </div>
 
+            <!-- 🕵️ Codebase Deep Scan Results -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-amber-400 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="text-3xl mr-3">🕵️</div>
+                    <h2 class="text-xl font-bold text-[#0058B3]">Deep Codebase Scan Results</h2>
+                </div>
+
+                <!-- Incoming References -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-amber-800 mb-3">🔗 Incoming Page References</h3>
+                    <div class="bg-amber-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-700 mb-2">The following files link to this maintenance page:</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                            <li><code class="bg-white px-1 py-0.5 rounded border">index.html</code> (Root Redirect)</li>
+                            <li><code class="bg-white px-1 py-0.5 rounded border">src/assets/js/index.js</code> (Dashboard Logic)</li>
+                            <li><code class="bg-white px-1 py-0.5 rounded border">src/pages/index/index.html</code> (Main Dashboard)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Code Health Report -->
+                <div>
+                    <h3 class="text-lg font-semibold text-amber-800 mb-3">🧹 Codebase Health Report</h3>
+                    <div class="bg-red-50 p-4 rounded-lg mb-3 border border-red-100">
+                        <div class="flex items-start">
+                            <span class="text-red-500 mr-2">🗑️</span>
+                            <div>
+                                <h4 class="font-bold text-red-800 text-sm">Dead Code Detected & Removed</h4>
+                                <p class="text-sm text-red-700 mt-1">
+                                    <strong>File:</strong> <code>src/utils/p2p-status.js</code><br>
+                                    <strong>Reason:</strong> Orphaned utility for cancelled "P2P Sync" feature.<br>
+                                    <strong>Action:</strong> Deleted to prevent technical debt accumulation.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <div class="flex items-start">
+                            <span class="text-green-500 mr-2">✨</span>
+                            <div>
+                                <h4 class="font-bold text-green-800 text-sm">Cleaned References</h4>
+                                <p class="text-sm text-green-700 mt-1">
+                                    <strong>File:</strong> <code>src/assets/js/index.js</code><br>
+                                    <strong>Action:</strong> Removed misleading comments referencing P2P synchronization.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 🎯 Enterprise Architecture Implementation -->
             <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-400 mb-6">
                 <div class="flex items-center mb-4">
                     <div class="text-3xl mr-3">🎯</div>
-                    <h2 class="text-xl font-bold text-[#0058B3]">v0.8.0.2 Architecture Implementation</h2>
+                    <h2 class="text-xl font-bold text-[#0058B3]">v0.8.0.3 Architecture Implementation</h2>
                 </div>
 
                 <!-- PWA Implementation -->
                 <div class="bg-purple-50 p-4 rounded-lg">
                     <h3 class="font-semibold text-purple-800 mb-2">📱 Progressive Web App (PWA) Architecture</h3>
                     <div class="space-y-1 text-sm text-gray-700">
-                        <p><strong>Implementation:</strong> Full installable app experience with service workers and offline capabilities.</p>
-                        <p><strong>Features:</strong> Background synchronization, push notifications, and native-like performance.</p>
-                        <p><strong>Benefits:</strong> Works identically across desktop, tablet, and mobile with app-like functionality.</p>
+                        <p><strong>Implementation:</strong> Full installable app experience with service workers and
+                            offline capabilities.</p>
+                        <p><strong>Features:</strong> Background synchronization, push notifications, and native-like
+                            performance.</p>
+                        <p><strong>Benefits:</strong> Works identically across desktop, tablet, and mobile with app-like
+                            functionality.</p>
                     </div>
                 </div>
             </div>
@@ -153,7 +221,8 @@ Maintenance & Todos - EECOL Wire Tools Suite
                         <div class="flex items-start space-x-2">
                             <span class="status-complete px-2 py-1 rounded text-xs font-bold mt-0.5">✅</span>
                             <div class="flex-1">
-                                <strong>IndexedDB Backend:</strong> Transaction-safe database operations with migration support and data validation.
+                                <strong>IndexedDB Backend:</strong> Transaction-safe database operations with migration
+                                support and data validation.
                             </div>
                         </div>
                         <div class="flex items-start space-x-2">
@@ -181,10 +250,13 @@ Maintenance & Todos - EECOL Wire Tools Suite
 
                 <div class="mt-6 space-y-4">
                     <p class="text-gray-700">
-                        <strong>The v0.8.0.2 architecture represents a shift to a local-first data management strategy.</strong> The implementation demonstrates professional-grade development practices with a focus on user control and data portability.
+                        <strong>The v0.8.0.3 architecture represents a shift to a local-first data management
+                            strategy.</strong> The implementation demonstrates professional-grade development practices
+                        with a focus on user control and data portability.
                     </p>
                     <p class="text-gray-700">
-                        The PWA implementation ensures native-like performance across all platforms with full offline functionality.
+                        The PWA implementation ensures native-like performance across all platforms with full offline
+                        functionality.
                     </p>
                 </div>
             </div>
@@ -207,17 +279,22 @@ Maintenance & Todos - EECOL Wire Tools Suite
                         </thead>
                         <tbody class="text-sm">
                             <tr class="border-b">
-                                <td class="px-4 py-2"><span class="status-complete px-2 py-1 rounded text-xs font-bold">✅ COMPLETE</span></td>
+                                <td class="px-4 py-2"><span
+                                        class="status-complete px-2 py-1 rounded text-xs font-bold">✅ COMPLETE</span>
+                                </td>
                                 <td class="px-4 py-2">IndexedDB Backend Architecture</td>
                                 <td class="px-4 py-2">Critical</td>
                             </tr>
                             <tr class="border-b">
-                                <td class="px-4 py-2"><span class="status-complete px-2 py-1 rounded text-xs font-bold">✅ COMPLETE</span></td>
+                                <td class="px-4 py-2"><span
+                                        class="status-complete px-2 py-1 rounded text-xs font-bold">✅ COMPLETE</span>
+                                </td>
                                 <td class="px-4 py-2">PWA Implementation & Service Workers</td>
                                 <td class="px-4 py-2">High</td>
                             </tr>
                             <tr class="border-b">
-                                <td class="px-4 py-2"><span class="status-planned px-2 py-1 rounded text-xs font-bold">🔄 FUTURE</span></td>
+                                <td class="px-4 py-2"><span
+                                        class="status-planned px-2 py-1 rounded text-xs font-bold">🔄 FUTURE</span></td>
                                 <td class="px-4 py-2">Advanced Analytics Dashboard</td>
                                 <td class="px-4 py-2">High</td>
                             </tr>
@@ -231,11 +308,15 @@ Maintenance & Todos - EECOL Wire Tools Suite
         <div class="mt-auto pt-4 border-t border-blue-200">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex space-x-2">
-                    <a href="../../../src/pages/index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
+                    <a href="../../../src/pages/index/index.html"
+                        class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠
+                        Home</a>
                 </div>
                 <div class="flex space-x-2 items-center">
-                    <a href="../../../src/pages/changelog/changelog.html" class="px-3 py-1.5 bg-amber-500 border-2 border-amber-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-amber-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-amber-500 focus:ring-opacity-50 text-xs no-underline">📋 Changelog</a>
-                    <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
+                    <a href="../../../src/pages/changelog/changelog.html"
+                        class="px-3 py-1.5 bg-amber-500 border-2 border-amber-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-amber-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-amber-500 focus:ring-opacity-50 text-xs no-underline">📋
+                        Changelog</a>
+                    <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.3</p>
                 </div>
             </div>
             <p class="font-medium text-[#0058B3] text-center select-none mb-1">
@@ -247,5 +328,7 @@ Maintenance & Todos - EECOL Wire Tools Suite
         </div>
     </div>
 
+    <script src="../../utils/dark-mode.js"></script>
 </body>
+
 </html>

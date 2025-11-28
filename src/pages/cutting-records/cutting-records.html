@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" id="csp-meta" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'">
+    <meta http-equiv="Content-Security-Policy" id="csp-meta"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'">
     <title>EECOL Wire Cut Record Tool</title>
+    <script src="../../utils/theme-loader.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../assets/css/cutting-records.css">
     <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
@@ -18,22 +21,27 @@
     <script src="../../utils/modals.js"></script>
     <script src="../../utils/mobile-menu.js"></script>
 </head>
+
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
 
 
 
     <!-- Main Container -->
-    <div id="recordsPage" class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-[#F0F8FF] p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16 relative">
+    <div id="recordsPage"
+        class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-white p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16 relative">
 
         <!-- Header -->
         <div class="flex justify-center mb-1 relative">
 
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
-                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2"/>
-                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor"/>
-                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2" />
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor" />
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
             </svg>
         </div>
 
@@ -41,7 +49,7 @@
             EECOL Wire Cut Record History
         </h1>
         <p class="mb-5 text-center text-sm font-medium header-gradient">
-           Log completed wire cuts for easy, shared inventory tracking and export/import.
+            Log completed wire cuts for easy, shared inventory tracking and export/import.
         </p>
 
         <div class="flex-1 overflow-y-auto">
@@ -55,18 +63,24 @@
                             User ID: <span class="font-bold">LocalUser</span>
                         </p>
                         <p class="text-xs text-gray-600 mt-1">Data is saved to IndexedDB.</p>
-                        <p class="text-xs text-blue-600 mt-1 font-medium">💡 JSON Backup & Import: Use the "JSON Backup Export" and "JSON Backup Import" buttons to save/load complete data backups.</p>
+                        <p class="text-xs text-blue-600 mt-1 font-medium">💡 JSON Backup & Import: Use the "JSON Backup
+                            Export" and "JSON Backup Import" buttons to save/load complete data backups.</p>
                     </div>
 
                     <!-- Export Status Notification -->
-                    <div id="exportNotification" class="p-2 bg-blue-50/70 border-l-4 border-blue-500 rounded-lg shadow-md">
+                    <div id="exportNotification"
+                        class="p-2 bg-blue-50/70 border-l-4 border-blue-500 rounded-lg shadow-md">
                         <p class="text-xs font-semibold text-blue-800">Last Export</p>
-                        <p class="text-xs text-blue-600 mt-1 mb-1 font-medium">→ Click export status links below to export data</p>
-                        <p class="text-xs text-gray-700">JSON Export: <span id="lastJsonExport">Never exported</span></p>
+                        <p class="text-xs text-blue-600 mt-1 mb-1 font-medium">→ Click export status links below to
+                            export data</p>
+                        <p class="text-xs text-gray-700">JSON Export: <span id="lastJsonExport">Never exported</span>
+                        </p>
                     </div>
 
-                    <div class="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-md">
-                        <button id="toggleStats" class="w-full text-left font-semibold text-blue-800 flex justify-between items-center">
+                    <div
+                        class="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-md">
+                        <button id="toggleStats"
+                            class="w-full text-left font-semibold text-blue-800 flex justify-between items-center">
                             <!--Quick Status Bar-->
                             📊 Quick Statistics
                             <span id="statsToggle">▼</span>
@@ -88,12 +102,8 @@
                     <!--Search Bar-->
                     <div class="mb-4 p-3 bg-white rounded-xl shadow-md">
                         <div class="flex flex-wrap gap-2 mb-2">
-                            <input
-                                id="searchInput"
-                                type="text"
-                                placeholder="Search by wire ID, order number, cutter..."
-                                class="flex-1 min-w-48 p-2 border border-gray-300 rounded-lg text-sm"
-                            />
+                            <input id="searchInput" type="text" placeholder="Search by wire ID, order number, cutter..."
+                                class="flex-1 min-w-48 p-2 border border-gray-300 rounded-lg text-sm" />
                             <select id="filterByField" class="p-2 border border-gray-300 rounded-lg text-sm">
                                 <option value="all">All Fields</option>
                                 <option value="wireId">Wire ID</option>
@@ -111,17 +121,10 @@
                             </select>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <input
-                                id="dateFrom"
-                                type="date"
-                                class="p-2 border border-gray-300 rounded-lg text-sm"
-                            />
-                            <input
-                                id="dateTo"
-                                type="date"
-                                class="p-2 border border-gray-300 rounded-lg text-sm"
-                            />
-                            <button id="clearFilters" class="px-3 py-2 bg-blue-700 text-white rounded-xl shadow-lg text-sm hover:bg-blue-800 transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-700 focus:ring-opacity-50">
+                            <input id="dateFrom" type="date" class="p-2 border border-gray-300 rounded-lg text-sm" />
+                            <input id="dateTo" type="date" class="p-2 border border-gray-300 rounded-lg text-sm" />
+                            <button id="clearFilters"
+                                class="px-3 py-2 bg-blue-700 text-white rounded-xl shadow-lg text-sm hover:bg-blue-800 transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-700 focus:ring-opacity-50">
                                 Clear Filters
                             </button>
                         </div>
@@ -129,67 +132,53 @@
 
                     <!-- Form Fields -->
                     <div class="shadow-md rounded-xl p-2 bg-white mobile-compact-spacing">
-                        <label for="orderNumber" class="block text-xs font-semibold mb-1 header-gradient">Order Number / IBT Number</label>
-                        <input
-                            id="orderNumber"
-                            type="text"
-                            placeholder="1234567"
-                            maxlength="7"
-                            class="w-full mobile-touch-input border border-gray-300 rounded-lg shadow-inner text-sm"
-                        />
+                        <label for="orderNumber" class="block text-xs font-semibold mb-1 header-gradient">Order Number /
+                            IBT Number</label>
+                        <input id="orderNumber" type="text" placeholder="1234567" maxlength="7"
+                            class="w-full mobile-touch-input border border-gray-300 rounded-lg shadow-inner text-sm" />
                         <label class="inline-flex items-center mt-2">
-                            <input type="checkbox" id="batchEntryMode" class="form-checkbox h-5 w-5 text-blue-600 touch-device-friendly" />
-                            <span class="ml-2 text-sm font-semibold header-gradient">Batch Entry Mode (Multiple Cuts)</span>
+                            <input type="checkbox" id="batchEntryMode"
+                                class="form-checkbox h-5 w-5 text-blue-600 touch-device-friendly" />
+                            <span class="ml-2 text-sm font-semibold header-gradient">Batch Entry Mode (Multiple
+                                Cuts)</span>
                         </label>
                     </div>
 
                     <div class="shadow-md rounded-xl p-2 bg-white mobile-compact-spacing">
-                        <label for="customerName" class="block text-xs font-semibold mb-1 header-gradient">Customer Name / Branch</label>
-                        <input
-                            id="customerName"
-                            type="text"
-                            placeholder="EECOL Customer Name / EECOL Branch"
-                            class="w-full mobile-touch-input border border-gray-300 rounded-lg shadow-inner text-sm"
-                        />
+                        <label for="customerName" class="block text-xs font-semibold mb-1 header-gradient">Customer Name
+                            / Branch</label>
+                        <input id="customerName" type="text" placeholder="EECOL Customer Name / EECOL Branch"
+                            class="w-full mobile-touch-input border border-gray-300 rounded-lg shadow-inner text-sm" />
                     </div>
 
                     <div class="shadow-md rounded-xl p-2 bg-white mobile-compact-spacing">
-                        <label for="orderComments" class="block text-xs font-semibold mb-1 header-gradient">Order Comments</label>
-                        <input
-                            id="orderComments"
-                            type="text"
+                        <label for="orderComments" class="block text-xs font-semibold mb-1 header-gradient">Order
+                            Comments</label>
+                        <input id="orderComments" type="text"
                             placeholder="e.g., Damaged Wire, Under Shipment / Over Shipment"
-                            class="w-full mobile-touch-input border border-gray-300 rounded-lg shadow-inner text-sm"
-                        />
+                            class="w-full mobile-touch-input border border-gray-300 rounded-lg shadow-inner text-sm" />
                     </div>
 
                     <div class="shadow-md rounded-xl p-2 bg-white mobile-compact-spacing" id="wireIdContainer">
-                        <label for="wireId" class="block text-xs font-semibold mb-1 header-gradient">Wire Type / ID</label>
-                        <input
-                            id="wireId"
-                            type="text"
-                            placeholder="TK6/3CU 1KV / ACWU90 6/3 AL"
+                        <label for="wireId" class="block text-xs font-semibold mb-1 header-gradient">Wire Type /
+                            ID</label>
+                        <input id="wireId" type="text" placeholder="TK6/3CU 1KV / ACWU90 6/3 AL"
                             class="w-full mobile-touch-input border border-gray-300 rounded-lg shadow-inner text-sm"
-                            list="wireIdOptions"
-                            required
-                        />
+                            list="wireIdOptions" required />
                         <datalist id="wireIdOptions"></datalist>
                     </div>
 
                     <!-- Cut Details -->
                     <div id="singleCutForm" class="space-y-4">
                         <div class="shadow-md rounded-xl p-2 bg-white">
-                            <label for="cutLength" class="block text-xs font-semibold mb-1 header-gradient">Length Cut</label>
+                            <label for="cutLength" class="block text-xs font-semibold mb-1 header-gradient">Length
+                                Cut</label>
                             <div class="flex space-x-1">
-                                <input
-                                    id="cutLength"
-                                    type="number"
-                                    placeholder="How many units was the cut"
-                                    value=""
+                                <input id="cutLength" type="number" placeholder="How many units was the cut" value=""
                                     class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm"
-                                    required
-                                />
-                                <select id="cutLengthUnit" class="w-auto p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium header-gradient text-sm">
+                                    required />
+                                <select id="cutLengthUnit"
+                                    class="w-auto p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium header-gradient text-sm">
                                     <option value="m">Meters (m)</option>
                                     <option value="ft">Feet (ft)</option>
                                 </select>
@@ -197,161 +186,138 @@
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <div class="mb-2">
-                                <button id="importFromCalculatorBtn" class="w-full px-3 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
+                                <button id="importFromCalculatorBtn"
+                                    class="w-full px-3 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
                                     📥 Import from Calculator (Mark or Stop)
                                 </button>
                             </div>
-                            <label for="startingMark" class="block text-xs font-semibold mb-1 header-gradient">Starting Mark</label>
+                            <label for="startingMark" class="block text-xs font-semibold mb-1 header-gradient">Starting
+                                Mark</label>
                             <div class="flex items-center space-x-1">
-                                <input
-                                    id="startingMark"
-                                    type="number"
-                                    placeholder="What was the starting unit"
-                                    value=""
-                                    class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm"
-                                />
-                                <select id="startingMarkUnit" class="w-auto p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium header-gradient text-sm">
+                                <input id="startingMark" type="number" placeholder="What was the starting unit" value=""
+                                    class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm" />
+                                <select id="startingMarkUnit"
+                                    class="w-auto p-2 border border-gray-300 rounded-lg bg-white shadow-sm font-medium header-gradient text-sm">
                                     <option value="m">Meters (m)</option>
                                     <option value="ft">Feet (ft)</option>
                                 </select>
                             </div>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
-                            <label for="endingMark" class="block text-xs font-semibold mb-1 header-gradient">Ending Mark</label>
+                            <label for="endingMark" class="block text-xs font-semibold mb-1 header-gradient">Ending
+                                Mark</label>
                             <div class="flex items-center space-x-1">
-                                <input
-                                    id="endingMark"
-                                    type="number"
-                                    placeholder="Leave blank for single unit cuts"
+                                <input id="endingMark" type="number" placeholder="Leave blank for single unit cuts"
                                     value=""
-                                    class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm"
-                                />
-                                <select id="endingMarkUnit" class="w-auto p-2 border border-gray-300 rounded-lg bg-gray-100 shadow-sm font-medium header-gradient text-sm" disabled>
+                                    class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm" />
+                                <select id="endingMarkUnit"
+                                    class="w-auto p-2 border border-gray-300 rounded-lg bg-gray-100 shadow-sm font-medium header-gradient text-sm"
+                                    disabled>
                                     <option value="m">Meters (m)</option>
                                     <option value="ft">Feet (ft)</option>
                                 </select>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Uses the same unit as Starting Mark. Leave blank for single unit cuts</p>
+                            <p class="text-xs text-gray-500 mt-1">Uses the same unit as Starting Mark. Leave blank for
+                                single unit cuts</p>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <label class="flex items-center space-x-2">
-                                <input
-                                    id="singleUnitCut"
-                                    type="checkbox"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                />
+                                <input id="singleUnitCut" type="checkbox"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" />
                                 <span class="text-xs font-semibold header-gradient">Single Unit Cut</span>
                             </label>
-                            <p class="text-xs text-gray-500 mt-1">Check for single unit cuts - auto-fills length to 1 and disables end mark.</p>
+                            <p class="text-xs text-gray-500 mt-1">Check for single unit cuts - auto-fills length to 1
+                                and disables end mark.</p>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <label class="flex items-center space-x-2">
-                                <input
-                                    id="fullPick"
-                                    type="checkbox"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                />
+                                <input id="fullPick" type="checkbox"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" />
                                 <span class="text-xs font-semibold header-gradient">Full Pick</span>
                             </label>
-                            <p class="text-xs text-gray-500 mt-1">Check if this is a full pick, bypassing start and end marks.</p>
+                            <p class="text-xs text-gray-500 mt-1">Check if this is a full pick, bypassing start and end
+                                marks.</p>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <label class="flex items-center space-x-2">
-                                <input
-                                    id="noMarks"
-                                    type="checkbox"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                />
+                                <input id="noMarks" type="checkbox"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" />
                                 <span class="text-xs font-semibold header-gradient">No Marks</span>
                             </label>
                             <p class="text-xs text-gray-500 mt-1">Check if there are no marks on the wire.</p>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <label class="flex items-center space-x-2">
-                                <input
-                                    id="systemCut"
-                                    type="checkbox"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                />
+                                <input id="systemCut" type="checkbox"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" />
                                 <span class="text-xs font-semibold header-gradient">System Cut</span>
                             </label>
-                            <p class="text-xs text-gray-500 mt-1">Check for system cuts without order number or customer.</p>
+                            <p class="text-xs text-gray-500 mt-1">Check for system cuts without order number or
+                                customer.</p>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <label class="flex items-center space-x-2">
-                                <input
-                                    id="cutInSystem"
-                                    type="checkbox"
-                                    class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
-                                />
+                                <input id="cutInSystem" type="checkbox"
+                                    class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500" />
                                 <span class="text-xs font-semibold header-gradient">Cut In System</span>
                             </label>
-                            <p class="text-xs text-gray-500 mt-1">Check for cuts that are part of the overall wire cutting system.</p>
+                            <p class="text-xs text-gray-500 mt-1">Check for cuts that are part of the overall wire
+                                cutting system.</p>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="lineCode" class="block text-xs font-semibold mb-1 header-gradient">Cut From Line Code</label>
-                                    <input
-                                        id="lineCode"
-                                        type="text"
-                                        placeholder="001 or A"
-                                        maxlength="3"
+                                    <label for="lineCode" class="block text-xs font-semibold mb-1 header-gradient">Cut
+                                        From Line Code</label>
+                                    <input id="lineCode" type="text" placeholder="001 or A" maxlength="3"
                                         class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm"
-                                        required
-                                    />
+                                        required />
                                 </div>
                                 <div>
-                                    <label for="turnedToLineCode" class="block text-xs font-semibold mb-1 header-gradient">Turned To Line Code</label>
-                                    <input
-                                        id="turnedToLineCode"
-                                        type="text"
-                                        placeholder="001 or A"
-                                        maxlength="3"
+                                    <label for="turnedToLineCode"
+                                        class="block text-xs font-semibold mb-1 header-gradient">Turned To Line
+                                        Code</label>
+                                    <input id="turnedToLineCode" type="text" placeholder="001 or A" maxlength="3"
                                         class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm"
-                                        required
-                                    />
+                                        required />
                                 </div>
                             </div>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
-                            <label for="cutterName" class="block text-xs font-semibold mb-1 header-gradient">Cutter Name</label>
-                            <input
-                                id="cutterName"
-                                type="text"
-                                placeholder="Employee Name"
-                                class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm"
-                                required
-                            />
+                            <label for="cutterName" class="block text-xs font-semibold mb-1 header-gradient">Cutter
+                                Name</label>
+                            <input id="cutterName" type="text" placeholder="Employee Name"
+                                class="w-full p-2 border border-gray-300 rounded-lg shadow-inner text-sm" required />
                         </div>
                         <div class="flex flex-col gap-4">
                             <div class="shadow-md rounded-xl p-2 bg-white flex-1">
-                                <label for="coilOrReel" class="block text-xs font-semibold mb-1 header-gradient">Coil or Reel</label>
-                                <select id="coilOrReel" class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm font-medium header-gradient text-sm">
+                                <label for="coilOrReel" class="block text-xs font-semibold mb-1 header-gradient">Coil or
+                                    Reel</label>
+                                <select id="coilOrReel"
+                                    class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm font-medium header-gradient text-sm">
                                     <option value="coil">Coil</option>
                                     <option value="reel">Reel</option>
                                 </select>
                             </div>
                             <div class="shadow-md rounded-xl p-2 bg-white flex-1">
-                                <label for="reelSize" class="block text-xs font-semibold mb-1 header-gradient">Reel Size</label>
+                                <label for="reelSize" class="block text-xs font-semibold mb-1 header-gradient">Reel
+                                    Size</label>
                                 <div class="flex items-center space-x-2">
-                                    <input
-                                        id="reelSize"
-                                        type="number"
-                                        placeholder="40"
-                                        min="0"
-                                        step="1"
+                                    <input id="reelSize" type="number" placeholder="40" min="0" step="1"
                                         class="flex-grow p-2 border border-gray-300 rounded-lg shadow-inner text-sm bg-gray-100 cursor-not-allowed"
-                                        disabled
-                                    />
-                                    <button id="importFromEstimatorBtn" class="px-2 py-0 bg-emerald-600 text-white text-xs font-bold rounded hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        disabled />
+                                    <button id="importFromEstimatorBtn"
+                                        class="px-2 py-0 bg-emerald-600 text-white text-xs font-bold rounded hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
                                         📥 Import from Reel Estimator
                                     </button>
                                 </div>
                             </div>
                             <div class="shadow-md rounded-xl p-2 bg-white flex-1">
-                                <label for="chargeable" class="block text-xs font-semibold mb-1 header-gradient">Chargeable</label>
-                                <select id="chargeable" class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm font-medium header-gradient text-sm bg-gray-100 cursor-not-allowed" disabled>
+                                <label for="chargeable"
+                                    class="block text-xs font-semibold mb-1 header-gradient">Chargeable</label>
+                                <select id="chargeable"
+                                    class="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm font-medium header-gradient text-sm bg-gray-100 cursor-not-allowed"
+                                    disabled>
                                     <option value="">Select...</option>
                                     <option value="yes">Yes</option>
                                     <option value="no">No</option>
@@ -360,36 +326,36 @@
                         </div>
                     </div>
 
-                    <div id="batchCutForm" class="hidden space-y-4 bg-white p-4 rounded-xl shadow-md border border-gray-300">
+                    <div id="batchCutForm"
+                        class="hidden space-y-4 bg-white p-4 rounded-xl shadow-md border border-gray-300">
                         <h3 class="text-lg font-semibold mb-2 header-gradient">Batch Cut Entries</h3>
-                        <div class="text-xs text-gray-500 mb-2">Each entry has individual Full Pick / No Marks / System Cut options</div>
+                        <div class="text-xs text-gray-500 mb-2">Each entry has individual Full Pick / No Marks / System
+                            Cut options</div>
                         <div class="flex space-x-2 mb-2">
-                            <button
-                                id="batchUndoBtn"
+                            <button id="batchUndoBtn"
                                 class="flex-1 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:text-gray-600 disabled:opacity-60 text-white font-bold py-2 px-2 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-gray-600 focus:ring-opacity-50 disabled:transform-none text-xs disabled:cursor-not-allowed"
-                                disabled
-                                title="Undo last batch action (Ctrl+Shift+Z)"
-                            >
+                                disabled title="Undo last batch action (Ctrl+Shift+Z)">
                                 ↶ Undo Batch
                             </button>
-                            <button
-                                id="batchRedoBtn"
+                            <button id="batchRedoBtn"
                                 class="flex-1 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:text-gray-600 disabled:opacity-60 text-white font-bold py-2 px-2 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-gray-600 focus:ring-opacity-50 disabled:transform-none text-xs disabled:cursor-not-allowed"
-                                disabled
-                                title="Redo last undone batch action"
-                            >
+                                disabled title="Redo last undone batch action">
                                 ↷ Redo Batch
                             </button>
                         </div>
-                        <div id="batchCutList" class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 p-2 rounded"></div>
-                        <button id="addBatchCutBtn" class="mt-2 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 text-sm">Add Cut</button>
+                        <div id="batchCutList"
+                            class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 p-2 rounded"></div>
+                        <button id="addBatchCutBtn"
+                            class="mt-2 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 text-sm">Add
+                            Cut</button>
                     </div>
 
                     <!-- Quick Mark Calculators -->
                     <div class="space-y-4">
                         <div class="p-2 bg-green-50/70 border-l-4 border-green-500 rounded-lg shadow-md">
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" id="toggleQuickCalc" class="form-checkbox h-4 w-4 text-green-600" />
+                                <input type="checkbox" id="toggleQuickCalc"
+                                    class="form-checkbox h-4 w-4 text-green-600" />
                                 <span class="text-sm font-semibold header-gradient">Show Quick Mark Calculators</span>
                             </label>
                         </div>
@@ -397,27 +363,35 @@
                         <div id="quickCalcSection" class="hidden space-y-3">
                             <!-- Wire Mark Calculator (Difference between marks) -->
                             <div class="p-3 bg-white rounded-lg shadow-md border border-blue-200">
-                                <h4 class="text-sm font-semibold mb-2 header-gradient">📏 Quick Mark Difference Calculator</h4>
+                                <h4 class="text-sm font-semibold mb-2 header-gradient">📏 Quick Mark Difference
+                                    Calculator</h4>
                                 <div class="grid grid-cols-3 gap-2 mb-2">
                                     <div>
                                         <label class="text-xs font-medium header-gradient">Start Mark</label>
-                                        <input type="number" id="quickStartMark" placeholder="0" min="0" step="0.01" class="w-full p-1 text-sm border border-gray-300 rounded">
+                                        <input type="number" id="quickStartMark" placeholder="0" min="0" step="0.01"
+                                            class="w-full p-1 text-sm border border-gray-300 rounded">
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium header-gradient">End Mark</label>
-                                        <input type="number" id="quickEndMark" placeholder="0" min="0" step="0.01" class="w-full p-1 text-sm border border-gray-300 rounded">
+                                        <input type="number" id="quickEndMark" placeholder="0" min="0" step="0.01"
+                                            class="w-full p-1 text-sm border border-gray-300 rounded">
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium header-gradient">Unit</label>
-                                        <select id="quickMarkUnit" class="w-full p-1 text-sm border border-gray-300 rounded font-medium header-gradient">
+                                        <select id="quickMarkUnit"
+                                            class="w-full p-1 text-sm border border-gray-300 rounded font-medium header-gradient">
                                             <option value="m">Meters</option>
                                             <option value="ft">Feet</option>
                                         </select>
                                     </div>
                                 </div>
-                                <button id="calcMarkDiff" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded">Calculate Difference</button>
+                                <button id="calcMarkDiff"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded">Calculate
+                                    Difference</button>
                                 <p id="markDiffResult" class="text-sm font-bold text-blue-600 mt-1 hidden"></p>
-                                <a href="../wire-mark-calculator/wire-mark-calculator.html" target="_blank" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded mt-1 inline-block text-center">Go to Mark Calculator</a>
+                                <a href="../wire-mark-calculator/wire-mark-calculator.html" target="_blank"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded mt-1 inline-block text-center">Go
+                                    to Mark Calculator</a>
                             </div>
 
                             <!-- Stop Mark Calculator -->
@@ -426,15 +400,18 @@
                                 <div class="grid grid-cols-3 gap-2 mb-2">
                                     <div>
                                         <label class="text-xs font-medium header-gradient">Start Mark</label>
-                                        <input type="number" id="quickStopStart" placeholder="0" min="0" step="0.01" class="w-full p-1 text-sm border border-gray-300 rounded">
+                                        <input type="number" id="quickStopStart" placeholder="0" min="0" step="0.01"
+                                            class="w-full p-1 text-sm border border-gray-300 rounded">
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium header-gradient">Cut Length</label>
-                                        <input type="number" id="quickStopLength" placeholder="0" min="0" step="0.01" class="w-full p-1 text-sm border border-gray-300 rounded">
+                                        <input type="number" id="quickStopLength" placeholder="0" min="0" step="0.01"
+                                            class="w-full p-1 text-sm border border-gray-300 rounded">
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium header-gradient">Unit</label>
-                                        <select id="quickStopUnit" class="w-full p-1 text-sm border border-gray-300 rounded font-medium header-gradient">
+                                        <select id="quickStopUnit"
+                                            class="w-full p-1 text-sm border border-gray-300 rounded font-medium header-gradient">
                                             <option value="m">Meters</option>
                                             <option value="ft">Feet</option>
                                         </select>
@@ -444,9 +421,13 @@
                                     <input type="checkbox" id="quickCountDown" class="form-checkbox h-3 w-3">
                                     <span class="text-gray-600">Count Down</span>
                                 </div>
-                                <button id="calcStopMark" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-1 px-2 rounded mt-1">Calculate Stop Mark</button>
+                                <button id="calcStopMark"
+                                    class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-1 px-2 rounded mt-1">Calculate
+                                    Stop Mark</button>
                                 <p id="stopMarkResult" class="text-sm font-bold text-orange-600 mt-1 hidden"></p>
-                                <a href="../wire-stop-mark-calculator/wire-stop-mark-calculator.html" target="_blank" class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-1 px-2 rounded mt-1 inline-block text-center">Go to Stop Mark Calculator</a>
+                                <a href="../wire-stop-mark-calculator/wire-stop-mark-calculator.html" target="_blank"
+                                    class="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-1 px-2 rounded mt-1 inline-block text-center">Go
+                                    to Stop Mark Calculator</a>
                             </div>
                         </div>
                     </div>
@@ -456,7 +437,8 @@
                     <div class="space-y-4">
                         <div class="p-2 bg-blue-50/70 border-l-4 border-blue-500 rounded-lg shadow-md">
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" id="toggleDataControls" class="form-checkbox h-4 w-4 text-blue-600" />
+                                <input type="checkbox" id="toggleDataControls"
+                                    class="form-checkbox h-4 w-4 text-blue-600" />
                                 <span class="text-sm font-semibold header-gradient">Show Data Management Controls</span>
                             </label>
                         </div>
@@ -464,35 +446,36 @@
                         <div id="dataControlsSection" class="hidden">
                             <div class="flex justify-between items-center mt-4 flex-wrap gap-2">
                                 <div class="flex space-x-2 flex-wrap gap-2">
-                                    <button id="exportBtn" class="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                    <button id="exportBtn"
+                                        class="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
                                         Export All Cut Records to CSV
                                     </button>
-                                    <button id="exportDeltaBtn" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                                    <button id="exportDeltaBtn"
+                                        class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
                                         Export New Records to CSV
                                     </button>
 
 
-                                    <button id="exportJSONBtn" class="p-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm">
+                                    <button id="exportJSONBtn"
+                                        class="p-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm">
                                         JSON Backup Export
                                     </button>
-                                    <button id="importJSONBtn" class="p-2 bg-lime-600 text-white rounded hover:bg-lime-700 text-sm">
+                                    <button id="importJSONBtn"
+                                        class="p-2 bg-lime-600 text-white rounded hover:bg-lime-700 text-sm">
                                         JSON Backup Import
                                     </button>
 
-                                    <button id="printBtn" class="p-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
+                                    <button id="printBtn"
+                                        class="p-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
                                         Print Cut Records
                                     </button>
 
-                                    <input
-                                        id="jsonFileInput"
-                                        type="file"
-                                        accept=".json"
-                                        style="display: none"
-                                    />
+                                    <input id="jsonFileInput" type="file" accept=".json" style="display: none" />
 
                                 </div>
                                 <div>
-                                    <button id="clearAllBtn" class="p-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+                                    <button id="clearAllBtn"
+                                        class="p-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
                                         Clear All Records
                                     </button>
                                 </div>
@@ -503,30 +486,24 @@
                     <!-- Record Button -->
                     <div class="pt-2 px-2">
                         <div class="flex space-x-2">
-                            <button
-                                id="undoBtn"
+                            <button id="undoBtn"
                                 class="flex-1 relative bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:text-gray-600 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-gray-600 focus:ring-opacity-50 disabled:transform-none text-sm disabled:cursor-not-allowed"
-                                disabled
-                                title="Undo last action (Ctrl+Z) - Available after recording cuts"
-                            >
+                                disabled title="Undo last action (Ctrl+Z) - Available after recording cuts">
                                 <span class="flex items-center justify-center space-x-1">
                                     <span class="hidden sm:inline">↶ </span>
                                     <span>Undo</span>
                                 </span>
-                                <span class="absolute -top-1 -right-1 bg-gray-700 text-white text-xs px-1 rounded-full disabled:hidden" id="undoAvailableBadge">0</span>
+                                <span
+                                    class="absolute -top-1 -right-1 bg-gray-700 text-white text-xs px-1 rounded-full disabled:hidden"
+                                    id="undoAvailableBadge">0</span>
                             </button>
-                            <button
-                                id="recordBtn"
-                                class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-700 focus:ring-opacity-50 text-sm"
-                            >
+                            <button id="recordBtn"
+                                class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-700 focus:ring-opacity-50 text-sm">
                                 RECORD CUT
                             </button>
-                            <button
-                                id="redoBtn"
+                            <button id="redoBtn"
                                 class="flex-1 relative bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:text-gray-600 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-gray-600 focus:ring-opacity-50 disabled:transform-none text-sm disabled:cursor-not-allowed"
-                                disabled
-                                title="Redo last undone action (Ctrl+Y)"
-                            >
+                                disabled title="Redo last undone action (Ctrl+Y)">
                                 <span class="flex items-center justify-center space-x-1">
                                     <span class="hidden sm:inline">↷ </span>
                                     <span>Redo</span>
@@ -536,13 +513,15 @@
                     </div>
 
                     <!-- Error Message -->
-                    <div id="errorBox" class="mt-3 p-2 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-md hidden">
+                    <div id="errorBox"
+                        class="mt-3 p-2 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-md hidden">
                         <p class="font-medium text-sm">Input Error:</p>
                         <p id="errorMessage" class="text-xs"></p>
                     </div>
 
                     <!-- Cut Records History -->
-                    <div class="p-4 bg-gray-50 border-l-8 border-blue-700 rounded-xl shadow-xl text-center flex-grow overflow-auto" style="width: 100%; max-height: 32rem;">
+                    <div class="p-4 bg-gray-50 border-l-8 border-blue-700 rounded-xl shadow-xl text-center flex-grow overflow-auto"
+                        style="width: 100%; max-height: 32rem;">
                         <!-- Records Counter -->
                         <div class="mb-2 p-2 bg-blue-100 rounded-lg">
                             <p class="text-xs font-semibold header-gradient">
@@ -569,20 +548,22 @@
         <div class="mt-auto pt-4 border-t border-blue-200 hidden sm:block">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex space-x-3">
-                    <a href="../index/index.html" class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠 Home</a>
-                    <a
-                        id="usefulBtnInside"
-                        href="../useful-tool/useful-tool.html"
-                        class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline"
-                    >
+                    <a href="../index/index.html"
+                        class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠
+                        Home</a>
+                    <a id="usefulBtnInside" href="../useful-tool/useful-tool.html"
+                        class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">
                         Is This Tool Useful?
                     </a>
-                    <a href="../backup/backup.html" class="px-3 py-1.5 bg-green-500 border-2 border-green-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-green-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 text-xs no-underline">💾 Backup Guide</a>
-                    <a href="../cutting-reports/cutting-reports.html" class="px-3 py-1.5 bg-purple-600 border-2 border-purple-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-purple-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-purple-600 focus:ring-opacity-50 text-xs no-underline">
+                    <a href="../backup/backup.html"
+                        class="px-3 py-1.5 bg-green-500 border-2 border-green-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-green-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 text-xs no-underline">💾
+                        Backup Guide</a>
+                    <a href="../cutting-reports/cutting-reports.html"
+                        class="px-3 py-1.5 bg-purple-600 border-2 border-purple-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-purple-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-purple-600 focus:ring-opacity-50 text-xs no-underline">
                         📈 Reports
                     </a>
                 </div>
-                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.2</p>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.3</p>
             </div>
             <p class="font-medium text-[#0058B3] text-center select-none mb-1">
                 Made With ❤️ By: Lucas and Cline 🤖
@@ -596,24 +577,30 @@
     <!-- Custom Modal for Alerts/Confirmations -->
     <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="modalBackdrop"></div>
-        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="modalContent">
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="modalContent">
             <div class="flex items-center justify-center mb-4">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eecol-logo-tilt">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
                     <defs>
                         <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#004a99;stop-opacity:1" />
                         </linearGradient>
                     </defs>
-                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2"/>
-                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)"/>
-                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
                 </svg>
             </div>
             <h3 class="text-lg font-bold text-center mb-3 header-gradient" id="modalTitle">Notification</h3>
-            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...</div>
+            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...
+            </div>
             <div class="flex justify-center space-x-3" id="modalButtons">
                 <!-- Buttons will be dynamically added here -->
             </div>
@@ -623,20 +610,26 @@
     <!-- Import Calculator Modal -->
     <div id="importCalculatorModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="importModalBackdrop"></div>
-        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="importModalContent">
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="importModalContent">
             <div class="flex items-center justify-center mb-4">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eecol-logo-tilt">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
                     <defs>
                         <linearGradient id="importModalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#004a99;stop-opacity:1" />
                         </linearGradient>
                     </defs>
-                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#importModalGradient)" stroke-width="2"/>
-                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#importModalGradient)"/>
-                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#importModalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#importModalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#importModalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#importModalGradient)"
+                        stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#importModalGradient)" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#importModalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#importModalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#importModalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
                 </svg>
             </div>
             <h3 class="text-lg font-bold text-center mb-4 header-gradient">📥 Import Marks from Calculator</h3>
@@ -647,10 +640,12 @@
                     <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
                     Mark Calculator History
                 </h4>
-                <select id="markCalculatorDropdown" class="w-full p-2 border border-gray-300 rounded-lg text-sm mb-3 bg-white">
+                <select id="markCalculatorDropdown"
+                    class="w-full p-2 border border-gray-300 rounded-lg text-sm mb-3 bg-white">
                     <option value="">Select a saved calculation...</option>
                 </select>
-                <button id="importFromMarkCalculatorBtn" class="w-full px-3 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
+                <button id="importFromMarkCalculatorBtn"
+                    class="w-full px-3 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
                     📥 Import from Mark Calculator
                 </button>
             </div>
@@ -661,17 +656,20 @@
                     <span class="w-3 h-3 bg-orange-500 rounded-full mr-2"></span>
                     Stop Calculator History
                 </h4>
-                <select id="stopCalculatorDropdown" class="w-full p-2 border border-gray-300 rounded-lg text-sm mb-3 bg-white">
+                <select id="stopCalculatorDropdown"
+                    class="w-full p-2 border border-gray-300 rounded-lg text-sm mb-3 bg-white">
                     <option value="">Select a saved calculation...</option>
                 </select>
-                <button id="importFromStopCalculatorBtn" class="w-full px-3 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
+                <button id="importFromStopCalculatorBtn"
+                    class="w-full px-3 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
                     📥 Import from Stop Calculator
                 </button>
             </div>
 
             <!-- Close Button -->
             <div class="flex justify-center">
-                <button id="closeImportModalBtn" class="px-4 py-2 bg-gray-500 text-white text-sm font-bold rounded-lg hover:bg-gray-600 transition duration-200">
+                <button id="closeImportModalBtn"
+                    class="px-4 py-2 bg-gray-500 text-white text-sm font-bold rounded-lg hover:bg-gray-600 transition duration-200">
                     Close
                 </button>
             </div>
@@ -681,20 +679,25 @@
     <!-- Import Reel Modal -->
     <div id="importReelModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="reelModalBackdrop"></div>
-        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out" id="reelModalContent">
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="reelModalContent">
             <div class="flex items-center justify-center mb-4">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eecol-logo-tilt">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
                     <defs>
                         <linearGradient id="reelModalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#004a99;stop-opacity:1" />
                         </linearGradient>
                     </defs>
-                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#reelModalGradient)" stroke-width="2"/>
-                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#reelModalGradient)"/>
-                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#reelModalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#reelModalGradient)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#reelModalGradient)" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#reelModalGradient)" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#reelModalGradient)" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#reelModalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#reelModalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#reelModalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
                 </svg>
             </div>
             <h3 class="text-lg font-bold text-center mb-4 header-gradient">📥 Import Flange Size</h3>
@@ -705,17 +708,20 @@
                     <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
                     Saved Flange Diameters
                 </h4>
-                <select id="flangeSizeDropdown" class="w-full p-2 border border-gray-300 rounded-lg text-sm mb-3 bg-white">
+                <select id="flangeSizeDropdown"
+                    class="w-full p-2 border border-gray-300 rounded-lg text-sm mb-3 bg-white">
                     <option value="">Select a saved flange size...</option>
                 </select>
-                <button id="importFlangeBtn" class="w-full px-3 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
+                <button id="importFlangeBtn"
+                    class="w-full px-3 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200">
                     📥 Import Selected Flange Size
                 </button>
             </div>
 
             <!-- Close Button -->
             <div class="flex justify-center">
-                <button id="closeReelModalBtn" class="px-4 py-2 bg-gray-500 text-white text-sm font-bold rounded-lg hover:bg-gray-600 transition duration-200">
+                <button id="closeReelModalBtn"
+                    class="px-4 py-2 bg-gray-500 text-white text-sm font-bold rounded-lg hover:bg-gray-600 transition duration-200">
                     Close
                 </button>
             </div>
@@ -724,4 +730,5 @@
 
     <script src="../../assets/js/cutting-records.js"></script>
 </body>
+
 </html>

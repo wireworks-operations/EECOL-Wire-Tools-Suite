@@ -2319,7 +2319,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
             { text: '📈 Reports', href: '../cutting-reports/cutting-reports.html', class: 'bg-purple-600 hover:bg-purple-700' }
         ],
-        version: 'v0.8.0.2',
+        version: 'v0.8.0.3',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Wire Cut Records'
     });

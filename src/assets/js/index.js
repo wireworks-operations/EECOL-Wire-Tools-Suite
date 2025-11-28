@@ -1,5 +1,5 @@
 // Maintenance notification logic
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const notification = document.getElementById('maintenance-notification');
     const statusIcon = document.getElementById('status-icon');
     const notificationText = document.getElementById('notification-text');
@@ -13,170 +13,67 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await window.eecolDB.get('maintenanceLogs', 'daily_check');
 
                 if (!data || !data.completedAt) {
-                    // No data or not completed, show based on time
-                    const now = new Date();
-                    const currentHour = now.getHours();
-                    if (currentHour < 13) {
-                        // Yellow: before 1 PM
-                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-                    } else {
-                        // Red: after 1 PM
-                        showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-                    }
+                    // No data or not completed - Action Required (Red)
+                    showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
                     return;
                 }
 
-                // Get completion date and time
+                // Get completion date
                 const completedAt = new Date(data.completedAt);
                 const completionDate = completedAt.toISOString().split('T')[0];
-                const completionHour = completedAt.getHours();
                 const now = new Date();
                 const currentDate = now.toISOString().split('T')[0];
-                const currentHour = now.getHours();
 
                 if (completionDate === currentDate) {
-                    // Completed today
-                    if (completionHour < 13) {
-                        // Green: completed before 1 PM
-                        showNotification('✅', 'bg-green-100 border-green-500', `Last completed: ${formatDate(completedAt)} (completed before 1 PM)`);
-                    } else {
-                        // Yellow: completed after 1 PM
-                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} (completed after 1 PM deadline)`);
-                    }
+                    // Completed today - Good (Green)
+                    showNotification('✅', 'bg-green-100 border-green-500', `Daily Maintenance Completed: ${formatDate(completedAt)}`);
                 } else {
-                    // Not completed today
-                    if (currentHour < 13) {
-                        // Yellow: still time today
-                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} - Complete today by 1 PM PST`);
-                    } else {
-                        // Red: overdue
-                        showNotification('❌', 'bg-red-100 border-red-500', `Last completed: ${formatDate(completedAt)} - Overdue: Complete daily maintenance checklist`);
-                    }
+                    // Not completed today - Action Required (Red)
+                    showNotification('❌', 'bg-red-100 border-red-500', `Action Required: Complete daily maintenance checklist (Last: ${formatDate(completedAt)})`);
                 }
             } catch (error) {
                 console.error('Error reading from IndexedDB:', error);
                 // Fallback to old localStorage if new DB fails
-                const maintenanceData = localStorage.getItem('machineMaintenanceChecklist');
-                if (!maintenanceData) {
-                    // No data, show yellow/red based on time
-                    const now = new Date();
-                    const currentHour = now.getHours();
-                    if (currentHour < 13) {
-                        // Yellow: before 1 PM
-                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-                    } else {
-                        // Red: after 1 PM
-                        showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-                    }
-                    return;
-                }
-
-                try {
-                    const data = JSON.parse(maintenanceData);
-                    if (!data.completedAt) {
-                        // Data but not completed, same as no data
-                        const now = new Date();
-                        const currentHour = now.getHours();
-                        if (currentHour < 13) {
-                            showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-                        } else {
-                            showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-                        }
-                        return;
-                    }
-
-                    // Get completion date and time
-                    const completedAt = new Date(data.completedAt);
-                    const completionDate = completedAt.toISOString().split('T')[0];
-                    const completionHour = completedAt.getHours();
-                    const now = new Date();
-                    const currentDate = now.toISOString().split('T')[0];
-                    const currentHour = now.getHours();
-
-                    if (completionDate === currentDate) {
-                        // Completed today
-                        if (completionHour < 13) {
-                            // Green: completed before 1 PM
-                            showNotification('✅', 'bg-green-100 border-green-500', `Last completed: ${formatDate(completedAt)} (completed before 1 PM)`);
-                        } else {
-                            // Yellow: completed after 1 PM
-                            showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} (completed after 1 PM deadline)`);
-                        }
-                    } else {
-                        // Not completed today
-                        if (currentHour < 13) {
-                            // Yellow: still time today
-                            showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} - Complete today by 1 PM PST`);
-                        } else {
-                            // Red: overdue
-                            showNotification('❌', 'bg-red-100 border-red-500', `Last completed: ${formatDate(completedAt)} - Overdue: Complete daily maintenance checklist`);
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error parsing maintenance data:', e);
-                }
+                checkLocalStorageFallback();
             }
         } else {
             // Fallback to localStorage if database not available
-            const maintenanceData = localStorage.getItem('machineMaintenanceChecklist');
-            if (!maintenanceData) {
-                // No data, show yellow/red based on time
-                const now = new Date();
-                const currentHour = now.getHours();
-                if (currentHour < 13) {
-                    // Yellow: before 1 PM
-                    showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-                } else {
-                    // Red: after 1 PM
-                    showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-                }
+            checkLocalStorageFallback();
+        }
+    }
+
+    function checkLocalStorageFallback() {
+        const maintenanceData = localStorage.getItem('machineMaintenanceChecklist');
+        if (!maintenanceData) {
+            // No data - Action Required (Red)
+            showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
+            return;
+        }
+
+        try {
+            const data = JSON.parse(maintenanceData);
+            if (!data.completedAt) {
+                // Data but not completed - Action Required (Red)
+                showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
                 return;
             }
 
-            try {
-                const data = JSON.parse(maintenanceData);
-                if (!data.completedAt) {
-                    // Data but not completed, same as no data
-                    const now = new Date();
-                    const currentHour = now.getHours();
-                    if (currentHour < 13) {
-                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', 'Complete daily maintenance checklist by 1 PM PST');
-                    } else {
-                        showNotification('❌', 'bg-red-100 border-red-500', 'Overdue: Complete daily maintenance checklist');
-                    }
-                    return;
-                }
+            // Get completion date
+            const completedAt = new Date(data.completedAt);
+            const completionDate = completedAt.toISOString().split('T')[0];
+            const now = new Date();
+            const currentDate = now.toISOString().split('T')[0];
 
-                // Get completion date and time
-                const completedAt = new Date(data.completedAt);
-                const completionDate = completedAt.toISOString().split('T')[0];
-                const completionHour = completedAt.getHours();
-                const now = new Date();
-                const currentDate = now.toISOString().split('T')[0];
-                const currentHour = now.getHours();
-
-                if (completionDate === currentDate) {
-                    // Completed today
-                    if (completionHour < 13) {
-                        // Green: completed before 1 PM
-                        showNotification('✅', 'bg-green-100 border-green-500', `Last completed: ${formatDate(completedAt)} (completed before 1 PM)`);
-                    } else {
-                        // Yellow: completed after 1 PM
-                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} (completed after 1 PM deadline)`);
-                    }
-                } else {
-                    // Not completed today
-                    if (currentHour < 13) {
-                        // Yellow: still time today
-                        showNotification('⚠️', 'bg-yellow-100 border-yellow-500', `Last completed: ${formatDate(completedAt)} - Complete today by 1 PM PST`);
-                    } else {
-                        // Red: overdue
-                        showNotification('❌', 'bg-red-100 border-red-500', `Last completed: ${formatDate(completedAt)} - Overdue: Complete daily maintenance checklist`);
-                    }
-                }
-            } catch (e) {
-                console.error('Error parsing maintenance data:', e);
+            if (completionDate === currentDate) {
+                // Completed today - Good (Green)
+                showNotification('✅', 'bg-green-100 border-green-500', `Daily Maintenance Completed: ${formatDate(completedAt)}`);
+            } else {
+                // Not completed today - Action Required (Red)
+                showNotification('❌', 'bg-red-100 border-red-500', `Action Required: Complete daily maintenance checklist (Last: ${formatDate(completedAt)})`);
             }
+        } catch (e) {
+            console.error('Error parsing maintenance data:', e);
+            showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
         }
     }
 
@@ -195,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateMaintenanceNotification();
 
     // Refresh when page becomes visible (user navigates back)
-    document.addEventListener('visibilitychange', function() {
+    document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
             updateMaintenanceNotification();
         }
@@ -205,22 +102,23 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.2',
+        version: 'v0.8.0.3',
         menuItems: [
             { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '🔒 Privacy Policy', href: '../privacy/privacy.html', class: 'bg-purple-500 hover:bg-purple-600' },
             { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
             { text: '🛠️ Maintenance', href: '../maintenance/maintenance.html', class: 'bg-purple-600 hover:bg-purple-700' },
+            { text: '🗃️ Database Config', href: '../database-config/database-config.html', class: 'bg-cyan-600 hover:bg-cyan-700' },
             { text: '📋 Changelog', href: '../changelog/changelog.html', class: 'bg-amber-500 hover:bg-amber-600' }
         ],
-        version: 'v0.8.0.2',
+        version: 'v0.8.0.3',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Wire Tools'
     });
 }
 
-// IndexedDB and P2P Sync initialization
-document.addEventListener('DOMContentLoaded', async function() {
+// IndexedDB initialization
+document.addEventListener('DOMContentLoaded', async function () {
     try {
         // Initialize IndexedDB (new system) - using singleton pattern
         if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
@@ -232,8 +130,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             // Run migration from localStorage if needed
             const hasExistingData = localStorage.getItem('cutRecords') ||
-                                   localStorage.getItem('inventoryItems') ||
-                                   localStorage.getItem('machineMaintenanceChecklist');
+                localStorage.getItem('inventoryItems') ||
+                localStorage.getItem('machineMaintenanceChecklist');
 
             if (hasExistingData) {
                 console.log('Existing localStorage data detected. Starting migration...');

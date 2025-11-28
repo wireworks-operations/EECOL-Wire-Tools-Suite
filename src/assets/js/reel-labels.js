@@ -163,7 +163,7 @@ if (typeof initMobileMenu === 'function') {
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '📱 Shipping Manifest', href: '../shipping-manifest/shipping-manifest.html', class: 'bg-green-600 hover:bg-green-700' }
         ],
-        version: 'v0.8.0.2',
+        version: 'v0.8.0.3',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Reel Labels'
     });

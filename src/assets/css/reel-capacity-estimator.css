@@ -73,6 +73,16 @@
             fill: var(--eecol-orange) !important;
         }
 
+        /* Dark Mode Support for SVG Diagram */
+        .dark-mode .svg-dimension-line line {
+            stroke: #ffffff;
+        }
+
+        .dark-mode .svg-dimension-line text {
+            fill: #ffffff;
+            stroke: none;
+        }
+
         /* Enhanced mobile responsive improvements */
         @media (max-width: 640px) {
             /* Touch-friendly input sizing */

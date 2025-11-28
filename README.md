@@ -1,4 +1,4 @@
-# EECOL Wire Tools Suite v0.8.0.2
+# EECOL Wire Tools Suite v0.8.0.3
 
 ## 🎯 **Overview**
 
@@ -10,6 +10,7 @@ A comprehensive Progressive Web Application (PWA) for industrial wire processing
 - **Professional Code**: Clean, production-ready with proper error handling
 - **Mobile Responsive**: Optimized for all screen sizes and devices
 - **PWA Installable**: Can be installed as a native app on desktop and mobile
+- **Premium UI Experience**: Dark mode support and polished, boxed layouts for calculation results
 
 ### **Architecture**
 - **IndexedDB Backend**: High-performance local database for all data persistence
@@ -132,6 +133,7 @@ npm run type-check
 - ⚠️ **Live Statistics**: Has localStorage fallback crash in some scenarios
 
 ### **Recent Updates & Roadmap**
+- **v0.8.0.3**: Dark mode feature with smooth theme transitions and Premium Calculation Results Layouts
 - **v0.8.0.2**: Database configuration page remake with modern design patterns
 - **Architectural Alignment**: Complete page reconstruction following project standards
 - **UI Standardization**: Integrated standard footer, navigation buttons, and shared stylesheet
@@ -140,12 +142,11 @@ npm run type-check
 - **Upcoming**: Saved configuration management page, multi-cut planner rebuild, v2.0.0 enterprise features
 
 ### **Version History**
-- **v0.8.0.2** (Current): Database configuration page remake with modern design patterns and UI standardization
+- **v0.8.0.3** (Current): Dark mode feature with smooth theme transitions, full application coverage, and premium boxed layouts for calculation results
+- **v0.8.0.2**: Database configuration page remake with modern design patterns and UI standardization
 - **v0.8.0.1**: Code modernization, professional UI, comprehensive tool suite
 - **v0.8.0.0**: Complete backend overhaul with IndexedDB and PWA support
 - **v0.7.x**: Initial IndexedDB implementation and calculator tools suite
-
-For detailed roadmap and planned features, see [ai-context/memory-bank/roadmap.md](ai-context/memory-bank/roadmap.md)
 
 ---
 
