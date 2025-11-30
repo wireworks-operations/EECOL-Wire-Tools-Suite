@@ -1,4 +1,4 @@
-/node_modules
-/cline
-/wire-refrences
+.clinerules
+node_modules
+wire-refrences
 server.log
