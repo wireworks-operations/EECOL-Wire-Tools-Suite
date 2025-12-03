@@ -599,6 +599,9 @@ function generateShippingManifestHazardDocumentation() {
 
 // Print machine maintenance checklist
 function printMachineMaintenanceChecklist() {
+    // DEBUG: Verify function execution
+    // alert("DEBUG: Loading Main Checklist Landscape Layout v1");
+
     // Collect data from current form (or loaded historical data)
     const inspectedBy = document.getElementById('globalInspectedBy').value || 'Not specified';
     const inspectionDate = document.getElementById('globalInspectionDate').value || new Date().toLocaleDateString();
@@ -616,18 +619,18 @@ function printMachineMaintenanceChecklist() {
 
     const machines = ['Manual Hand Coiler', 'Green Electric Hand Coiler', 'Blue Electric Hand Coiler', 'Telus Machine', 'Big Blue Machine #1', 'Big Blue Machine #2'];
 
-    checklistHTML += '<table style="width: 100%; border-collapse: collapse; font-size: 5px; margin-top: 10px;">';
+    checklistHTML += '<table>';
     checklistHTML += '<thead><tr>';
-    checklistHTML += '<th style="border: 1px solid #000; padding: 1px; font-weight: bold;">Item</th>';
+    checklistHTML += '<th>MAINTENANCE ITEM</th>';
 
     machines.forEach(machine => {
-        checklistHTML += `<th style="border: 1px solid #000; padding: 1px; font-weight: bold; font-size: 4px;">${machine}<br><span style="font-size: 3px;">(OK/NG)</span></th>`;
+        checklistHTML += `<th>${machine}</th>`;
     });
 
     checklistHTML += '</tr></thead><tbody>';
 
     maintenanceItems.forEach((item, itemIndex) => {
-        checklistHTML += `<tr><td style="border: 1px solid #000; padding: 1px; font-weight: bold; font-size: 4px;">${item}</td>`;
+        checklistHTML += `<tr><td>${item}</td>`;
 
         for (let machineIndex = 0; machineIndex < machines.length; machineIndex++) {
             // Check if checkbox exists for this machine/item combination
@@ -635,10 +638,18 @@ function printMachineMaintenanceChecklist() {
             const notOkCheckbox = document.querySelector(`.not-ok-checkbox[data-machine="${machineIndex + 1}"][data-item="${itemIndex}"]`);
 
             if (!okCheckbox || !notOkCheckbox) {
-                checklistHTML += '<td style="border: 1px solid #000; padding: 1px; text-align: center; font-size: 3px;">-</td>';
+                checklistHTML += '<td style="text-align: center;">-</td>';
             } else {
-                const status = okCheckbox.checked ? 'OK' : (notOkCheckbox.checked ? 'NG' : '');
-                checklistHTML += `<td style="border: 1px solid #000; padding: 1px; text-align: center; font-weight: bold; font-size: 4px; color: ${okCheckbox.checked ? '#10b981' : (notOkCheckbox.checked ? '#ef4444' : '#000')};">${status}</td>`;
+                let status = '';
+                let statusClass = '';
+                if (okCheckbox.checked) {
+                    status = '✓';
+                    statusClass = 'status-ok';
+                } else if (notOkCheckbox.checked) {
+                    status = 'X';
+                    statusClass = 'status-ng';
+                }
+                checklistHTML += `<td style="text-align: center;"><span class="${statusClass}">${status}</span></td>`;
             }
         }
 
@@ -655,85 +666,194 @@ function printMachineMaintenanceChecklist() {
             <meta charset="UTF-8">
             <title>EECOL Machine Maintenance Checklist</title>
             <style>
+                @page {
+                    size: landscape;
+                    margin: 10mm;
+                }
                 body {
                     font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
-                    padding: 10px;
-                    color: #0058B3;
-                    line-height: 1.2;
-                    font-size: 8px;
-                }
-                .header {
-                    text-align: center;
-                    margin-bottom: 10px;
-                    border-bottom: 2px solid #0058B3;
-                    padding-bottom: 5px;
-                }
-                .title {
-                    font-size: 14px;
-                    font-weight: bold;
+                    color: #333;
+                    line-height: 1.4;
+                    font-size: 11px; /* Slightly smaller for matrix */
                     margin: 0;
+                    padding: 0;
                 }
-                .subtitle {
-                    font-size: 10px;
-                    color: #666;
-                    margin: 2px 0;
+
+                /* ISO Header Style */
+                .iso-header {
+                    display: flex;
+                    border: 2px solid #000;
+                    margin-bottom: 20px;
                 }
-                .inspection-info {
-                    margin: 5px 0;
-                    font-size: 7px;
+                .iso-header > div {
+                    padding: 10px;
+                    border-right: 1px solid #000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 }
-                .comments {
-                    margin: 5px 0;
-                    font-size: 6px;
+                .iso-header > div:last-child {
+                    border-right: none;
                 }
-                .comments label {
+                .logo-box {
+                    width: 20%;
                     font-weight: bold;
-                }
-                .branding {
+                    font-size: 16px;
+                    color: #0058B3;
+                    background: #f0f0f0;
                     text-align: center;
-                    margin-top: 20px;
-                    font-size: 6px;
-                    color: #999;
-                    font-style: italic;
                 }
+                .title-box {
+                    width: 50%;
+                    font-weight: bold;
+                    font-size: 18px;
+                    text-transform: uppercase;
+                    flex-direction: column;
+                    text-align: center;
+                }
+                .title-box .sub {
+                    font-size: 10px;
+                    font-weight: normal;
+                    margin-top: 5px;
+                    color: #666;
+                }
+                .meta-box {
+                    width: 30%;
+                    font-size: 11px;
+                    flex-direction: column;
+                    align-items: flex-start !important;
+                    padding-left: 15px !important;
+                }
+
+                /* Professional Table */
                 table {
-                    font-size: 5px !important;
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 11px;
+                    margin-bottom: 20px;
                 }
-                th, td {
-                    border: 1px solid #000 !important;
-                    padding: 1px !important;
+                th {
+                    background-color: #0058B3 !important;
+                    color: white !important;
+                    font-weight: bold;
+                    text-align: center;
+                    padding: 8px 4px;
+                    border: 1px solid #000;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                    vertical-align: middle;
                 }
+                th:first-child {
+                    text-align: left;
+                    width: 20%;
+                }
+                td {
+                    border: 1px solid #ccc;
+                    padding: 6px 4px;
+                    color: #333;
+                    vertical-align: middle;
+                }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9 !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                tr:nth-child(odd) {
+                    background-color: #fff !important;
+                }
+
+                /* Status Icons */
+                .status-ok {
+                    color: #10b981;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+                .status-ng {
+                    color: #ef4444;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                /* Comments Section */
+                .comments-box {
+                    border: 1px solid #ddd;
+                    background: #fcfcfc;
+                    padding: 10px;
+                    margin-bottom: 20px;
+                    font-size: 11px;
+                    min-height: 40px;
+                }
+                .comments-label {
+                    font-weight: bold;
+                    font-size: 11px;
+                    margin-bottom: 5px;
+                    color: #555;
+                    text-transform: uppercase;
+                }
+
+                /* Signature Footer */
+                .signature-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 30px;
+                    padding-top: 10px;
+                    border-top: 2px solid #000;
+                    page-break-inside: avoid;
+                }
+                .sig-block {
+                    width: 45%;
+                }
+                .sig-line {
+                    border-bottom: 1px solid #000;
+                    height: 30px;
+                    margin-bottom: 5px;
+                }
+                .sig-label {
+                    font-size: 10px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+
                 @media print {
-                    body { margin: 0; padding: 5px; }
+                    body { margin: 0; padding: 0; }
                     .no-print { display: none !important; }
                     button { display: none; }
                 }
             </style>
         </head>
         <body>
-            <div class="header">
-                <div class="title">EECOL Machine Maintenance Checklist</div>
-                <div class="subtitle">Daily Equipment Inspection & Maintenance Records</div>
-            </div>
-
-            <div class="inspection-info">
-                <strong>Inspected By:</strong> ${inspectedBy}<br>
-                <strong>Date:</strong> ${inspectionDate}
+            <div class="iso-header">
+                <div class="logo-box">EECOL<br>WIRE TOOLS</div>
+                <div class="title-box">
+                    MACHINE MAINTENANCE RECORD
+                    <div class="sub">SITE-WIDE INSPECTION LOG</div>
+                </div>
+                <div class="meta-box">
+                    <div><strong>Date:</strong> ${inspectionDate}</div>
+                    <div><strong>Inspector:</strong> ${inspectedBy}</div>
+                    <div><strong>Scope:</strong> All Machines</div>
+                </div>
             </div>
 
             ${checklistHTML}
 
-            <div class="comments">
-                <label>Comments:</label><br>
-                ${comments.replace(/\n/g, '<br>') || 'No comments'}
+            <div class="comments-label">ADDITIONAL COMMENTS / NOTES:</div>
+            <div class="comments-box">
+                ${comments.replace(/\n/g, '<br>') || 'No additional comments recorded.'}
             </div>
 
-            <div class="branding">
-                EECOL Wire Tools Suite - Enterprise Edition<br>
-                Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+            <div class="signature-footer">
+                <div class="sig-block">
+                    <div class="sig-line"></div>
+                    <div class="sig-label">Inspector Signature</div>
+                </div>
+                <div class="sig-block">
+                    <div class="sig-line"></div>
+                    <div class="sig-label">Supervisor Review</div>
+                </div>
             </div>
 
-            <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 5px 10px; background: #0058B3; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Print</button>
+            <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🖨️ PRINT RECORD</button>
         </body>
         </html>
     `);
@@ -758,6 +878,9 @@ function printMachineMaintenanceChecklistMultiPage() {
         'Tail Ends Trimmed Or Tacked', 'Top Wire Spooled From Bottom', 'PPE Ready & Available'
     ];
 
+    // DEBUG: Verify function execution
+    // alert("DEBUG: Loading New Print Layout v3");
+
     let printContent = `
         <!DOCTYPE html>
         <html lang="en">
@@ -765,98 +888,190 @@ function printMachineMaintenanceChecklistMultiPage() {
             <meta charset="UTF-8">
             <title>EECOL Multi-Machine Maintenance Checklist</title>
             <style>
+                @page {
+                    size: A4;
+                    margin: 10mm;
+                }
                 body {
                     font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
-                    padding: 10px;
-                    color: #0058B3;
-                    line-height: 1.2;
-                    font-size: 8px;
-                }
-                .header {
-                    text-align: center;
-                    margin-bottom: 10px;
-                    border-bottom: 2px solid #0058B3;
-                    padding-bottom: 5px;
-                    page-break-after: avoid;
-                }
-                .title {
-                    font-size: 14px;
-                    font-weight: bold;
+                    color: #333;
+                    line-height: 1.4;
+                    font-size: 12px;
                     margin: 0;
+                    padding: 0;
                 }
-                .subtitle {
+                
+                /* ISO Header Style */
+                .iso-header {
+                    display: flex;
+                    border: 2px solid #000;
+                    margin-bottom: 20px;
+                }
+                .iso-header > div {
+                    padding: 10px;
+                    border-right: 1px solid #000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .iso-header > div:last-child {
+                    border-right: none;
+                }
+                .logo-box {
+                    width: 20%;
+                    font-weight: bold;
+                    font-size: 16px;
+                    color: #0058B3;
+                    background: #f0f0f0;
+                    text-align: center;
+                }
+                .title-box {
+                    width: 50%;
+                    font-weight: bold;
+                    font-size: 18px;
+                    text-transform: uppercase;
+                    flex-direction: column;
+                    text-align: center;
+                }
+                .title-box .sub {
                     font-size: 10px;
+                    font-weight: normal;
+                    margin-top: 5px;
                     color: #666;
-                    margin: 2px 0;
                 }
+                .meta-box {
+                    width: 30%;
+                    font-size: 11px;
+                    flex-direction: column;
+                    align-items: flex-start !important;
+                    padding-left: 15px !important;
+                }
+
+                /* Machine Section */
                 .machine-section {
-                    margin-bottom: 15px;
+                    margin-bottom: 30px;
                     page-break-inside: avoid;
+                    border: 1px solid #ccc;
+                    padding: 15px;
+                    border-radius: 4px;
                 }
                 .machine-section:not(:first-child) {
                     page-break-before: always;
                     break-before: page;
                 }
-                .machine-header {
+                .machine-title {
+                    background: #0058B3;
+                    color: white;
+                    padding: 8px 15px;
                     font-weight: bold;
-                    font-size: 10px;
-                    color: #0058B3;
-                    margin-bottom: 5px;
-                    border-bottom: 1px solid #ddd;
-                    padding-bottom: 2px;
+                    font-size: 16px;
+                    margin: -15px -15px 15px -15px; /* Flush with container */
+                    border-radius: 3px 3px 0 0;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
                 }
-                .inspection-info {
-                    margin: 3px 0;
-                    font-size: 6px;
-                }
-                .comments {
-                    margin: 3px 0;
-                    font-size: 5px;
-                }
-                .comments label {
-                    font-weight: bold;
-                }
+
+                /* Professional Table */
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    font-size: 4px;
-                    margin-bottom: 5px;
-                }
-                th, td {
-                    border: 1px solid #000;
-                    padding: 1px;
+                    font-size: 12px;
+                    margin-bottom: 20px;
                 }
                 th {
+                    background-color: #0058B3 !important;
+                    color: white !important;
                     font-weight: bold;
-                    font-size: 5px;
+                    text-align: left;
+                    padding: 8px;
+                    border: 1px solid #000;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
                 }
-                .branding {
-                    text-align: center;
-                    margin-top: 15px;
-                    font-size: 5px;
-                    color: #999;
-                    font-style: italic;
+                td {
+                    border: 1px solid #ccc;
+                    padding: 6px 8px;
+                    color: #333;
                 }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9 !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                tr:nth-child(odd) {
+                    background-color: #fff !important;
+                }
+
+                /* Status Icons */
+                .status-ok {
+                    color: #10b981;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+                .status-ng {
+                    color: #ef4444;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                /* Comments Section */
+                .comments-box {
+                    border: 1px solid #ddd;
+                    background: #fcfcfc;
+                    padding: 10px;
+                    margin-bottom: 20px;
+                    font-size: 11px;
+                    min-height: 40px;
+                }
+                .comments-label {
+                    font-weight: bold;
+                    font-size: 11px;
+                    margin-bottom: 5px;
+                    color: #555;
+                    text-transform: uppercase;
+                }
+
+                /* Signature Footer */
+                .signature-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 30px;
+                    padding-top: 10px;
+                    border-top: 2px solid #000;
+                }
+                .sig-block {
+                    width: 45%;
+                }
+                .sig-line {
+                    border-bottom: 1px solid #000;
+                    height: 30px;
+                    margin-bottom: 5px;
+                }
+                .sig-label {
+                    font-size: 10px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+
                 @media print {
-                    body { margin: 0; padding: 5px; }
+                    body { margin: 0; padding: 0; }
                     .no-print { display: none !important; }
-                    .machine-section { page-break-inside: avoid; }
                     button { display: none; }
+                    .machine-section { page-break-inside: avoid; }
                 }
             </style>
         </head>
         <body>
-            <div class="header">
-                <div class="title">EECOL Multi-Machine Maintenance Checklist</div>
-                <div class="subtitle">Daily Equipment Inspection & Maintenance Records</div>
-            </div>
     `;
 
     const skipLists = {
-        1: [1,2,3,4,5,6,7], // Manual Hand Coiler skips these item indices
-        2: [3,4,5,7],       // Green Electric Hand Coiler skips
-        3: [3,4,5]          // Blue Electric Hand Coiler skips
+        1: [1, 2, 3, 4, 5, 6, 7], // Manual Hand Coiler skips these item indices
+        2: [3, 4, 5, 7],       // Green Electric Hand Coiler skips
+        3: [3, 4, 5]          // Blue Electric Hand Coiler skips
     };
+
+    const globalDate = document.getElementById('inspectionDate-1')?.value || new Date().toLocaleDateString();
+    const globalInspector = document.getElementById('inspectedBy-1')?.value || 'Not specified';
 
     for (let i = 1; i <= 6; i++) {
         const inspectedBy = document.getElementById(`inspectedBy-${i}`).value || 'Not specified';
@@ -865,16 +1080,28 @@ function printMachineMaintenanceChecklistMultiPage() {
 
         printContent += `
             <div class="machine-section">
-                <div class="machine-header">${machines[i-1]}</div>
-                <div class="inspection-info">
-                    <strong>Inspected By:</strong> ${inspectedBy} | <strong>Date:</strong> ${inspectionDate}
+                <!-- ISO Header repeated for each page/machine -->
+                <div class="iso-header">
+                    <div class="logo-box">EECOL<br>WIRE TOOLS</div>
+                    <div class="title-box">
+                        MACHINE MAINTENANCE RECORD
+                        <div class="sub">DAILY INSPECTION LOG</div>
+                    </div>
+                    <div class="meta-box">
+                        <div><strong>Date:</strong> ${inspectionDate}</div>
+                        <div><strong>Inspector:</strong> ${inspectedBy}</div>
+                        <div><strong>Machine ID:</strong> #${i}</div>
+                    </div>
                 </div>
+
+                <div class="machine-title">${machines[i - 1]}</div>
+
                 <table>
                     <thead>
                         <tr>
-                            <th>Maintenance Item</th>
-                            <th>OK</th>
-                            <th>NG</th>
+                            <th style="width: 60%;">MAINTENANCE ITEM</th>
+                            <th style="width: 20%; text-align: center;">OK</th>
+                            <th style="width: 20%; text-align: center;">NG</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -893,8 +1120,8 @@ function printMachineMaintenanceChecklistMultiPage() {
                 printContent += `
                     <tr>
                         <td>${item}</td>
-                        <td style="text-align: center; ${statusOK ? 'font-weight: bold; color: #10b981;' : ''}">${statusOK}</td>
-                        <td style="text-align: center; ${statusNG ? 'font-weight: bold; color: #ef4444;' : ''}">${statusNG}</td>
+                        <td style="text-align: center;"><span class="status-ok">${statusOK}</span></td>
+                        <td style="text-align: center;"><span class="status-ng">${statusNG}</span></td>
                     </tr>
                 `;
             }
@@ -903,21 +1130,28 @@ function printMachineMaintenanceChecklistMultiPage() {
         printContent += `
                     </tbody>
                 </table>
-                <div class="comments">
-                    <label>Comments:</label><br>
-                    ${comments.replace(/\n/g, '<br>') || 'No comments'}
+
+                <div class="comments-label">ADDITIONAL COMMENTS / NOTES:</div>
+                <div class="comments-box">
+                    ${comments.replace(/\n/g, '<br>') || 'No additional comments recorded.'}
+                </div>
+
+                <div class="signature-footer">
+                    <div class="sig-block">
+                        <div class="sig-line"></div>
+                        <div class="sig-label">Inspector Signature</div>
+                    </div>
+                    <div class="sig-block">
+                        <div class="sig-line"></div>
+                        <div class="sig-label">Supervisor Review</div>
+                    </div>
                 </div>
             </div>
         `;
     }
 
     printContent += `
-            <div class="branding">
-                EECOL Wire Tools Suite - Enterprise Edition<br>
-                Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
-            </div>
-
-            <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 5px 10px; background: #0058B3; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Print</button>
+            <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🖨️ PRINT RECORD</button>
         </body>
         </html>
     `;
