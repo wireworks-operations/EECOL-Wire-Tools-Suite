@@ -10,7 +10,7 @@
 
 We take all security bugs in this project seriously. Thank you for improving the security of our project. We appreciate your efforts and responsible disclosure and will make every effort to acknowledge your contributions.
 
-To report a security vulnerability, please email [security@example.com](mailto:security@example.com) with a detailed description of the vulnerability and steps to reproduce it.
+To report a security vulnerability, please email [Lucas Kara](lucas.kara@eecol.com) with a detailed description of the vulnerability and steps to reproduce it.
 
 ## Security State
 
