@@ -130,8 +130,6 @@ npm run type-check
 ### **Known Issues**
 - ❌ **Multi-Cut Planner**: Multi-cut planner reverted to placeholder due to breaking changes that took place
 
-- ⚠️ **Live Statistics**: Has localStorage fallback crash in some scenarios
-
 ### **Recent Updates & Roadmap**
 - **v0.8.0.3**: Dark mode feature with smooth theme transitions and Premium Calculation Results Layouts
 - **v0.8.0.2**: Database configuration page remake with modern design patterns
