@@ -208,6 +208,9 @@ function handleCheckboxChange(event) {
     if (otherCheckbox) {
         otherCheckbox.checked = false;
     }
+
+    // Auto-save on change
+    saveCurrentSession();
 }
 
 // Validate checklist completion
@@ -707,6 +710,31 @@ function setupPrintFunctionality() {
     });
 }
 
+// Setup auto-save for text inputs
+function setupAutoSave() {
+    const inputs = [
+        'globalInspectedBy',
+        'globalInspectionDate',
+        'comments'
+    ];
+
+    // Simple debounce to prevent excessive writes
+    let timeout;
+    const debouncedSave = () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            saveCurrentSession();
+        }, 500);
+    };
+
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', debouncedSave);
+        }
+    });
+}
+
 // Initialize everything
 document.addEventListener('DOMContentLoaded', async function() {
     // Initialize database if not already done (important for maintenance checklist pages)
@@ -720,6 +748,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     initializeChecklists();
+    setupAutoSave(); // Initialize auto-save listeners
     loadChecklistState();
     restoreCurrentSession(); // Restore any saved current work session
     setTodaysDate();

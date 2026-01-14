@@ -13,24 +13,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const data = await window.eecolDB.get('maintenanceLogs', 'daily_check');
 
                 if (!data || !data.completedAt) {
-                    // No data or not completed - Action Required (Red)
-                    showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
+                    showNotCompleted();
                     return;
                 }
 
-                // Get completion date
-                const completedAt = new Date(data.completedAt);
-                const completionDate = completedAt.toISOString().split('T')[0];
-                const now = new Date();
-                const currentDate = now.toISOString().split('T')[0];
-
-                if (completionDate === currentDate) {
-                    // Completed today - Good (Green)
-                    showNotification('✅', 'bg-green-100 border-green-500', `Daily Maintenance Completed: ${formatDate(completedAt)}`);
-                } else {
-                    // Not completed today - Action Required (Red)
-                    showNotification('❌', 'bg-red-100 border-red-500', `Action Required: Complete daily maintenance checklist (Last: ${formatDate(completedAt)})`);
-                }
+                checkCompletionStatus(data.completedAt);
             } catch (error) {
                 console.error('Error reading from IndexedDB:', error);
                 // Fallback to old localStorage if new DB fails
@@ -45,47 +32,58 @@ document.addEventListener('DOMContentLoaded', function () {
     function checkLocalStorageFallback() {
         const maintenanceData = localStorage.getItem('machineMaintenanceChecklist');
         if (!maintenanceData) {
-            // No data - Action Required (Red)
-            showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
+            showNotCompleted();
             return;
         }
 
         try {
             const data = JSON.parse(maintenanceData);
             if (!data.completedAt) {
-                // Data but not completed - Action Required (Red)
-                showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
+                showNotCompleted();
                 return;
             }
 
-            // Get completion date
-            const completedAt = new Date(data.completedAt);
-            const completionDate = completedAt.toISOString().split('T')[0];
-            const now = new Date();
-            const currentDate = now.toISOString().split('T')[0];
-
-            if (completionDate === currentDate) {
-                // Completed today - Good (Green)
-                showNotification('✅', 'bg-green-100 border-green-500', `Daily Maintenance Completed: ${formatDate(completedAt)}`);
-            } else {
-                // Not completed today - Action Required (Red)
-                showNotification('❌', 'bg-red-100 border-red-500', `Action Required: Complete daily maintenance checklist (Last: ${formatDate(completedAt)})`);
-            }
+            checkCompletionStatus(data.completedAt);
         } catch (e) {
             console.error('Error parsing maintenance data:', e);
-            showNotification('❌', 'bg-red-100 border-red-500', 'Action Required: Complete daily maintenance checklist');
+            showNotCompleted();
         }
+    }
+
+    function checkCompletionStatus(completedAtISO) {
+        const completedAt = new Date(completedAtISO);
+        const now = new Date();
+
+        // Define the start of the current maintenance cycle (11 PM cutoff)
+        let cycleStart = new Date(now);
+        cycleStart.setHours(23, 0, 0, 0); // Today at 11:00 PM
+
+        // If it's currently before 11 PM, the cycle started yesterday at 11 PM
+        if (now.getHours() < 23) {
+            cycleStart.setDate(cycleStart.getDate() - 1);
+        } else {
+            // If it's after 11 PM, the cycle started today at 11 PM (which is what we set initially)
+        }
+
+        if (completedAt > cycleStart) {
+            showCompleted();
+        } else {
+            showNotCompleted();
+        }
+    }
+
+    function showCompleted() {
+        showNotification('✅', 'bg-green-100 border-green-500', 'Completed');
+    }
+
+    function showNotCompleted() {
+        showNotification('❌', 'bg-red-100 border-red-500', 'Not Completed');
     }
 
     function showNotification(icon, bgClass, text) {
         statusIcon.textContent = icon;
         notification.className = notification.className.replace('hidden', '').replace(/bg-[^ ]*|border-[^ ]*/g, '').trim() + ' ' + bgClass + ' border-l-4';
         notificationText.textContent = text;
-    }
-
-    function formatDate(date) {
-        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
     }
 
     // Initial load
