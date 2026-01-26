@@ -828,21 +828,21 @@ function renderInventoryItems() {
             <div class="inventory-item bg-white p-3 rounded-lg shadow-sm border">
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs">
                     <div><span class="font-semibold text-gray-900">Date:</span> <span class="text-gray-700">${formatDateMMDDYYYY(item.inventoryDate || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Name:</span> <span class="text-gray-700">${item.personName || 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Reason:</span> <span class="text-gray-700">${displayReason || 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Notes:</span> <span class="text-gray-700">${displayNote || 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Comments:</span> <span class="text-gray-700">${item.inventoryComments || 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Line #:</span> <span class="text-gray-700">${item.lineCode || 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Product:</span> <span class="text-gray-700">${item.productCode || 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Current Length:</span> <span class="text-gray-700">${item.currentLength ? `${item.currentLength} ${item.currentLengthUnit}` : 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Actual Length:</span> <span class="text-gray-700">${item.actualLength ? `${item.actualLength} ${item.actualLengthUnit}` : 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Wire Coil Code:</span> <span class="text-gray-700">${item.coilCode || 'N/A'}</span></div>
+                    <div><span class="font-semibold text-gray-900">Name:</span> <span class="text-gray-700">${escapeHTML(item.personName || 'N/A')}</span></div>
+                    <div><span class="font-semibold text-gray-900">Reason:</span> <span class="text-gray-700">${escapeHTML(displayReason || 'N/A')}</span></div>
+                    <div><span class="font-semibold text-gray-900">Notes:</span> <span class="text-gray-700">${escapeHTML(displayNote || 'N/A')}</span></div>
+                    <div><span class="font-semibold text-gray-900">Comments:</span> <span class="text-gray-700">${escapeHTML(item.inventoryComments || 'N/A')}</span></div>
+                    <div><span class="font-semibold text-gray-900">Line #:</span> <span class="text-gray-700">${escapeHTML(item.lineCode || 'N/A')}</span></div>
+                    <div><span class="font-semibold text-gray-900">Product:</span> <span class="text-gray-700">${escapeHTML(item.productCode || 'N/A')}</span></div>
+                    <div><span class="font-semibold text-gray-900">Current Length:</span> <span class="text-gray-700">${item.currentLength ? `${escapeHTML(item.currentLength)} ${escapeHTML(item.currentLengthUnit)}` : 'N/A'}</span></div>
+                    <div><span class="font-semibold text-gray-900">Actual Length:</span> <span class="text-gray-700">${item.actualLength ? `${escapeHTML(item.actualLength)} ${escapeHTML(item.actualLengthUnit)}` : 'N/A'}</span></div>
+                    <div><span class="font-semibold text-gray-900">Wire Coil Code:</span> <span class="text-gray-700">${escapeHTML(item.coilCode || 'N/A')}</span></div>
                     <div><span class="font-semibold text-gray-900">Adjust:</span> <span class="${item.adjust ? 'text-orange-600 font-bold' : 'text-green-600'}">${item.adjust ? 'Yes' : 'No'}</span></div>
                     <div><span class="font-semibold text-gray-900">Approved:</span> <span class="${getApprovalClass(item.approved)}">${getApprovalText(item.approved)}</span></div>
-                    <div><span class="font-semibold text-gray-900">INA #:</span> <span class="text-gray-700">${item.inaNumber || 'N/A'}</span></div>
+                    <div><span class="font-semibold text-gray-900">INA #:</span> <span class="text-gray-700">${escapeHTML(item.inaNumber || 'N/A')}</span></div>
                     <div><span class="font-semibold text-gray-900">INA Date:</span> <span class="text-gray-700">${formatDateMMDDYYYY(item.inaDate || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Avg Cost:</span> <span class="text-gray-700">${item.averageCost && item.costUnit ? `${item.costUnit}${item.averageCost}` : 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Value:</span> <span class="text-gray-700">${item.totalValue ? `$${item.totalValue}` : 'N/A'}</span></div>
+                    <div><span class="font-semibold text-gray-900">Avg Cost:</span> <span class="text-gray-700">${item.averageCost && item.costUnit ? `${escapeHTML(item.costUnit)}${escapeHTML(item.averageCost)}` : 'N/A'}</span></div>
+                    <div><span class="font-semibold text-gray-900">Value:</span> <span class="text-gray-700">${item.totalValue ? `$${escapeHTML(item.totalValue)}` : 'N/A'}</span></div>
                 </div>
                 <p class="text-xs text-gray-500 mt-2">@ ${date} by Local</p>
                 <p class="text-xs text-gray-400">Created: ${new Date(item.createdAt || item.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${item.updatedAt && item.updatedAt !== item.createdAt ? ` | Updated: ${new Date(item.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</p>
