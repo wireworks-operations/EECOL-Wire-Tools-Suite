@@ -5,6 +5,7 @@
 export class MultiCutPlanner {
     constructor() {
         this.reels = [];
+        this.reelIdCounter = 0;
         this.units = 'metric'; // 'metric' or 'imperial'
         this.wireDiameter = 1.5; // Default mm
         this.startMark = 0;
@@ -25,7 +26,7 @@ export class MultiCutPlanner {
 
     addReel(length, dims = {}) {
         const reel = {
-            id: Date.now(),
+            id: `${Date.now()}-${++this.reelIdCounter}`,
             length: parseFloat(length),
             flange: parseFloat(dims.flange) || 0,
             barrel: parseFloat(dims.barrel) || 0,
@@ -92,11 +93,13 @@ export class MultiCutPlanner {
 
             if (reel.flange > 0 && this.wireDiameter > 0) {
                 capacity = this.calculateCapacity(reel.flange, reel.barrel, reel.traverse, this.wireDiameter);
-                fillPercent = (reel.length / capacity) * 100;
+                if (capacity > 0) {
+                    fillPercent = (reel.length / capacity) * 100;
 
-                if (fillPercent > 100) status = 'overfill';
-                else if (fillPercent > 85) status = 'warning';
-                else status = 'ok';
+                    if (fillPercent > 100) status = 'overfill';
+                    else if (fillPercent > 85) status = 'warning';
+                    else status = 'ok';
+                }
             }
 
             return {
