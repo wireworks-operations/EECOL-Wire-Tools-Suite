@@ -6,14 +6,14 @@
 class EECOLIndexedDB {
   static instance = null;
 
-  static getInstance(version = 2) {
+  static getInstance(version = 3) {
     if (!EECOLIndexedDB.instance) {
       EECOLIndexedDB.instance = new EECOLIndexedDB(version);
     }
     return EECOLIndexedDB.instance;
   }
 
-  constructor(version = 2) {
+  constructor(version = 3) {
     // Prevent direct instantiation - enforce singleton pattern
     if (EECOLIndexedDB.instance) {
       throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
@@ -73,6 +73,10 @@ class EECOLIndexedDB {
       sessions: {
         keyPath: 'sessionId',
         indexes: ['userId', 'createdAt', 'expiresAt', 'active']
+      },
+      calibrationMeasurements: {
+        keyPath: 'id',
+        indexes: ['machineName', 'timestamp']
       }
     };
   }
@@ -376,6 +380,24 @@ class EECOLIndexedDB {
       timestamp: Date.now(),
       ...data
     });
+  }
+
+  // Save calibration measurement
+  async saveCalibrationMeasurement(machineName, measurement) {
+    return await this.add('calibrationMeasurements', {
+      id: crypto.randomUUID(),
+      machineName,
+      measurement,
+      timestamp: Date.now()
+    });
+  }
+
+  // Get recent calibration measurements for a specific machine
+  async getRecentCalibrationMeasurements(machineName, limit = 3) {
+    const allMeasurements = await this.getAll('calibrationMeasurements', 'machineName', IDBKeyRange.only(machineName));
+    return allMeasurements
+      .sort((a, b) => b.timestamp - a.timestamp) // Sort descending
+      .slice(0, limit); // Take top N
   }
 
   /**
