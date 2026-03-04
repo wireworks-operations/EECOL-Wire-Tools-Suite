@@ -90,6 +90,7 @@ function printCalculationResult(title, resultValue, resultDescription = '') {
         </body>
         </html>
     `);
+    printWindow.document.close();
     printWindow.print();
 }
 
@@ -149,6 +150,7 @@ function printWireWeightResults(totalShipmentWeight, totalWireWeight, unitWeight
         </body>
         </html>
     `);
+    printWindow.document.close();
     printWindow.print();
 }
 
@@ -1161,6 +1163,153 @@ function printMachineMaintenanceChecklistMultiPage() {
     printWindow.print();
 }
 
+// Print single machine calibration measurements
+function printMachineCalibrationMeasurement(machineName, measurements) {
+    const printWindow = window.open('', '_blank');
+
+    const formattedTitle = `EECOL Machine Counter Calibration`;
+    let measurementsHTML = '';
+
+    if (!measurements || measurements.length === 0) {
+        measurementsHTML = `<p style="color: #666; font-style: italic; text-align: center;">No previous measurements recorded.</p>`;
+    } else {
+        measurementsHTML = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <thead>
+                <tr>
+                    <th style="background-color: #0058B3; color: white; padding: 10px; border: 1px solid #000; text-align: center;">#</th>
+                    <th style="background-color: #0058B3; color: white; padding: 10px; border: 1px solid #000; text-align: left;">Date & Time</th>
+                    <th style="background-color: #0058B3; color: white; padding: 10px; border: 1px solid #000; text-align: right;">Measurement</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        measurements.forEach((m, index) => {
+            const date = new Date(m.timestamp).toLocaleString();
+            measurementsHTML += `
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ccc; text-align: center;">${index + 1}</td>
+                    <td style="padding: 10px; border: 1px solid #ccc; text-align: left;">${date}</td>
+                    <td style="padding: 10px; border: 1px solid #ccc; text-align: right; font-weight: bold; color: #0058B3;">${m.measurement}</td>
+                </tr>
+            `;
+        });
+
+        measurementsHTML += `</tbody></table>`;
+    }
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>${formattedTitle} - ${machineName}</title>
+            <style>
+                body {
+                    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+                    padding: 20px;
+                    color: #333;
+                    line-height: 1.6;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    border-bottom: 3px solid #0058B3;
+                    padding-bottom: 15px;
+                }
+                .title {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #0058B3;
+                    margin: 0 0 5px 0;
+                }
+                .subtitle {
+                    font-size: 16px;
+                    color: #666;
+                    text-transform: uppercase;
+                }
+                .machine-name {
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #0058B3;
+                    margin-bottom: 20px;
+                    background: #f0f4f8;
+                    padding: 10px 15px;
+                    border-left: 5px solid #0058B3;
+                    border-radius: 4px;
+                }
+                .result {
+                    margin: 20px 0;
+                }
+                .branding {
+                    text-align: center;
+                    margin-top: 40px;
+                    font-size: 10px;
+                    color: #999;
+                    font-style: italic;
+                }
+                .signature-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 50px;
+                    padding-top: 20px;
+                    border-top: 2px solid #000;
+                    page-break-inside: avoid;
+                }
+                .sig-block {
+                    width: 45%;
+                }
+                .sig-line {
+                    border-bottom: 1px solid #000;
+                    height: 30px;
+                    margin-bottom: 5px;
+                }
+                .sig-label {
+                    font-size: 10px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+                @media print {
+                    body { margin: 0; }
+                    button { display: none; }
+                    .branding { page-break-inside: avoid; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="title">${formattedTitle}</div>
+                <div class="subtitle">Calibration Record</div>
+            </div>
+
+            <div class="machine-name">Machine: ${machineName}</div>
+
+            <div class="result">
+                <div style="font-weight: bold; color: #555; text-transform: uppercase; font-size: 14px; margin-bottom: 10px;">Recent Calibration Entries</div>
+                ${measurementsHTML}
+            </div>
+
+            <div class="signature-footer">
+                <div class="sig-block">
+                    <div class="sig-line"></div>
+                    <div class="sig-label">Operator Signature</div>
+                </div>
+                <div class="sig-block">
+                    <div class="sig-line"></div>
+                    <div class="sig-label">Supervisor Review</div>
+                </div>
+            </div>
+
+            <div class="branding">
+                EECOL Wire Tools Suite 2025 - Enterprise Edition<br>
+                Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+            </div>
+            <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🖨️ PRINT RECORD</button>
+        </body>
+        </html>
+    `);
+    printWindow.print();
+}
+
 // Make functions available globally
 if (typeof window !== 'undefined') {
     window.printCalculationResult = printCalculationResult;
@@ -1176,4 +1325,5 @@ if (typeof window !== 'undefined') {
     window.generateShippingManifestHazardDocumentation = generateShippingManifestHazardDocumentation;
     window.formatPrintTimestamp = formatPrintTimestamp;
     window.createPrintWindow = createPrintWindow;
+    window.printMachineCalibrationMeasurement = printMachineCalibrationMeasurement;
 }

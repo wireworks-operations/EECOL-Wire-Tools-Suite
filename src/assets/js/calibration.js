@@ -91,10 +91,14 @@ async function renderMachines() {
                                 <option value="m">Meters (m)</option>
                             </select>
                         </div>
-                        <div class="w-full sm:w-auto">
+                        <div class="w-full sm:w-auto flex gap-2">
                             <button onclick="saveMeasurement('${machineName}', '${machineId}')"
-                                class="w-full px-6 py-3 bg-indigo-600 border-2 border-indigo-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-opacity-50 flex items-center justify-center">
+                                class="flex-1 sm:flex-none px-6 py-3 bg-indigo-600 border-2 border-indigo-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-opacity-50 flex items-center justify-center">
                                 💾 Save
+                            </button>
+                            <button onclick="printMeasurement('${machineName}')"
+                                class="flex-1 sm:flex-none px-6 py-3 bg-gray-600 border-2 border-gray-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-gray-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-gray-600 focus:ring-opacity-50 flex items-center justify-center">
+                                🖨️ Print
                             </button>
                         </div>
                     </div>
@@ -164,6 +168,29 @@ async function saveMeasurement(machineName, machineId) {
     } catch (error) {
         console.error("Failed to save measurement:", error);
         showModal('Error', 'Failed to save measurement to the database.');
+    }
+}
+
+async function printMeasurement(machineName) {
+    if (!dbReady) {
+        showModal('Error', 'Database not ready. Please try again.');
+        return;
+    }
+
+    try {
+        let recentMeasurements = await window.eecolDB.getRecentCalibrationMeasurements(machineName, 3);
+        // Sort descending to show newest first on print
+        recentMeasurements = recentMeasurements.sort((a, b) => b.timestamp - a.timestamp);
+
+        if (typeof window.printMachineCalibrationMeasurement === 'function') {
+            window.printMachineCalibrationMeasurement(machineName, recentMeasurements);
+        } else {
+            console.error("Print function printMachineCalibrationMeasurement not found in global scope.");
+            showModal('Error', 'Print module is not loaded correctly.');
+        }
+    } catch (error) {
+        console.error("Failed to print measurements:", error);
+        showModal('Error', 'Failed to gather measurements for printing.');
     }
 }
 
