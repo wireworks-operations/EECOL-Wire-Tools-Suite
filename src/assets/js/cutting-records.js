@@ -1065,14 +1065,14 @@ function renderCutRecords() {
         if (pickFlags.length > 0) {
             if (record.startingMark && !isNoMarks) {
                 // Show both Full Pick and marks
-                pickDisplay = `<span class="font-bold">${pickFlags.join(', ')}</span> | Start Mark: <span class="font-bold">${record.startingMark} ${record.startingMarkUnit}</span> | End Mark: <span class="font-bold">${record.isSingleUnitCut ? '1 unit cut' : record.endingMark + ' ' + record.endingMarkUnit}</span>`;
+                pickDisplay = `<span class="font-bold">${pickFlags.join(', ')}</span> | Start Mark: <span class="font-bold">${escapeHTML(record.startingMark)} ${escapeHTML(record.startingMarkUnit)}</span> | End Mark: <span class="font-bold">${record.isSingleUnitCut ? '1 unit cut' : escapeHTML(record.endingMark) + ' ' + escapeHTML(record.endingMarkUnit)}</span>`;
             } else {
                 // Just show the flags
                 pickDisplay = `<span class="font-bold">${pickFlags.join(', ')}</span>`;
             }
         } else if (record.startingMark && !isNoMarks) {
             // Normal case with marks (when No Marks is not checked)
-            pickDisplay = `Start Mark: <span class="font-bold">${record.startingMark} ${record.startingMarkUnit}</span> | End Mark: <span class="font-bold">${record.isSingleUnitCut ? '1 unit cut' : record.endingMark + ' ' + record.endingMarkUnit}</span>`;
+            pickDisplay = `Start Mark: <span class="font-bold">${escapeHTML(record.startingMark)} ${escapeHTML(record.startingMarkUnit)}</span> | End Mark: <span class="font-bold">${record.isSingleUnitCut ? '1 unit cut' : escapeHTML(record.endingMark) + ' ' + escapeHTML(record.endingMarkUnit)}</span>`;
         } else {
             // No marks or full pick without marks
             pickDisplay = 'No Marks';
@@ -1098,20 +1098,20 @@ function renderCutRecords() {
         html += `
             <div class="cut-record-item">
                 <p class="text-xs font-semibold header-gradient truncate">
-                    Wire: ${record.wireId} | Cut From ${record.lineCode || 'N/A'} | Turned To L:${record.turnedToLineCode || 'N/A'} | Order: ${record.orderNumber} | Customer: ${record.customerName}
+                    Wire: ${escapeHTML(record.wireId)} | Cut From ${escapeHTML(record.lineCode || 'N/A')} | Turned To L:${escapeHTML(record.turnedToLineCode || 'N/A')} | Order: ${escapeHTML(record.orderNumber)} | Customer: ${escapeHTML(record.customerName)}
                 </p>
                 <p class="text-xs text-gray-700">
-                    Cut Length: <span class="font-bold">${record.cutLength.toFixed(2)} ${record.cutLengthUnit}</span> | ${pickDisplay}
+                    Cut Length: <span class="font-bold">${escapeHTML(record.cutLength.toFixed(2))} ${escapeHTML(record.cutLengthUnit)}</span> | ${pickDisplay}
                 </p>
                 <p class="text-xs text-gray-700">
-                    Cutter: ${record.cutterName} |
+                    Cutter: ${escapeHTML(record.cutterName)} |
                     ${record.coilOrReel === 'coil' ? `Coil: Yes` : ''}
                     ${record.coilOrReel === 'reel' && record.chargeable === 'no' ? `Non-Chargeable Reel` : ''}
-                    ${record.coilOrReel === 'reel' && record.chargeable === 'yes' ? ` RLS EE-${record.reelSize ? record.reelSize : 'N/A'}W | Chargeable: ${record.chargeable}` : ''}
+                    ${record.coilOrReel === 'reel' && record.chargeable === 'yes' ? ` RLS EE-${escapeHTML(record.reelSize ? record.reelSize : 'N/A')}W | Chargeable: ${escapeHTML(record.chargeable)}` : ''}
                     ${record.isSystemCut ? ' | <span class="font-bold">System Cut</span>' : ''}
                     ${record.isCutInSystem ? ` | <span class="font-bold">Cut In System: Yes</span>` : ` | Cut In System: No`}
                 </p>
-                <p class="text-xs text-gray-700">Comments: ${record.orderComments || 'N/A'}</p>
+                <p class="text-xs text-gray-700">Comments: ${escapeHTML(record.orderComments || 'N/A')}</p>
                 <p class="text-xs text-gray-500">@ ${date} by Local</p>
                 <p class="text-xs text-gray-400">Created: ${new Date(record.createdAt || record.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${record.updatedAt && record.updatedAt !== record.createdAt ? ` | Updated: ${new Date(record.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</p>
                 <div class="flex justify-between items-center mt-1">
@@ -1558,16 +1558,16 @@ function printRecords(filtered = false) {
                 <tbody>
                     ${records.map(record => `
                         <tr>
-                            <td>${record.wireId}</td>
-                            <td>${record.cutLength} ${record.cutLengthUnit}</td>
-                            <td>${record.isFullPick ? 'Full Pick' : record.startingMark + ' ' + record.startingMarkUnit}</td>
-                            <td>${record.isFullPick ? 'Full Pick' : (record.isSingleUnitCut ? '1 unit cut' : record.endingMark + ' ' + record.endingMarkUnit)}</td>
-                            <td>${record.lineCode || 'N/A'}</td>
-                            <td>${record.cutterName}</td>
-                            <td>${record.orderNumber}</td>
-                            <td>${record.customerName}</td>
-                            <td>${record.coilOrReel === 'coil' ? 'Coil' : (record.reelSize ? `RLS EE-${record.reelSize}W` : 'Reel')}</td>
-                            <td>${record.orderComments || 'N/A'}</td>
+                            <td>${escapeHTML(record.wireId)}</td>
+                            <td>${escapeHTML(record.cutLength)} ${escapeHTML(record.cutLengthUnit)}</td>
+                            <td>${record.isFullPick ? 'Full Pick' : escapeHTML(record.startingMark) + ' ' + escapeHTML(record.startingMarkUnit)}</td>
+                            <td>${record.isFullPick ? 'Full Pick' : (record.isSingleUnitCut ? '1 unit cut' : escapeHTML(record.endingMark) + ' ' + escapeHTML(record.endingMarkUnit))}</td>
+                            <td>${escapeHTML(record.lineCode || 'N/A')}</td>
+                            <td>${escapeHTML(record.cutterName)}</td>
+                            <td>${escapeHTML(record.orderNumber)}</td>
+                            <td>${escapeHTML(record.customerName)}</td>
+                            <td>${record.coilOrReel === 'coil' ? 'Coil' : (record.reelSize ? `RLS EE-${escapeHTML(record.reelSize)}W` : 'Reel')}</td>
+                            <td>${escapeHTML(record.orderComments || 'N/A')}</td>
                             <td>${new Date(record.timestamp).toLocaleString()}</td>
                         </tr>
                     `).join('')}
