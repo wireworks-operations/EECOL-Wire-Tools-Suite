@@ -15,6 +15,43 @@ let topCustomersChart = null;
 let wireTypeChart = null;
 let cuttingPerformanceChart = null;
 
+/**
+ * BOLT OPTIMIZATION: Single-pass metrics object
+ * Stores all pre-calculated statistics to avoid redundant O(N) iterations.
+ */
+let calculatedMetrics = {
+    // Inventory
+    totalInventoryItems: 0,
+    approvedCount: 0,
+    deniedCount: 0,
+    pendingCount: 0,
+    totalProcessed: 0,
+    inventoryValue: 0,
+    todayInventoryCount: 0,
+    recentInventoryCount: 0,
+    quality: { normal: 0, damaged: 0, tailends: 0 },
+    valueDistribution: { high: 0, standard: 0 },
+    inventoryApprovalRateChange: '+0%',
+
+    // Cutting
+    totalCuts: 0,
+    totalLengthCut: 0,
+    cutsToday: 0,
+    recentCutsCount: 0,
+    cutsThisWeek: 0,
+    cutsLastWeek: 0,
+    performance: { fullPicks: 0, systemCuts: 0 },
+
+    // Combined/Advanced
+    productCounts: {}, // Combined inventory productCode and cutting wireId
+    customerCounts: {},
+    wireTypeCounts: {},
+    activityTimeline: [0, 0, 0, 0, 0, 0, 0], // Last 7 days
+    topProduct: 'None',
+    topCustomer: '-',
+    topCustomerOrders: '-'
+};
+
 // Chart.js initialization with CDN fallback
 function loadChartJS() {
     return new Promise((resolve, reject) => {
@@ -103,6 +140,7 @@ async function loadLiveData() {
             cutRecords = cuttingData && cuttingData.length > 0 ?
                 cuttingData.sort((a, b) => b.timestamp - a.timestamp) : [];
 
+            calculateMetrics();
             updateDashboard();
 
         } else {
@@ -147,12 +185,14 @@ function loadFromLocalStorage() {
             cutRecords = [];
         }
 
+        calculateMetrics();
         updateDashboard();
 
     } catch (error) {
         console.error('❌ Error loading from localStorage:', error);
         inventoryItems = [];
         cutRecords = [];
+        calculateMetrics();
         updateDashboard();
     }
 }
@@ -191,6 +231,177 @@ function initAutoRefresh() {
     }, 30000); // Check every 30 seconds
 }
 
+/**
+ * BOLT OPTIMIZATION: Single-pass metrics calculation
+ * Consolidates multiple O(N) passes into a single iteration for each dataset.
+ */
+function calculateMetrics() {
+    // Reset metrics
+    calculatedMetrics = {
+        totalInventoryItems: inventoryItems.length,
+        approvedCount: 0,
+        deniedCount: 0,
+        pendingCount: 0,
+        totalProcessed: 0,
+        inventoryValue: 0,
+        todayInventoryCount: 0,
+        recentInventoryCount: 0,
+        quality: { normal: 0, damaged: 0, tailends: 0 },
+        valueDistribution: { high: 0, standard: 0 },
+        inventoryApprovalRateChange: '+0%',
+        totalCuts: cutRecords.length,
+        totalLengthCut: 0,
+        cutsToday: 0,
+        recentCutsCount: 0,
+        cutsThisWeek: 0,
+        cutsLastWeek: 0,
+        performance: { fullPicks: 0, systemCuts: 0 },
+        productCounts: {},
+        customerCounts: {},
+        wireTypeCounts: {},
+        activityTimeline: [0, 0, 0, 0, 0, 0, 0],
+        topProduct: 'None',
+        topCustomer: '-',
+        topCustomerOrders: '-'
+    };
+
+    const now = Date.now();
+    const todayStr = new Date().toDateString();
+    const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
+    const twoWeeksAgo = now - (14 * 24 * 60 * 60 * 1000);
+
+    // Pre-calculate activity timeline day buckets
+    const dayBuckets = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        dayBuckets.push(d.toDateString());
+    }
+
+    // Weekly inventory approval rate counters
+    let currentWeekInvProcessed = 0;
+    let currentWeekInvApproved = 0;
+    let previousWeekInvProcessed = 0;
+    let previousWeekInvApproved = 0;
+
+    // Single pass for inventory
+    for (const item of inventoryItems) {
+        const ts = item.timestamp;
+        const itemDate = new Date(ts);
+        const itemDateStr = itemDate.toDateString();
+
+        // Approval status
+        if (item.approved === true) {
+            calculatedMetrics.approvedCount++;
+            calculatedMetrics.totalProcessed++;
+        } else if (item.approved === false) {
+            calculatedMetrics.deniedCount++;
+            calculatedMetrics.totalProcessed++;
+        } else {
+            calculatedMetrics.pendingCount++;
+        }
+
+        // Value
+        const val = item.totalValue || 0;
+        calculatedMetrics.inventoryValue += val;
+        if (val >= 50) {
+            calculatedMetrics.valueDistribution.high++;
+        } else {
+            calculatedMetrics.valueDistribution.standard++;
+        }
+
+        // Recency & Weekly change tracking
+        if (itemDateStr === todayStr) {
+            calculatedMetrics.todayInventoryCount++;
+        }
+        if (ts > weekAgo) {
+            calculatedMetrics.recentInventoryCount++;
+            if (item.approved !== null && item.approved !== undefined) {
+                currentWeekInvProcessed++;
+                if (item.approved === true) currentWeekInvApproved++;
+            }
+        } else if (ts > twoWeeksAgo) {
+            if (item.approved !== null && item.approved !== undefined) {
+                previousWeekInvProcessed++;
+                if (item.approved === true) previousWeekInvApproved++;
+            }
+        }
+
+        // Products
+        const code = item.productCode || 'Unknown';
+        calculatedMetrics.productCounts[code] = (calculatedMetrics.productCounts[code] || 0) + 1;
+
+        // Quality
+        const reason = (item.reason || '').toLowerCase();
+        if (reason.includes('damaged')) {
+            calculatedMetrics.quality.damaged++;
+        } else if (reason.includes('tail end') || reason.includes('tailend')) {
+            calculatedMetrics.quality.tailends++;
+        } else {
+            calculatedMetrics.quality.normal++;
+        }
+    }
+
+    // Single pass for cutting records
+    for (const record of cutRecords) {
+        const ts = record.timestamp;
+        const recordDate = new Date(ts);
+        const recordDateStr = recordDate.toDateString();
+
+        // Basic metrics
+        calculatedMetrics.totalLengthCut += (record.cutLength || 0);
+        if (record.isFullPick === true) calculatedMetrics.performance.fullPicks++;
+        if (record.isSystemCut === true) calculatedMetrics.performance.systemCuts++;
+
+        // Recency & Timeline
+        if (recordDateStr === todayStr) {
+            calculatedMetrics.cutsToday++;
+        }
+        if (ts > weekAgo) {
+            calculatedMetrics.recentCutsCount++;
+            calculatedMetrics.cutsThisWeek++;
+        } else if (ts > twoWeeksAgo) {
+            calculatedMetrics.cutsLastWeek++;
+        }
+
+        // Activity Timeline bucket
+        const bucketIndex = dayBuckets.indexOf(recordDateStr);
+        if (bucketIndex !== -1) {
+            calculatedMetrics.activityTimeline[bucketIndex]++;
+        }
+
+        // Combined Product Counts
+        const wireId = record.wireId || 'Unknown';
+        calculatedMetrics.productCounts[wireId] = (calculatedMetrics.productCounts[wireId] || 0) + 1;
+
+        // Wire Type Counts
+        calculatedMetrics.wireTypeCounts[wireId] = (calculatedMetrics.wireTypeCounts[wireId] || 0) + 1;
+
+        // Customer Counts
+        const customer = record.customerName || 'Unknown';
+        calculatedMetrics.customerCounts[customer] = (calculatedMetrics.customerCounts[customer] || 0) + 1;
+    }
+
+    // Post-processing for tops and rates
+    if (Object.keys(calculatedMetrics.productCounts).length > 0) {
+        calculatedMetrics.topProduct = Object.keys(calculatedMetrics.productCounts).reduce((a, b) =>
+            calculatedMetrics.productCounts[a] > calculatedMetrics.productCounts[b] ? a : b, 'None');
+    }
+
+    if (Object.keys(calculatedMetrics.customerCounts).length > 0) {
+        const sortedCustomers = Object.entries(calculatedMetrics.customerCounts)
+            .sort(([, a], [, b]) => b - a);
+        const [name, count] = sortedCustomers[0];
+        calculatedMetrics.topCustomer = name;
+        calculatedMetrics.topCustomerOrders = count > 1 ? `${count} cuts` : `${count} cut`;
+    }
+
+    // Inventory approval rate change
+    const currentRate = currentWeekInvProcessed > 0 ? (currentWeekInvApproved / currentWeekInvProcessed) * 100 : 0;
+    const previousRate = previousWeekInvProcessed > 0 ? (previousWeekInvApproved / previousWeekInvProcessed) * 100 : 0;
+    calculatedMetrics.inventoryApprovalRateChange = calculateChange(currentRate, previousRate);
+}
+
 // Initialize all charts
 async function initializeAllCharts() {
     createApprovalChart();
@@ -209,92 +420,26 @@ async function initializeAllCharts() {
 
 // Update key metrics dashboard
 function updateDashboard() {
+    const m = calculatedMetrics;
 
-    // Inventory metrics
-    const totalInventoryItems = inventoryItems.length;
-    const approvedCount = inventoryItems.filter(item => item.approved === true).length;
-    const totalProcessed = inventoryItems.filter(item => item.approved !== null && item.approved !== undefined).length;
-    const approvedRate = totalProcessed > 0 ? Math.round((approvedCount / totalProcessed) * 100) : 0;
+    const approvedRate = m.totalProcessed > 0 ? Math.round((m.approvedCount / m.totalProcessed) * 100) : 0;
+    const avgInventoryValue = m.totalInventoryItems > 0 ? m.inventoryValue / m.totalInventoryItems : 0;
+    const todayActivityCount = m.cutsToday + m.todayInventoryCount;
+    const recentActivityCount = m.recentCutsCount + m.recentInventoryCount;
+    const cutsChange = calculateChange(m.cutsThisWeek, m.cutsLastWeek);
 
-    const inventoryValue = inventoryItems.reduce((sum, item) => sum + (item.totalValue || 0), 0);
-    const avgInventoryValue = totalInventoryItems > 0 ? inventoryValue / totalInventoryItems : 0;
-
-    // Cutting metrics
-    const totalCuts = cutRecords.length;
-    const totalLengthCut = cutRecords.reduce((sum, record) => sum + (record.cutLength || 0), 0);
-    const cutsToday = cutRecords.filter(record => {
-        const today = new Date().toDateString();
-        return new Date(record.timestamp).toDateString() === today;
-    }).length;
-
-    // Combined metrics
-    const totalActivity = totalInventoryItems + totalCuts;
-    const todayActivityCount = cutsToday + inventoryItems.filter(item => {
-        const today = new Date().toDateString();
-        return new Date(item.timestamp).toDateString() === today;
-    }).length;
-
-    const recentActivityCount = inventoryItems.filter(item => {
-        const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-        return item.timestamp > weekAgo;
-    }).length + cutRecords.filter(record => {
-        const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-        return record.timestamp > weekAgo;
-    }).length;
-
-    // Get most common product/wire type across both datasets
-    const productCount = {};
-    inventoryItems.forEach(item => {
-        const code = item.productCode || 'Unknown';
-        productCount[code] = (productCount[code] || 0) + 1;
-    });
-    cutRecords.forEach(record => {
-        const wireType = record.wireId || 'Unknown';
-        productCount[wireType] = (productCount[wireType] || 0) + 1;
-    });
-    const topProduct = Object.keys(productCount).reduce((a, b) =>
-        productCount[a] > productCount[b] ? a : b, 'None');
-
-    // Top Customer calculation from cutting records
-    const customerCount = {};
-    cutRecords.forEach(record => {
-        const customer = record.customerName || 'Unknown';
-        customerCount[customer] = (customerCount[customer] || 0) + 1;
-    });
-    let topCustomer = '-';
-    let topCustomerOrders = '-';
-    if (Object.keys(customerCount).length > 0) {
-        const [customerName, orderCount] = Object.entries(customerCount)
-            .sort(([,a], [,b]) => b - a)[0];
-        topCustomer = customerName;
-        topCustomerOrders = orderCount > 1 ? `${orderCount} cuts` : `${orderCount} cut`;
-    }
-
-    // Activity change (cuts this week)
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const currentWeekCuts = cutRecords.filter(record => {
-        const recordDate = new Date(record.timestamp);
-        return recordDate >= oneWeekAgo;
-    });
-    const previousWeekCuts = cutRecords.filter(record => {
-        const recordDate = new Date(record.timestamp);
-        return recordDate >= new Date(oneWeekAgo.getTime() - 7 * 24 * 60 * 60 * 1000) && recordDate < oneWeekAgo;
-    });
-    const cutsChange = calculateChange(currentWeekCuts.length, previousWeekCuts.length);
-
-    // Update DOM with combined data (kept for compatibility) - safe null checks
+    // Update DOM with pre-calculated data
     const totalItemsEl = document.getElementById('dashboardTotalItems');
-    if (totalItemsEl) totalItemsEl.textContent = totalActivity;
+    if (totalItemsEl) totalItemsEl.textContent = m.totalInventoryItems + m.totalCuts;
 
     const approvalRateEl = document.getElementById('dashboardApprovalRate');
     if (approvalRateEl) approvalRateEl.textContent = approvedRate + '%';
 
     const topProductEl = document.getElementById('dashboardTopProduct');
-    if (topProductEl) topProductEl.textContent = totalActivity > 0 ? topProduct : '-';
+    if (topProductEl) topProductEl.textContent = (m.totalInventoryItems + m.totalCuts) > 0 ? m.topProduct : '-';
 
     const totalValueEl = document.getElementById('dashboardTotalValue');
-    if (totalValueEl) totalValueEl.textContent = '$' + inventoryValue.toFixed(2);
+    if (totalValueEl) totalValueEl.textContent = '$' + m.inventoryValue.toFixed(2);
 
     const avgValueEl = document.getElementById('dashboardAvgValue');
     if (avgValueEl) avgValueEl.textContent = '$' + avgInventoryValue.toFixed(2) + ' avg';
@@ -306,69 +451,39 @@ function updateDashboard() {
     if (totalItemsChangeEl) totalItemsChangeEl.textContent = cutsChange + ' vs last week';
 
     const approvalRateChangeEl = document.getElementById('dashboardApprovalRateChange');
-    if (approvalRateChangeEl) approvalRateChangeEl.textContent = totalProcessed > 0 ? '+0% vs last week' : 'No processed';
+    if (approvalRateChangeEl) approvalRateChangeEl.textContent = m.totalProcessed > 0 ? '+0% vs last week' : 'No processed';
 
-    // Update new metrics - safe null checks
     const topCustomerEl = document.getElementById('dashboardTopCustomer');
-    if (topCustomerEl) topCustomerEl.textContent = topCustomer;
+    if (topCustomerEl) topCustomerEl.textContent = m.topCustomer;
 
     const topCustomerOrdersEl = document.getElementById('dashboardTopCustomerOrders');
-    if (topCustomerOrdersEl) topCustomerOrdersEl.textContent = topCustomerOrders;
+    if (topCustomerOrdersEl) topCustomerOrdersEl.textContent = m.topCustomerOrders;
 
     const totalCutsEl = document.getElementById('dashboardTotalCuts');
-    if (totalCutsEl) totalCutsEl.textContent = totalCuts;
+    if (totalCutsEl) totalCutsEl.textContent = m.totalCuts;
 
     const cutsTodayEl = document.getElementById('dashboardCutsToday');
     if (cutsTodayEl) cutsTodayEl.textContent = cutsChange + ' this week';
 
-    // Update inventory section metrics (only if elements exist - live-stats page doesn't have these)
-
-    // Calculate weekly approval rate change - safe updates only if element exists
-    const approvalWeekAgo = new Date();
-    approvalWeekAgo.setDate(approvalWeekAgo.getDate() - 7);
-    const currentWeekProcessed = inventoryItems.filter(item => {
-        const itemDate = new Date(item.timestamp);
-        return itemDate >= approvalWeekAgo && item.approved !== null && item.approved !== undefined;
-    });
-    const previousWeekProcessed = inventoryItems.filter(item => {
-        const itemDate = new Date(item.timestamp);
-        return itemDate >= new Date(approvalWeekAgo.getTime() - 7 * 24 * 60 * 60 * 1000) &&
-               itemDate < approvalWeekAgo &&
-               item.approved !== null && item.approved !== undefined;
-    });
-    const currentWeekApprovedRate = currentWeekProcessed.length > 0 ?
-        currentWeekProcessed.filter(item => item.approved === true).length / currentWeekProcessed.length : 0;
-    const previousWeekApprovedRate = previousWeekProcessed.length > 0 ?
-        previousWeekProcessed.filter(item => item.approved === true).length / previousWeekProcessed.length : 0;
-    const approvalRateChange = calculateChange(currentWeekApprovedRate * 100, previousWeekApprovedRate * 100);
+    // Inventory section metrics
     const inventoryApprovalRateChangeEl = document.getElementById('inventoryApprovalRateChange');
-    if (inventoryApprovalRateChangeEl) inventoryApprovalRateChangeEl.textContent = approvalRateChange + ' vs last week';
+    if (inventoryApprovalRateChangeEl) inventoryApprovalRateChangeEl.textContent = m.inventoryApprovalRateChange + ' vs last week';
 
-    // Inventory quality count and percent - safe updates only if elements exist
-    const normalCount = inventoryItems.filter(item =>
-        !item.reason || (!item.reason.toLowerCase().includes('damaged') &&
-        !item.reason.toLowerCase().includes('tail end') &&
-        !item.reason.toLowerCase().includes('tailend'))).length;
-    const totalProcessedForQuality = inventoryItems.filter(item => item.approved !== null).length; // or all items?
-    const qualityPercent = totalProcessedForQuality > 0 ? Math.round((normalCount / totalProcessedForQuality) * 100) : 0;
+    const qualityPercent = m.totalProcessed > 0 ? Math.round((m.quality.normal / m.totalProcessed) * 100) : 0;
     const inventoryQualityCountEl = document.getElementById('inventoryQualityCount');
-    if (inventoryQualityCountEl) inventoryQualityCountEl.textContent = normalCount;
+    if (inventoryQualityCountEl) inventoryQualityCountEl.textContent = m.quality.normal;
     const inventoryQualityPercentEl = document.getElementById('inventoryQualityPercent');
     if (inventoryQualityPercentEl) inventoryQualityPercentEl.textContent = qualityPercent + '% Normal';
 
-    // Update cutting section metrics - safe updates only if elements exist
+    // Cutting section metrics
     const cuttingTotalCutsEl = document.getElementById('cuttingTotalCuts');
-    if (cuttingTotalCutsEl) cuttingTotalCutsEl.textContent = totalCuts;
-
+    if (cuttingTotalCutsEl) cuttingTotalCutsEl.textContent = m.totalCuts;
     const cuttingCutsTodayEl = document.getElementById('cuttingCutsToday');
-    if (cuttingCutsTodayEl) cuttingCutsTodayEl.textContent = cutsToday;
-
+    if (cuttingCutsTodayEl) cuttingCutsTodayEl.textContent = m.cutsToday;
     const cuttingTopCustomerEl = document.getElementById('cuttingTopCustomer');
-    if (cuttingTopCustomerEl) cuttingTopCustomerEl.textContent = topCustomer;
-
+    if (cuttingTopCustomerEl) cuttingTopCustomerEl.textContent = m.topCustomer;
     const cuttingTopCustomerOrdersEl = document.getElementById('cuttingTopCustomerOrders');
-    if (cuttingTopCustomerOrdersEl) cuttingTopCustomerOrdersEl.textContent = topCustomerOrders;
-
+    if (cuttingTopCustomerOrdersEl) cuttingTopCustomerOrdersEl.textContent = m.topCustomerOrders;
     const cuttingWeeklyChangeEl = document.getElementById('cuttingWeeklyChange');
     if (cuttingWeeklyChangeEl) cuttingWeeklyChangeEl.textContent = cutsChange;
 }
@@ -378,42 +493,22 @@ function updateAllCharts() {
     const now = new Date().toLocaleTimeString();
     const timestamp = 'Updated: ' + now;
 
-    // Update timestamps - safe null checks for elements that exist on this page
-    const approvalTimestampEl = document.getElementById('approvalChartTimestamp');
-    if (approvalTimestampEl) approvalTimestampEl.textContent = timestamp;
-
-    const productTimestampEl = document.getElementById('productChartTimestamp');
-    if (productTimestampEl) productTimestampEl.textContent = timestamp;
-
-    const activityTimestampEl = document.getElementById('activityChartTimestamp');
-    if (activityTimestampEl) activityTimestampEl.textContent = timestamp;
-
-    const qualityTimestampEl = document.getElementById('qualityChartTimestamp');
-    if (qualityTimestampEl) qualityTimestampEl.textContent = timestamp;
-
-    const valueTimestampEl = document.getElementById('valueChartTimestamp');
-    if (valueTimestampEl) valueTimestampEl.textContent = timestamp;
-
-    // Update new chart timestamps - safe null checks
-    const topCustomersTimestampEl = document.getElementById('topCustomersChartTimestamp');
-    if (topCustomersTimestampEl) topCustomersTimestampEl.textContent = timestamp;
-
-    const wireTypeTimestampEl = document.getElementById('wireTypeChartTimestamp');
-    if (wireTypeTimestampEl) wireTypeTimestampEl.textContent = timestamp;
-
-    const cuttingPerformanceTimestampEl = document.getElementById('cuttingPerformanceChartTimestamp');
-    if (cuttingPerformanceTimestampEl) cuttingPerformanceTimestampEl.textContent = timestamp;
-
-    // const inaTimestampEl = document.getElementById('inaChartTimestamp');
-    // if (inaTimestampEl) inaTimestampEl.textContent = timestamp;
+    // Update timestamps
+    const timestamps = [
+        'approvalChartTimestamp', 'productChartTimestamp', 'activityChartTimestamp',
+        'qualityChartTimestamp', 'valueChartTimestamp', 'topCustomersChartTimestamp',
+        'wireTypeChartTimestamp', 'cuttingPerformanceChartTimestamp'
+    ];
+    timestamps.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = timestamp;
+    });
 
     updateApprovalChart();
     updateProductChart();
     updateActivityChart();
     updateQualityChart();
     updateValueChart();
-
-    // Update new charts
     updateTopCustomersChart();
     updateWireTypeChart();
     updateCuttingPerformanceChart();
@@ -735,163 +830,93 @@ function createValueChart() {
     }
 }
 
-// Chart update functions
+// BOLT OPTIMIZATION: Refactored chart update functions to use calculatedMetrics
 function updateApprovalChart() {
     if (!approvalChart) return;
-
-    const approved = inventoryItems.filter(item => item.approved === true).length;
-    const denied = inventoryItems.filter(item => item.approved === false).length;
-    const pending = inventoryItems.filter(item => item.approved === null || item.approved === undefined).length;
-
-    approvalChart.data.datasets[0].data = [approved, denied, pending];
+    const m = calculatedMetrics;
+    approvalChart.data.datasets[0].data = [m.approvedCount, m.deniedCount, m.pendingCount];
     approvalChart.update();
 
-    // Update count displays
-    document.getElementById('approvedCount').textContent = approved;
-    document.getElementById('deniedCount').textContent = denied;
-    document.getElementById('pendingCount').textContent = pending;
+    document.getElementById('approvedCount').textContent = m.approvedCount;
+    document.getElementById('deniedCount').textContent = m.deniedCount;
+    document.getElementById('pendingCount').textContent = m.pendingCount;
 }
 
 function updateProductChart() {
     if (!productChart) return;
-
-    // Combined product/wire type counts
-    const productCount = {};
-    inventoryItems.forEach(item => {
-        const code = item.productCode || 'Unknown';
-        productCount[code] = (productCount[code] || 0) + 1;
-    });
-    cutRecords.forEach(record => {
-        const wireType = record.wireId || 'Unknown';
-        productCount[wireType] = (productCount[wireType] || 0) + 1;
-    });
-
-    const sortedProducts = Object.entries(productCount)
-        .sort(([,a], [,b]) => b - a)
+    const sortedProducts = Object.entries(calculatedMetrics.productCounts)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 5);
 
     productChart.data.labels = sortedProducts.map(([code]) => code);
-    productChart.data.datasets[0].data = sortedProducts.map(([,count]) => count);
+    productChart.data.datasets[0].data = sortedProducts.map(([, count]) => count);
     productChart.update();
 }
 
 function updateActivityChart() {
     if (!activityChart) return;
-
-    // Cutting activity for last 7 days
-    const data = [];
-    for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dayStart = new Date(date).setHours(0, 0, 0, 0);
-        const dayEnd = new Date(date).setHours(23, 59, 59, 999);
-
-        const cuttingCount = cutRecords.filter(record =>
-            record.timestamp >= dayStart && record.timestamp <= dayEnd
-        ).length;
-
-        data.push(cuttingCount);
-    }
-
-    activityChart.data.datasets[0].data = data;
+    activityChart.data.datasets[0].data = calculatedMetrics.activityTimeline;
     activityChart.update();
 }
 
 function updateQualityChart() {
     if (!qualityChart) return;
-
-    const normal = inventoryItems.filter(item =>
-        !item.reason || (!item.reason.toLowerCase().includes('damaged') &&
-        !item.reason.toLowerCase().includes('tail end') &&
-        !item.reason.toLowerCase().includes('tailend'))).length;
-    const damaged = inventoryItems.filter(item =>
-        item.reason && item.reason.toLowerCase().includes('damaged')).length;
-    const tailends = inventoryItems.filter(item =>
-        item.reason && (item.reason.toLowerCase().includes('tail end') || item.reason.toLowerCase().includes('tailend'))).length;
-
-    qualityChart.data.datasets[0].data = [normal, damaged, tailends];
+    const q = calculatedMetrics.quality;
+    qualityChart.data.datasets[0].data = [q.normal, q.damaged, q.tailends];
     qualityChart.update();
 
-    // Update count displays
-    document.getElementById('normalCount').textContent = normal;
-    document.getElementById('damagedCount').textContent = damaged;
-    document.getElementById('tailendCount').textContent = tailends;
+    document.getElementById('normalCount').textContent = q.normal;
+    document.getElementById('damagedCount').textContent = q.damaged;
+    document.getElementById('tailendCount').textContent = q.tailends;
 }
 
 function updateValueChart() {
     if (!valueChart) return;
-
-    const highValue = inventoryItems.filter(item => (item.totalValue || 0) >= 50).length;
-    const standardValue = inventoryItems.filter(item => (item.totalValue || 0) < 50).length;
-
-    valueChart.data.datasets[0].data = [highValue, standardValue];
+    const v = calculatedMetrics.valueDistribution;
+    valueChart.data.datasets[0].data = [v.high, v.standard];
     valueChart.update();
 
-    // Update count displays
-    document.getElementById('highValueCount').textContent = highValue;
-    document.getElementById('lowValueCount').textContent = standardValue;
+    document.getElementById('highValueCount').textContent = v.high;
+    document.getElementById('lowValueCount').textContent = v.standard;
 }
 
-// New chart update functions
 function updateTopCustomersChart() {
     if (!topCustomersChart) return;
-
-    // Top counting customers from cutting records
-    const customerCount = {};
-    cutRecords.forEach(record => {
-        const customer = record.customerName || 'Unknown';
-        customerCount[customer] = (customerCount[customer] || 0) + 1;
-    });
-
-    const sortedCustomers = Object.entries(customerCount)
-        .sort(([,a], [,b]) => b - a)
+    const sortedCustomers = Object.entries(calculatedMetrics.customerCounts)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 5);
 
     topCustomersChart.data.labels = sortedCustomers.map(([customer]) => customer);
-    topCustomersChart.data.datasets[0].data = sortedCustomers.map(([,count]) => count);
+    topCustomersChart.data.datasets[0].data = sortedCustomers.map(([, count]) => count);
     topCustomersChart.update();
 }
 
 function updateWireTypeChart() {
     if (!wireTypeChart) return;
-
-    // Wire type counts from cutting records only
-    const wireTypeCount = {};
-    cutRecords.forEach(record => {
-        const wireType = record.wireId || 'Unknown';
-        wireTypeCount[wireType] = (wireTypeCount[wireType] || 0) + 1;
-    });
-
-    const sortedWireTypes = Object.entries(wireTypeCount)
-        .sort(([,a], [,b]) => b - a)
+    const sortedWireTypes = Object.entries(calculatedMetrics.wireTypeCounts)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 5);
 
     wireTypeChart.data.labels = sortedWireTypes.map(([wireType]) => wireType);
-    wireTypeChart.data.datasets[0].data = sortedWireTypes.map(([,count]) => count);
+    wireTypeChart.data.datasets[0].data = sortedWireTypes.map(([, count]) => count);
     wireTypeChart.update();
 }
 
 function updateCuttingPerformanceChart() {
     if (!cuttingPerformanceChart) return;
-
-    const fullPicks = cutRecords.filter(record => record.isFullPick === true).length;
-    const systemCuts = cutRecords.filter(record => record.isSystemCut === true).length;
-
-    cuttingPerformanceChart.data.datasets[0].data = [fullPicks, systemCuts];
+    const p = calculatedMetrics.performance;
+    cuttingPerformanceChart.data.datasets[0].data = [p.fullPicks, p.systemCuts];
     cuttingPerformanceChart.update();
 
-    // Update count displays
-    document.getElementById('fullPickCount').textContent = fullPicks;
-    document.getElementById('systemCutCount').textContent = systemCuts;
+    document.getElementById('fullPickCount').textContent = p.fullPicks;
+    document.getElementById('systemCutCount').textContent = p.systemCuts;
 }
 
 function updateINAItems() {
     const inaList = document.getElementById('topINAItems');
     if (!inaList) return;
 
-    // Get recent items with INA numbers
     const inaItems = inventoryItems.filter(item => item.inaNumber && item.inaNumber.trim() !== '')
-        .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, 5);
 
     if (inaItems.length === 0) {
