@@ -69,7 +69,7 @@ function initMobileMenu(options = {}) {
 function createMobileMenu(menuItems, version, credits, title) {
     // Hamburger button HTML
     const hamburgerButton = `
-        <button id="mobileMenuBtn" class="sm:hidden fixed bottom-4 left-4 z-40 bg-[#0058B3] hover:bg-[#004a99] text-white p-3 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#0058B3] focus:ring-opacity-50">
+        <button id="mobileMenuBtn" aria-label="Open Navigation Menu" aria-expanded="false" class="sm:hidden fixed bottom-4 left-4 z-40 bg-[#0058B3] hover:bg-[#004a99] text-white p-3 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#0058B3] focus:ring-opacity-50">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path id="hamburgerIcon" d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path id="closeIcon" class="hidden" d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -120,7 +120,7 @@ function createMobileMenu(menuItems, version, credits, title) {
 
                 <!-- Close Button -->
                 <div class="flex justify-end p-4">
-                    <button id="mobileMenuCloseBtn" class="p-2 text-[#0058B3] hover:text-[#004a99] rounded-full hover:bg-gray-100 transition-colors duration-200">
+                    <button id="mobileMenuCloseBtn" aria-label="Close Navigation Menu" class="p-2 text-[#0058B3] hover:text-[#004a99] rounded-full hover:bg-gray-100 transition-colors duration-200">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -237,6 +237,7 @@ function toggleMobileMenu() {
  */
 function openMobileMenu() {
     const overlay = document.getElementById('mobileMenuOverlay');
+    const hamburgerBtn = document.getElementById('mobileMenuBtn');
     const hamburgerIcon = document.getElementById('hamburgerIcon');
     const closeIcon = document.getElementById('closeIcon');
 
@@ -246,6 +247,12 @@ function openMobileMenu() {
     overlay.classList.remove('-translate-x-full');
     overlay.classList.add('translate-x-0');
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    // Update ARIA state
+    if (hamburgerBtn) {
+        hamburgerBtn.setAttribute('aria-expanded', 'true');
+        hamburgerBtn.setAttribute('aria-label', 'Close Navigation Menu');
+    }
 
     // Toggle icon (hamburger to X)
     if (hamburgerIcon && closeIcon) {
@@ -259,6 +266,7 @@ function openMobileMenu() {
  */
 function closeMobileMenu() {
     const overlay = document.getElementById('mobileMenuOverlay');
+    const hamburgerBtn = document.getElementById('mobileMenuBtn');
     const hamburgerIcon = document.getElementById('hamburgerIcon');
     const closeIcon = document.getElementById('closeIcon');
 
@@ -268,6 +276,12 @@ function closeMobileMenu() {
     overlay.classList.remove('translate-x-0');
     overlay.classList.add('-translate-x-full');
     document.body.style.overflow = ''; // Restore scrolling
+
+    // Update ARIA state
+    if (hamburgerBtn) {
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        hamburgerBtn.setAttribute('aria-label', 'Open Navigation Menu');
+    }
 
     // Toggle icon (X to hamburger)
     if (hamburgerIcon && closeIcon) {
