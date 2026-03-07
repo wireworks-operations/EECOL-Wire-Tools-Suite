@@ -318,20 +318,89 @@ function updateDashboard() {
     console.log('📊 Updating dashboard statistics...');
 
     const totalCuts = cutRecords.length;
-    const totalLength = cutRecords.reduce((sum, record) => sum + (record.cutLength || 0), 0);
-    const avgCutLength = totalCuts > 0 ? (totalLength / totalCuts).toFixed(2) : 0;
 
-    // Calculate statistics
-    const fullPicks = cutRecords.filter(record => record.isFullPick === true).length;
-    const fullPicksPercent = totalCuts > 0 ? ((fullPicks / totalCuts) * 100).toFixed(1) : 0;
+    /**
+     * BOLT OPTIMIZATION: Single-pass metrics calculation
+     * Consolidates multiple O(N) passes (filter, reduce, forEach) into a single iteration
+     * to avoid redundant passes over the large cutRecords dataset.
+     */
+    let totalLength = 0;
+    let fullPicks = 0;
+    let systemCuts = 0;
+    let noMarkCuts = 0;
+    let longestCut = 0;
+    let longestCutOrder = '-';
 
-    // Top cutter calculation
     const cutterCounts = {};
-    cutRecords.forEach(record => {
+    const customerCounts = {};
+    const wireTypeCounts = {};
+
+    const now = new Date();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(now.getDate() - 7);
+    const twoWeeksAgo = new Date(oneWeekAgo);
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 7);
+
+    let currentWeekCount = 0;
+    let previousWeekCount = 0;
+
+    for (const record of cutRecords) {
+        // Total Length
+        const cutLength = parseFloat(record.cutLength) || 0;
+        totalLength += cutLength;
+
+        // Full Picks
+        if (record.isFullPick === true) fullPicks++;
+
+        // System Cuts
+        if (record.isSystemCut === true) systemCuts++;
+
+        // No Mark Cuts
+        const startingMark = record.startingMark;
+        const endingMark = record.endingMark;
+        if (startingMark === null || startingMark === undefined || startingMark === '' ||
+            endingMark === null || endingMark === undefined || endingMark === '') {
+            noMarkCuts++;
+        }
+
+        // Longest Cut
+        if (cutLength > longestCut) {
+            longestCut = cutLength;
+            longestCutOrder = record.orderNumber || 'N/A';
+        }
+
+        // Cutter counts
         if (record.cutterName) {
             cutterCounts[record.cutterName] = (cutterCounts[record.cutterName] || 0) + 1;
         }
-    });
+
+        // Customer counts
+        if (record.customerName) {
+            customerCounts[record.customerName] = (customerCounts[record.customerName] || 0) + 1;
+        }
+
+        // Wire type counts
+        const wireType = record.wireId || 'Unknown';
+        wireTypeCounts[wireType] = (wireTypeCounts[wireType] || 0) + 1;
+
+        // Weekly change tracking
+        const recordDate = parseDate(record.timestamp);
+        if (recordDate) {
+            if (recordDate >= oneWeekAgo) {
+                currentWeekCount++;
+            } else if (recordDate >= twoWeeksAgo) {
+                previousWeekCount++;
+            }
+        }
+    }
+
+    const avgCutLength = totalCuts > 0 ? (totalLength / totalCuts).toFixed(2) : 0;
+    const fullPicksPercent = totalCuts > 0 ? ((fullPicks / totalCuts) * 100).toFixed(1) : 0;
+    const systemCutsPercent = totalCuts > 0 ? ((systemCuts / totalCuts) * 100).toFixed(1) : 0;
+    const noMarkCutsPercent = totalCuts > 0 ? ((noMarkCuts / totalCuts) * 100).toFixed(1) : 0;
+    const cutsChange = calculateChange(currentWeekCount, previousWeekCount);
+
+    // Top cutter calculation
     let topCutter = '-';
     let topCutterCuts = 0;
     for (const [cutter, count] of Object.entries(cutterCounts)) {
@@ -342,12 +411,6 @@ function updateDashboard() {
     }
 
     // Top customer calculation
-    const customerCounts = {};
-    cutRecords.forEach(record => {
-        if (record.customerName) {
-            customerCounts[record.customerName] = (customerCounts[record.customerName] || 0) + 1;
-        }
-    });
     let topCustomer = '-';
     let topCustomerCuts = 0;
     for (const [customer, count] of Object.entries(customerCounts)) {
@@ -358,11 +421,6 @@ function updateDashboard() {
     }
 
     // Most cut wire type
-    const wireTypeCounts = {};
-    cutRecords.forEach(record => {
-        const wireType = record.wireId || 'Unknown';
-        wireTypeCounts[wireType] = (wireTypeCounts[wireType] || 0) + 1;
-    });
     let mostCutWire = '-';
     let mostCutWireCount = 0;
     for (const [wireType, count] of Object.entries(wireTypeCounts)) {
@@ -371,43 +429,6 @@ function updateDashboard() {
             mostCutWire = wireType;
         }
     }
-
-    // Longest cut
-    let longestCut = 0;
-    let longestCutOrder = '-';
-    cutRecords.forEach(record => {
-        const cutLength = parseFloat(record.cutLength) || 0;
-        if (cutLength > longestCut) {
-            longestCut = cutLength;
-            longestCutOrder = record.orderNumber || 'N/A';
-        }
-    });
-
-    // System cuts
-    const systemCuts = cutRecords.filter(record => record.isSystemCut === true).length;
-    const systemCutsPercent = totalCuts > 0 ? ((systemCuts / totalCuts) * 100).toFixed(1) : 0;
-
-    // No mark cuts
-    const noMarkCuts = cutRecords.filter(record => {
-        const startingMark = record.startingMark;
-        const endingMark = record.endingMark;
-        return startingMark === null || startingMark === undefined || startingMark === '' ||
-               endingMark === null || endingMark === undefined || endingMark === '';
-    }).length;
-    const noMarkCutsPercent = totalCuts > 0 ? ((noMarkCuts / totalCuts) * 100).toFixed(1) : 0;
-
-    // Weekly change calculation
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const currentWeekRecords = cutRecords.filter(record => {
-        const recordDate = parseDate(record.timestamp);
-        return recordDate && recordDate >= oneWeekAgo;
-    });
-    const previousWeekRecords = cutRecords.filter(record => {
-        const recordDate = parseDate(record.timestamp);
-        return recordDate && recordDate >= new Date(oneWeekAgo.getTime() - 7 * 24 * 60 * 60 * 1000) && recordDate < oneWeekAgo;
-    });
-    const cutsChange = calculateChange(currentWeekRecords.length, previousWeekRecords.length);
 
     // Update DOM elements
     document.getElementById('totalCutsStat').textContent = totalCuts;
