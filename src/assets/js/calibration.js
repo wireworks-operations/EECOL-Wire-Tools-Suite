@@ -126,7 +126,7 @@ function renderPreviousMeasurements(measurements) {
                     <span class="text-sm text-gray-600 dark:text-gray-400">${date}</span>
                 </div>
                 <div class="font-bold text-indigo-700 dark:text-indigo-400 text-lg">
-                    ${m.measurement}
+                    ${window.escapeHTML(m.measurement)}
                 </div>
             </div>
         `;
