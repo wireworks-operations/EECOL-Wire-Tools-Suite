@@ -25,6 +25,7 @@ function showAlert(message, title = "Notification") {
 
         modalTitle.textContent = title;
         modalMessage.textContent = message;
+        modalMessage.classList.add('whitespace-pre-line');
         modalButtons.innerHTML = '<button id="modalOKBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">OK</button>';
 
         const okBtn = modalButtons.querySelector('#modalOKBtn');
@@ -54,6 +55,7 @@ function showConfirm(message, title = "Confirmation") {
 
         modalTitle.textContent = title;
         modalMessage.textContent = message;
+        modalMessage.classList.add('whitespace-pre-line');
         modalButtons.innerHTML = `
             <button id="modalCancelBtn" class="px-4 py-2 bg-gray-500 text-white rounded-xl shadow-lg hover:bg-gray-600 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold mr-2">Cancel</button>
             <button id="modalOKBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">OK</button>
