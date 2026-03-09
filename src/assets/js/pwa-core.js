@@ -76,19 +76,44 @@ function showInstallPrompt() {
     const banner = document.createElement('div');
     banner.id = 'pwa-install-banner';
     banner.className = 'fixed bottom-4 left-4 right-4 bg-eecol-blue text-white p-4 rounded-lg shadow-xl z-50 flex items-center justify-between';
-    banner.innerHTML = `
-        <div class="flex items-center">
-            <div class="text-2xl mr-3">📱</div>
-            <div>
-                <div class="font-bold">Install EECOL Wire Tools</div>
-                <div class="text-sm opacity-90">Install as app for better experience</div>
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="hideInstallPrompt()" class="px-3 py-2 bg-transparent border border-white rounded text-sm">Not Now</button>
-            <button onclick="installPWA()" class="px-4 py-2 bg-white text-eecol-blue rounded font-bold text-sm">Install</button>
-        </div>
-    `;
+
+    const leftDiv = document.createElement('div');
+    leftDiv.className = 'flex items-center';
+
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'text-2xl mr-3';
+    iconDiv.textContent = '📱';
+    leftDiv.appendChild(iconDiv);
+
+    const textDiv = document.createElement('div');
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'font-bold';
+    titleDiv.textContent = 'Install EECOL Wire Tools';
+    textDiv.appendChild(titleDiv);
+
+    const subtitleDiv = document.createElement('div');
+    subtitleDiv.className = 'text-sm opacity-90';
+    subtitleDiv.textContent = 'Install as app for better experience';
+    textDiv.appendChild(subtitleDiv);
+    leftDiv.appendChild(textDiv);
+    banner.appendChild(leftDiv);
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'flex gap-2';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.onclick = () => hideInstallPrompt();
+    cancelBtn.className = 'px-3 py-2 bg-transparent border border-white rounded text-sm';
+    cancelBtn.textContent = 'Not Now';
+    btnGroup.appendChild(cancelBtn);
+
+    const installBtn = document.createElement('button');
+    installBtn.onclick = () => installPWA();
+    installBtn.className = 'px-4 py-2 bg-white text-eecol-blue rounded font-bold text-sm';
+    installBtn.textContent = 'Install';
+    btnGroup.appendChild(installBtn);
+
+    banner.appendChild(btnGroup);
     document.body.appendChild(banner);
 }
 
@@ -132,7 +157,7 @@ function updateNetworkStatus(online) {
             if (!container.querySelector('.network-status.offline')) {
                 const indicator = document.createElement('div');
                 indicator.className = 'network-status offline bg-orange-100 border-l-4 border-orange-500 text-orange-700 px-4 py-2 mb-4 text-sm';
-                indicator.innerHTML = '⚠️ You are currently offline. Some features may be limited.';
+                indicator.textContent = '⚠️ You are currently offline. Some features may be limited.';
                 container.appendChild(indicator);
             }
         });

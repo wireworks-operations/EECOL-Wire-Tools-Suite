@@ -382,40 +382,65 @@ function displayRecommendedReels(recommendedReels, targetLength_m) {
         const reelCard = document.createElement('div');
         reelCard.className = 'bg-green-50 border border-green-200 rounded-lg p-4';
 
-        reelCard.innerHTML = `
-            <h5 class="text-md font-bold mb-2 text-[#0058B3]">🏭 Option ${index + 1}: ${reel.name}</h5>
-            <p class="text-sm text-green-800 mb-3">Utilization: ${reel.utilization.toFixed(1)}%</p>
+        const header = document.createElement('h5');
+        header.className = 'text-md font-bold mb-2 text-[#0058B3]';
+        header.textContent = `🏭 Option ${index + 1}: ${reel.name}`;
+        reelCard.appendChild(header);
 
-            <div class="grid grid-cols-3 gap-2 text-center text-sm">
-                <div class="bg-white p-2 rounded shadow-sm">
-                    <div class="font-semibold text-gray-600">Flange Diameter</div>
-                    <div class="text-[#0058B3] font-bold">${df_in.toFixed(1)} in</div>
-                    <div class="text-gray-500">${metersToFeet(reel.flange).toFixed(1)} ft</div>
-                </div>
-                <div class="bg-white p-2 rounded shadow-sm">
-                    <div class="font-semibold text-gray-600">Core Diameter</div>
-                    <div class="text-[#0058B3] font-bold">${dc_in.toFixed(1)} in</div>
-                    <div class="text-gray-500">${metersToFeet(reel.core).toFixed(1)} ft</div>
-                </div>
-                <div class="bg-white p-2 rounded shadow-sm">
-                    <div class="font-semibold text-gray-600">Traverse Width</div>
-                    <div class="text-[#0058B3] font-bold">${w_in.toFixed(1)} in</div>
-                    <div class="text-gray-500">${metersToFeet(reel.width).toFixed(1)} ft</div>
-                </div>
-            </div>
+        const utilP = document.createElement('p');
+        utilP.className = 'text-sm text-green-800 mb-3';
+        utilP.textContent = `Utilization: ${reel.utilization.toFixed(1)}%`;
+        reelCard.appendChild(utilP);
 
-            <div class="mt-3 bg-green-100 p-2 rounded text-center">
-                <div class="text-green-800 font-semibold">
-                    Capacity: ${reel.capacity_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${capacity_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)
-                </div>
-                <div class="text-green-700 text-xs mt-1">
-                    Target: ${targetLength_m.toFixed(0)} m (${target_ft.toFixed(0)} ft) - ${reel.utilization.toFixed(1)}% utilized
-                </div>
-                <div class="text-green-700 text-xs font-bold">
-                    ✅ ${reel.category.charAt(0).toUpperCase() + reel.category.slice(1)} reel • ${reel.layerCount} layers possible
-                </div>
-            </div>
-        `;
+        const gridDiv = document.createElement('div');
+        gridDiv.className = 'grid grid-cols-3 gap-2 text-center text-sm';
+
+        const createGridItem = (label, primary, secondary) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'bg-white p-2 rounded shadow-sm';
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'font-semibold text-gray-600';
+            labelDiv.textContent = label;
+            itemDiv.appendChild(labelDiv);
+
+            const primaryDiv = document.createElement('div');
+            primaryDiv.className = 'text-[#0058B3] font-bold';
+            primaryDiv.textContent = primary;
+            itemDiv.appendChild(primaryDiv);
+
+            const secondaryDiv = document.createElement('div');
+            secondaryDiv.className = 'text-gray-500';
+            secondaryDiv.textContent = secondary;
+            itemDiv.appendChild(secondaryDiv);
+
+            return itemDiv;
+        };
+
+        gridDiv.appendChild(createGridItem('Flange Diameter', `${df_in.toFixed(1)} in`, `${metersToFeet(reel.flange).toFixed(1)} ft`));
+        gridDiv.appendChild(createGridItem('Core Diameter', `${dc_in.toFixed(1)} in`, `${metersToFeet(reel.core).toFixed(1)} ft`));
+        gridDiv.appendChild(createGridItem('Traverse Width', `${w_in.toFixed(1)} in`, `${metersToFeet(reel.width).toFixed(1)} ft`));
+        reelCard.appendChild(gridDiv);
+
+        const footerDiv = document.createElement('div');
+        footerDiv.className = 'mt-3 bg-green-100 p-2 rounded text-center';
+
+        const capDiv = document.createElement('div');
+        capDiv.className = 'text-green-800 font-semibold';
+        capDiv.textContent = `Capacity: ${reel.capacity_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${capacity_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
+        footerDiv.appendChild(capDiv);
+
+        const targetDiv = document.createElement('div');
+        targetDiv.className = 'text-green-700 text-xs mt-1';
+        targetDiv.textContent = `Target: ${targetLength_m.toFixed(0)} m (${target_ft.toFixed(0)} ft) - ${reel.utilization.toFixed(1)}% utilized`;
+        footerDiv.appendChild(targetDiv);
+
+        const layersDiv = document.createElement('div');
+        layersDiv.className = 'text-green-700 text-xs font-bold';
+        layersDiv.textContent = `✅ ${reel.category.charAt(0).toUpperCase() + reel.category.slice(1)} reel • ${reel.layerCount} layers possible`;
+        footerDiv.appendChild(layersDiv);
+
+        reelCard.appendChild(footerDiv);
 
         recommendedReelsList.appendChild(reelCard);
     });

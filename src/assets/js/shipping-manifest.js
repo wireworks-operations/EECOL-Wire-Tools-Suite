@@ -270,7 +270,10 @@ function populateReelConfigurationSelector() {
 
     // Clear existing options except the default
     const defaultOption = selector.querySelector('option[value=""]');
-    selector.innerHTML = '';
+    while (selector.firstChild) {
+        selector.removeChild(selector.firstChild);
+    }
+
     if (defaultOption) {
         selector.appendChild(defaultOption);
     } else {

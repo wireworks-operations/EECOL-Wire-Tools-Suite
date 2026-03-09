@@ -196,41 +196,61 @@ async function clearAllCutRecordsFromDB() {
 }
 
 function updateExportStatus() {
-    function formatExportTime(timestamp) {
-        if (!timestamp) return `<a href="#" onclick="exportJSONBackup()" style="color: #f59e0b; font-weight: 600; text-decoration: underline;">Never exported</a>`;
+    function setExportDisplay(element, timestamp) {
+        if (!element) return;
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+
+        if (!timestamp) {
+            const a = document.createElement('a');
+            a.href = '#';
+            a.onclick = (e) => { e.preventDefault(); exportJSONBackup(); };
+            a.style.color = '#f59e0b';
+            a.style.fontWeight = '600';
+            a.style.textDecoration = 'underline';
+            a.textContent = 'Never exported';
+            element.appendChild(a);
+            return;
+        }
 
         const date = new Date(timestamp);
         const now = new Date();
         const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
         const isStale = diffDays > 3;
 
-        if (isStale) return `<a href="#" onclick="exportJSONBackup()">${diffDays > 7 ? date.toLocaleDateString() : `${diffDays} days ago`}</a>`;
-
-        if (diffDays === 0) {
-            return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        } else if (diffDays === 1) {
-            return 'Yesterday';
-        } else if (diffDays < 7) {
-            return `${diffDays} days ago`;
-        } else {
-            return date.toLocaleDateString();
+        if (isStale) {
+            const a = document.createElement('a');
+            a.href = '#';
+            a.onclick = (e) => { e.preventDefault(); exportJSONBackup(); };
+            a.textContent = diffDays > 7 ? date.toLocaleDateString() : `${diffDays} days ago`;
+            element.appendChild(a);
+            return;
         }
+
+        let text = '';
+        if (diffDays === 0) {
+            text = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        } else if (diffDays === 1) {
+            text = 'Yesterday';
+        } else if (diffDays < 7) {
+            text = `${diffDays} days ago`;
+        } else {
+            text = date.toLocaleDateString();
+        }
+        element.textContent = text;
     }
 
     // Try to get from IndexedDB first
+    const jsonEl = document.getElementById('lastJsonExport');
     if (window.eecolDB && window.eecolDB.isReady()) {
         window.eecolDB.get('settings', 'lastJsonExport').then((jsonExport) => {
-            const jsonEl = document.getElementById('lastJsonExport');
-            if (jsonEl) jsonEl.innerHTML = formatExportTime(jsonExport?.value);
+            setExportDisplay(jsonEl, jsonExport?.value);
         }).catch(() => {
-            // Fresh database - show never exported
-            const jsonEl = document.getElementById('lastJsonExport');
-            if (jsonEl) jsonEl.innerHTML = formatExportTime(null);
+            setExportDisplay(jsonEl, null);
         });
     } else {
-        // Fresh database - show never exported
-        const jsonEl = document.getElementById('lastJsonExport');
-        if (jsonEl) jsonEl.innerHTML = formatExportTime(null);
+        setExportDisplay(jsonEl, null);
     }
 }
 
@@ -1033,8 +1053,15 @@ function renderCutRecords() {
     // Update counters
     totalRecordsElement.textContent = filteredRecords.length;
 
+    while (cutHistoryList.firstChild) {
+        cutHistoryList.removeChild(cutHistoryList.firstChild);
+    }
+
     if (filteredRecords.length === 0) {
-        cutHistoryList.innerHTML = '<p class="text-sm text-gray-500">No cut records found yet.</p>';
+        const emptyMsg = document.createElement('p');
+        emptyMsg.className = 'text-sm text-gray-500';
+        emptyMsg.textContent = 'No cut records found yet.';
+        cutHistoryList.appendChild(emptyMsg);
         displayedRecordsElement.textContent = '0';
         updateStats();
         return;
@@ -1045,101 +1072,158 @@ function renderCutRecords() {
     displayedRecordsCount = recordsToShow;
     displayedRecordsElement.textContent = displayedRecordsCount;
 
-    let html = '';
     filteredRecords.slice(0, displayedRecordsCount).forEach(record => {
-        const date = new Date(record.timestamp).toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        const recordDiv = document.createElement('div');
+        recordDiv.className = 'cut-record-item';
 
-        let isFullPick = record.isFullPick;
-        let isNoMarks = record.isNoMarks;
+        const headerP = document.createElement('p');
+        headerP.className = 'text-xs font-semibold header-gradient truncate';
+        headerP.textContent = `Wire: ${record.wireId} | Cut From ${record.lineCode || 'N/A'} | Turned To L:${record.turnedToLineCode || 'N/A'} | Order: ${record.orderNumber} | Customer: ${record.customerName}`;
+        recordDiv.appendChild(headerP);
+
+        const detailsP = document.createElement('p');
+        detailsP.className = 'text-xs text-gray-700';
+
+        const lengthSpan = document.createElement('span');
+        lengthSpan.className = 'font-bold';
+        lengthSpan.textContent = `${record.cutLength.toFixed(2)} ${record.cutLengthUnit}`;
+
+        detailsP.textContent = 'Cut Length: ';
+        detailsP.appendChild(lengthSpan);
+        detailsP.appendChild(document.createTextNode(' | '));
+
         let pickFlags = [];
-        if (isFullPick) pickFlags.push('Full Pick');
-        if (isNoMarks) pickFlags.push('No Marks');
+        if (record.isFullPick) pickFlags.push('Full Pick');
+        if (record.isNoMarks) pickFlags.push('No Marks');
 
-        let pickDisplay = '';
         if (pickFlags.length > 0) {
-            if (record.startingMark && !isNoMarks) {
-                // Show both Full Pick and marks
-                pickDisplay = `<span class="font-bold">${pickFlags.join(', ')}</span> | Start Mark: <span class="font-bold">${escapeHTML(record.startingMark)} ${escapeHTML(record.startingMarkUnit)}</span> | End Mark: <span class="font-bold">${record.isSingleUnitCut ? '1 unit cut' : escapeHTML(record.endingMark) + ' ' + escapeHTML(record.endingMarkUnit)}</span>`;
-            } else {
-                // Just show the flags
-                pickDisplay = `<span class="font-bold">${pickFlags.join(', ')}</span>`;
+            const flagsSpan = document.createElement('span');
+            flagsSpan.className = 'font-bold';
+            flagsSpan.textContent = pickFlags.join(', ');
+            detailsP.appendChild(flagsSpan);
+
+            if (record.startingMark && !record.isNoMarks) {
+                detailsP.appendChild(document.createTextNode(' | Start Mark: '));
+                const startSpan = document.createElement('span');
+                startSpan.className = 'font-bold';
+                startSpan.textContent = `${record.startingMark} ${record.startingMarkUnit}`;
+                detailsP.appendChild(startSpan);
+                detailsP.appendChild(document.createTextNode(' | End Mark: '));
+                const endSpan = document.createElement('span');
+                endSpan.className = 'font-bold';
+                endSpan.textContent = record.isSingleUnitCut ? '1 unit cut' : `${record.endingMark} ${record.endingMarkUnit}`;
+                detailsP.appendChild(endSpan);
             }
-        } else if (record.startingMark && !isNoMarks) {
-            // Normal case with marks (when No Marks is not checked)
-            pickDisplay = `Start Mark: <span class="font-bold">${escapeHTML(record.startingMark)} ${escapeHTML(record.startingMarkUnit)}</span> | End Mark: <span class="font-bold">${record.isSingleUnitCut ? '1 unit cut' : escapeHTML(record.endingMark) + ' ' + escapeHTML(record.endingMarkUnit)}</span>`;
+        } else if (record.startingMark && !record.isNoMarks) {
+            detailsP.appendChild(document.createTextNode('Start Mark: '));
+            const startSpan = document.createElement('span');
+            startSpan.className = 'font-bold';
+            startSpan.textContent = `${record.startingMark} ${record.startingMarkUnit}`;
+            detailsP.appendChild(startSpan);
+            detailsP.appendChild(document.createTextNode(' | End Mark: '));
+            const endSpan = document.createElement('span');
+            endSpan.className = 'font-bold';
+            endSpan.textContent = record.isSingleUnitCut ? '1 unit cut' : `${record.endingMark} ${record.endingMarkUnit}`;
+            detailsP.appendChild(endSpan);
         } else {
-            // No marks or full pick without marks
-            pickDisplay = 'No Marks';
+            detailsP.appendChild(document.createTextNode('No Marks'));
         }
+        recordDiv.appendChild(detailsP);
 
-        // Determine Cut In System button state and text
-        let cutInSystemButton = '';
+        const cutterP = document.createElement('p');
+        cutterP.className = 'text-xs text-gray-700';
+        let cutterText = `Cutter: ${record.cutterName} | `;
+        if (record.coilOrReel === 'coil') cutterText += 'Coil: Yes';
+        if (record.coilOrReel === 'reel' && record.chargeable === 'no') cutterText += 'Non-Chargeable Reel';
+        if (record.coilOrReel === 'reel' && record.chargeable === 'yes') {
+            cutterText += ` RLS EE-${record.reelSize ? record.reelSize : 'N/A'}W | Chargeable: ${record.chargeable}`;
+        }
+        cutterP.textContent = cutterText;
+        if (record.isSystemCut) {
+            const systemSpan = document.createElement('span');
+            systemSpan.className = 'font-bold';
+            systemSpan.textContent = ' | System Cut';
+            cutterP.appendChild(systemSpan);
+        }
+        const cutInSystemSpan = document.createElement('span');
+        cutInSystemSpan.className = 'font-bold';
+        cutInSystemSpan.textContent = ` | Cut In System: ${record.isCutInSystem ? 'Yes' : 'No'}`;
+        cutterP.appendChild(cutInSystemSpan);
+        recordDiv.appendChild(cutterP);
+
+        const commentsP = document.createElement('p');
+        commentsP.className = 'text-xs text-gray-700';
+        commentsP.textContent = `Comments: ${record.orderComments || 'N/A'}`;
+        recordDiv.appendChild(commentsP);
+
+        const date = new Date(record.timestamp).toLocaleString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        const metaP = document.createElement('p');
+        metaP.className = 'text-xs text-gray-500';
+        metaP.textContent = `@ ${date} by Local`;
+        recordDiv.appendChild(metaP);
+
+        const createdDate = new Date(record.createdAt || record.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const updatedDate = record.updatedAt && record.updatedAt !== record.createdAt ? ` | Updated: ${new Date(record.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : '';
+        const createdP = document.createElement('p');
+        createdP.className = 'text-xs text-gray-400';
+        createdP.textContent = `Created: ${createdDate}${updatedDate}`;
+        recordDiv.appendChild(createdP);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'flex justify-between items-center mt-1';
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'flex space-x-1';
+
+        const editBtn = document.createElement('button');
+        editBtn.onclick = () => editRecord(record.id);
+        editBtn.className = 'text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded';
+        editBtn.textContent = 'Edit';
+        btnGroup.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.onclick = () => deleteRecord(record.id);
+        deleteBtn.className = 'text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded';
+        deleteBtn.textContent = 'Delete';
+        btnGroup.appendChild(deleteBtn);
+
+        actionsDiv.appendChild(btnGroup);
+
+        const cutInSystemButton = document.createElement('button');
         if (record.isCutInSystem) {
-            // Already set to true - show purple button with date, disabled
             const setDate = record.cutInSystemTimestamp ? (() => {
-                const date = new Date(record.cutInSystemTimestamp);
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const year = date.getFullYear();
-                return `${month}/${day}/${year}`;
+                const d = new Date(record.cutInSystemTimestamp);
+                return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
             })() : 'Unknown';
-            cutInSystemButton = `<button disabled class="text-xs bg-purple-600 text-white px-2 py-1 rounded cursor-not-allowed opacity-75" title="Marked as Cut In System on ${setDate}">✓ Cut In System (${setDate})</button>`;
+            cutInSystemButton.disabled = true;
+            cutInSystemButton.className = 'text-xs bg-purple-600 text-white px-2 py-1 rounded cursor-not-allowed opacity-75';
+            cutInSystemButton.textContent = `✓ Cut In System (${setDate})`;
+            cutInSystemButton.title = `Marked as Cut In System on ${setDate}`;
         } else {
-            // Not set - show gray button, clickable
-            cutInSystemButton = `<button onclick="toggleCutInSystem('${record.id}')" class="text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded">Cut In System</button>`;
+            cutInSystemButton.onclick = () => toggleCutInSystem(record.id);
+            cutInSystemButton.className = 'text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded';
+            cutInSystemButton.textContent = 'Cut In System';
         }
+        actionsDiv.appendChild(cutInSystemButton);
+        recordDiv.appendChild(actionsDiv);
 
-        html += `
-            <div class="cut-record-item">
-                <p class="text-xs font-semibold header-gradient truncate">
-                    Wire: ${escapeHTML(record.wireId)} | Cut From ${escapeHTML(record.lineCode || 'N/A')} | Turned To L:${escapeHTML(record.turnedToLineCode || 'N/A')} | Order: ${escapeHTML(record.orderNumber)} | Customer: ${escapeHTML(record.customerName)}
-                </p>
-                <p class="text-xs text-gray-700">
-                    Cut Length: <span class="font-bold">${escapeHTML(record.cutLength.toFixed(2))} ${escapeHTML(record.cutLengthUnit)}</span> | ${pickDisplay}
-                </p>
-                <p class="text-xs text-gray-700">
-                    Cutter: ${escapeHTML(record.cutterName)} |
-                    ${record.coilOrReel === 'coil' ? `Coil: Yes` : ''}
-                    ${record.coilOrReel === 'reel' && record.chargeable === 'no' ? `Non-Chargeable Reel` : ''}
-                    ${record.coilOrReel === 'reel' && record.chargeable === 'yes' ? ` RLS EE-${escapeHTML(record.reelSize ? record.reelSize : 'N/A')}W | Chargeable: ${escapeHTML(record.chargeable)}` : ''}
-                    ${record.isSystemCut ? ' | <span class="font-bold">System Cut</span>' : ''}
-                    ${record.isCutInSystem ? ` | <span class="font-bold">Cut In System: Yes</span>` : ` | Cut In System: No`}
-                </p>
-                <p class="text-xs text-gray-700">Comments: ${escapeHTML(record.orderComments || 'N/A')}</p>
-                <p class="text-xs text-gray-500">@ ${date} by Local</p>
-                <p class="text-xs text-gray-400">Created: ${new Date(record.createdAt || record.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${record.updatedAt && record.updatedAt !== record.createdAt ? ` | Updated: ${new Date(record.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</p>
-                <div class="flex justify-between items-center mt-1">
-                    <div class="flex space-x-1">
-                        <button onclick="editRecord('${record.id}')" class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">Edit</button>
-                        <button onclick="deleteRecord('${record.id}')" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                    </div>
-                    ${cutInSystemButton}
-                </div>
-            </div>
-        `;
+        cutHistoryList.appendChild(recordDiv);
     });
 
     // Add "Load More" button if there are more records
     if (displayedRecordsCount < filteredRecords.length) {
-        html += `
-            <div class="text-center mt-4">
-                <button
-                    onclick="loadMoreRecords()"
-                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition duration-200"
-                >
-                    Load More Records (${filteredRecords.length - displayedRecordsCount} remaining)
-                </button>
-            </div>
-        `;
+        const moreDiv = document.createElement('div');
+        moreDiv.className = 'text-center mt-4';
+        const moreBtn = document.createElement('button');
+        moreBtn.onclick = loadMoreRecords;
+        moreBtn.className = 'px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition duration-200';
+        moreBtn.textContent = `Load More Records (${filteredRecords.length - displayedRecordsCount} remaining)`;
+        moreDiv.appendChild(moreBtn);
+        cutHistoryList.appendChild(moreDiv);
     }
 
-    cutHistoryList.innerHTML = html;
     updateStats();
 }
 
@@ -2000,65 +2084,88 @@ document.addEventListener('DOMContentLoaded', async function() {
         entryDiv.innerHTML = `
             <div class="flex flex-wrap gap-4 justify-center">
                 <label class="flex items-center space-x-2">
-                    <input type="checkbox" class="batchEntrySingleUnitCut w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" ${data.isSingleUnitCut ? 'checked' : ''}>
+                    <input type="checkbox" class="batchEntrySingleUnitCut w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
                     <span class="text-sm font-semibold header-gradient">Single Unit Cut</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="checkbox" class="batchEntryFullPick w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" ${data.isFullPick ? 'checked' : ''}>
+                    <input type="checkbox" class="batchEntryFullPick w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
                     <span class="text-sm font-semibold header-gradient">Full Pick</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="checkbox" class="batchEntryNoMarks w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" ${data.isNoMarks ? 'checked' : ''}>
+                    <input type="checkbox" class="batchEntryNoMarks w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
                     <span class="text-sm font-semibold header-gradient">No Marks</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="checkbox" class="batchEntrySystemCut w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" ${data.isSystemCut ? 'checked' : ''}>
+                    <input type="checkbox" class="batchEntrySystemCut w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
                     <span class="text-sm font-semibold header-gradient">System Cut</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="checkbox" class="batchEntryCutInSystem w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500" ${data.isCutInSystem ? 'checked' : ''}>
+                    <input type="checkbox" class="batchEntryCutInSystem w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500">
                     <span class="text-sm font-semibold header-gradient">Cut In System</span>
                 </label>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" placeholder="Wire Type/ID" class="p-1 border border-gray-300 rounded text-sm flex-grow" value="${window.escapeHTML(data.wireId || '')}" />
-                <input type="number" placeholder="Cut Length" class="p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.cutLength || '')}" />
+                <input type="text" placeholder="Wire Type/ID" class="p-1 border border-gray-300 rounded text-sm flex-grow" />
+                <input type="number" placeholder="Cut Length" class="p-1 border border-gray-300 rounded text-sm w-20" />
                 <select class="p-1 border border-gray-300 rounded text-sm w-24">
-                    <option value="m" ${data.cutLengthUnit === 'm' ? 'selected' : ''}>Meters (m)</option>
-                    <option value="ft" ${data.cutLengthUnit === 'ft' ? 'selected' : ''}>Feet (ft)</option>
+                    <option value="m">Meters (m)</option>
+                    <option value="ft">Feet (ft)</option>
                 </select>
-                <input type="text" placeholder="Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.lineCode || '')}" />
-                <input type="text" placeholder="Turned To Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-24" value="${window.escapeHTML(data.turnedToLineCode || '')}" />
-                <input type="text" placeholder="Cutter Name" class="p-1 border border-gray-300 rounded text-sm w-32" value="${window.escapeHTML(data.cutterName || '')}" />
+                <input type="text" placeholder="Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-20" />
+                <input type="text" placeholder="Turned To Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-24" />
+                <input type="text" placeholder="Cutter Name" class="p-1 border border-gray-300 rounded text-sm w-32" />
             </div>
             <div class="flex flex-wrap gap-2 items-center">
                 <div class="flex items-center gap-1">
-                    <input type="number" placeholder="Start Mark" class="batchEntryStartingMark p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.startingMark || '')}" />
+                    <input type="number" placeholder="Start Mark" class="batchEntryStartingMark p-1 border border-gray-300 rounded text-sm w-20" />
                     <select class="batchEntryStartingMarkUnit p-1 border border-gray-300 rounded text-sm w-16">
-                        <option value="m" ${data.startingMarkUnit === 'm' ? 'selected' : ''}>m</option>
-                        <option value="ft" ${data.startingMarkUnit === 'ft' ? 'selected' : ''}>ft</option>
+                        <option value="m">m</option>
+                        <option value="ft">ft</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-1">
-                    <input type="number" placeholder="End Mark" class="batchEntryEndingMark p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.endingMark || '')}" />
+                    <input type="number" placeholder="End Mark" class="batchEntryEndingMark p-1 border border-gray-300 rounded text-sm w-20" />
                     <select class="batchEntryEndingMarkUnit p-1 border border-gray-300 rounded text-sm w-16">
-                        <option value="m" ${data.endingMarkUnit === 'm' ? 'selected' : ''}>m</option>
-                        <option value="ft" ${data.endingMarkUnit === 'ft' ? 'selected' : ''}>ft</option>
+                        <option value="m">m</option>
+                        <option value="ft">ft</option>
                     </select>
                 </div>
                 <select class="coilOrReelSelect p-1 border border-gray-300 rounded text-sm w-24">
-                    <option value="coil" ${data.coilOrReel === 'coil' ? 'selected' : ''}>Coil</option>
-                    <option value="reel" ${data.coilOrReel === 'reel' ? 'selected' : ''}>Reel</option>
+                    <option value="coil">Coil</option>
+                    <option value="reel">Reel</option>
                 </select>
-                <input type="number" placeholder="Reel Size" class="p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.reelSize || '')}" disabled />
+                <input type="number" placeholder="Reel Size" class="p-1 border border-gray-300 rounded text-sm w-20" disabled />
                 <select class="p-1 border border-gray-300 rounded text-sm w-24" disabled>
                     <option value="">Chargeable?</option>
-                    <option value="yes" ${data.chargeable === 'yes' ? 'selected' : ''}>Yes</option>
-                    <option value="no" ${data.chargeable === 'no' ? 'selected' : ''}>No</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
                 </select>
                 <button type="button" class="removeBatchCutBtn px-2 py-1 bg-red-500 text-white rounded text-xs">Remove</button>
             </div>
         `;
+
+        // Set values securely using .value
+        entryDiv.querySelector('.batchEntrySingleUnitCut').checked = !!data.isSingleUnitCut;
+        entryDiv.querySelector('.batchEntryFullPick').checked = !!data.isFullPick;
+        entryDiv.querySelector('.batchEntryNoMarks').checked = !!data.isNoMarks;
+        entryDiv.querySelector('.batchEntrySystemCut').checked = !!data.isSystemCut;
+        entryDiv.querySelector('.batchEntryCutInSystem').checked = !!data.isCutInSystem;
+
+        entryDiv.querySelector('input[placeholder="Wire Type/ID"]').value = data.wireId || '';
+        entryDiv.querySelector('input[placeholder="Cut Length"]').value = data.cutLength || '';
+        entryDiv.querySelector('select').value = data.cutLengthUnit || 'm';
+        entryDiv.querySelector('input[placeholder="Line Code"]').value = data.lineCode || '';
+        entryDiv.querySelector('input[placeholder="Turned To Line Code"]').value = data.turnedToLineCode || '';
+        entryDiv.querySelector('input[placeholder="Cutter Name"]').value = data.cutterName || '';
+
+        entryDiv.querySelector('.batchEntryStartingMark').value = data.startingMark || '';
+        entryDiv.querySelector('.batchEntryStartingMarkUnit').value = data.startingMarkUnit || 'm';
+        entryDiv.querySelector('.batchEntryEndingMark').value = data.endingMark || '';
+        entryDiv.querySelector('.batchEntryEndingMarkUnit').value = data.endingMarkUnit || 'm';
+
+        entryDiv.querySelector('.coilOrReelSelect').value = data.coilOrReel || 'coil';
+        entryDiv.querySelector('input[placeholder="Reel Size"]').value = data.reelSize || '';
+        entryDiv.querySelector('select:has(option[value="yes"])').value = data.chargeable || '';
 
         // Add event listeners for auto-uppercase and validation
         const wireIdInput = entryDiv.querySelector('input[placeholder="Wire Type/ID"]');
@@ -2360,13 +2467,22 @@ async function populateCalculatorDropdowns() {
 
     try {
         // Clear existing options
-        markDropdown.innerHTML = '<option value="">Loading...</option>';
-        stopDropdown.innerHTML = '<option value="">Loading...</option>';
+        markDropdown.innerHTML = '';
+        const markLoadingOpt = document.createElement('option');
+        markLoadingOpt.value = '';
+        markLoadingOpt.textContent = 'Loading...';
+        markDropdown.appendChild(markLoadingOpt);
+
+        stopDropdown.innerHTML = '';
+        const stopLoadingOpt = document.createElement('option');
+        stopLoadingOpt.value = '';
+        stopLoadingOpt.textContent = 'Loading...';
+        stopDropdown.appendChild(stopLoadingOpt);
 
         // Check if database is available
         if (!window.eecolDB || !(await window.eecolDB.isReady())) {
-            markDropdown.innerHTML = '<option value="">Database not available</option>';
-            stopDropdown.innerHTML = '<option value="">Database not available</option>';
+            markLoadingOpt.textContent = 'Database not available';
+            stopLoadingOpt.textContent = 'Database not available';
             return;
         }
 
@@ -2385,45 +2501,76 @@ async function populateCalculatorDropdowns() {
             .slice(0, 5);
 
         // Populate Mark Calculator dropdown
-        markDropdown.innerHTML = '<option value="">Select a saved calculation...</option>';
+        markDropdown.innerHTML = '';
+        const markDefaultOpt = document.createElement('option');
+        markDefaultOpt.value = '';
+        markDefaultOpt.textContent = 'Select a saved calculation...';
+        markDropdown.appendChild(markDefaultOpt);
+
         if (sortedMarkRecords.length === 0) {
-            markDropdown.innerHTML += '<option value="" disabled>No saved calculations found</option>';
+            const noneOpt = document.createElement('option');
+            noneOpt.value = '';
+            noneOpt.disabled = true;
+            noneOpt.textContent = 'No saved calculations found';
+            markDropdown.appendChild(noneOpt);
         } else {
             sortedMarkRecords.forEach(record => {
                 const date = new Date(record.timestamp).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
                 const unitLabel = record.unit === 'ft' ? 'ft' : 'm';
-                const displayText = `Start: ${record.startMark}${unitLabel}, End: ${record.endMark}${unitLabel}, Saved: ${date}`;
-                markDropdown.innerHTML += `<option value="${record.id}" data-unit="${record.unit}" data-start="${record.startMark}" data-end="${record.endMark}">${displayText}</option>`;
+                const opt = document.createElement('option');
+                opt.value = record.id;
+                opt.setAttribute('data-unit', record.unit);
+                opt.setAttribute('data-start', record.startMark);
+                opt.setAttribute('data-end', record.endMark);
+                opt.textContent = `Start: ${record.startMark}${unitLabel}, End: ${record.endMark}${unitLabel}, Saved: ${date}`;
+                markDropdown.appendChild(opt);
             });
         }
 
         // Populate Stop Calculator dropdown
-        stopDropdown.innerHTML = '<option value="">Select a saved calculation...</option>';
+        stopDropdown.innerHTML = '';
+        const stopDefaultOpt = document.createElement('option');
+        stopDefaultOpt.value = '';
+        stopDefaultOpt.textContent = 'Select a saved calculation...';
+        stopDropdown.appendChild(stopDefaultOpt);
+
         if (sortedStopRecords.length === 0) {
-            stopDropdown.innerHTML += '<option value="" disabled>No saved calculations found</option>';
+            const noneOpt = document.createElement('option');
+            noneOpt.value = '';
+            noneOpt.disabled = true;
+            noneOpt.textContent = 'No saved calculations found';
+            stopDropdown.appendChild(noneOpt);
         } else {
             sortedStopRecords.forEach(record => {
                 const date = new Date(record.timestamp).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
                 const unitLabel = record.unit === 'ft' ? 'ft' : 'm';
-                const displayText = `Start: ${record.startMark}${unitLabel}, End: ${record.endMark}${unitLabel}, Saved: ${date}`;
-                stopDropdown.innerHTML += `<option value="${record.id}" data-unit="${record.unit}" data-start="${record.startMark}" data-end="${record.endMark}">${displayText}</option>`;
+                const opt = document.createElement('option');
+                opt.value = record.id;
+                opt.setAttribute('data-unit', record.unit);
+                opt.setAttribute('data-start', record.startMark);
+                opt.setAttribute('data-end', record.endMark);
+                opt.textContent = `Start: ${record.startMark}${unitLabel}, End: ${record.endMark}${unitLabel}, Saved: ${date}`;
+                stopDropdown.appendChild(opt);
             });
         }
 
     } catch (error) {
         console.error('Error populating calculator dropdowns:', error);
-        markDropdown.innerHTML = '<option value="">Error loading history</option>';
-        stopDropdown.innerHTML = '<option value="">Error loading history</option>';
+        markDropdown.innerHTML = '';
+        const errOpt = document.createElement('option');
+        errOpt.value = '';
+        errOpt.textContent = 'Error loading history';
+        markDropdown.appendChild(errOpt);
+
+        stopDropdown.innerHTML = '';
+        const errOptStop = document.createElement('option');
+        errOptStop.value = '';
+        errOptStop.textContent = 'Error loading history';
+        stopDropdown.appendChild(errOptStop);
     }
 }
 
@@ -2571,11 +2718,15 @@ async function populateFlangeDropdown() {
 
     try {
         // Clear existing options
-        dropdown.innerHTML = '<option value="">Loading...</option>';
+        dropdown.innerHTML = '';
+        const loadingOpt = document.createElement('option');
+        loadingOpt.value = '';
+        loadingOpt.textContent = 'Loading...';
+        dropdown.appendChild(loadingOpt);
 
         // Check if database is available
         if (!window.eecolDB || !(await window.eecolDB.isReady())) {
-            dropdown.innerHTML = '<option value="">Database not available</option>';
+            loadingOpt.textContent = 'Database not available';
             return;
         }
 
@@ -2589,27 +2740,41 @@ async function populateFlangeDropdown() {
             .slice(0, 5);
 
         // Populate dropdown
-        dropdown.innerHTML = '<option value="">Select a saved flange size...</option>';
+        dropdown.innerHTML = '';
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Select a saved flange size...';
+        dropdown.appendChild(defaultOpt);
+
         if (sortedConfigurations.length === 0) {
-            dropdown.innerHTML += '<option value="" disabled>No saved configurations found</option>';
+            const noneOpt = document.createElement('option');
+            noneOpt.value = '';
+            noneOpt.disabled = true;
+            noneOpt.textContent = 'No saved configurations found';
+            dropdown.appendChild(noneOpt);
         } else {
             sortedConfigurations.forEach(config => {
                 const date = new Date(config.timestamp).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
                 const flangeSize = config.flangeDiameter.value;
                 const flangeUnit = config.flangeDiameter.unit;
-                const displayText = `Flange: ${flangeSize} ${flangeUnit} - Saved: ${date}`;
-                dropdown.innerHTML += `<option value="${config.id}" data-value="${flangeSize}" data-unit="${flangeUnit}">${displayText}</option>`;
+                const opt = document.createElement('option');
+                opt.value = config.id;
+                opt.setAttribute('data-value', flangeSize);
+                opt.setAttribute('data-unit', flangeUnit);
+                opt.textContent = `Flange: ${flangeSize} ${flangeUnit} - Saved: ${date}`;
+                dropdown.appendChild(opt);
             });
         }
 
     } catch (error) {
         console.error('Error populating flange dropdown:', error);
-        dropdown.innerHTML = '<option value="">Error loading configurations</option>';
+        dropdown.innerHTML = '';
+        const errOpt = document.createElement('option');
+        errOpt.value = '';
+        errOpt.textContent = 'Error loading configurations';
+        dropdown.appendChild(errOpt);
     }
 }
 
