@@ -774,8 +774,15 @@ function renderInventoryItems() {
 
     totalItemsElement.textContent = filteredItems.length;
 
+    while (inventoryList.firstChild) {
+        inventoryList.removeChild(inventoryList.firstChild);
+    }
+
     if (filteredItems.length === 0) {
-        inventoryList.innerHTML = '<p class="text-sm text-gray-500">No inventory items found yet.</p>';
+        const emptyMsg = document.createElement('p');
+        emptyMsg.className = 'text-sm text-gray-500';
+        emptyMsg.textContent = 'No inventory items found yet.';
+        inventoryList.appendChild(emptyMsg);
         displayedItemsElement.textContent = '0';
         updateStats();
         return;
@@ -785,104 +792,155 @@ function renderInventoryItems() {
     displayedItemsCount = itemsToShow;
     displayedItemsElement.textContent = displayedItemsCount;
 
-    let html = '';
     filteredItems.slice(0, displayedItemsCount).forEach((item) => {
-        const date = new Date(item.timestamp).toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'inventory-item bg-white p-3 rounded-lg shadow-sm border';
+
+        const gridDiv = document.createElement('div');
+        gridDiv.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs';
+
+        const fields = [
+            { label: 'Date:', value: formatDateMMDDYYYY(item.inventoryDate || 'N/A') },
+            { label: 'Name:', value: item.personName || 'N/A' },
+            { label: 'Reason:', value: (item.reason || '').toUpperCase() },
+            { label: 'Notes:', value: (item.note || '').toUpperCase() },
+            { label: 'Comments:', value: item.inventoryComments || 'N/A' },
+            { label: 'Line #:', value: item.lineCode || 'N/A' },
+            { label: 'Product:', value: item.productCode || 'N/A' },
+            { label: 'Current Length:', value: item.currentLength ? `${item.currentLength} ${item.currentLengthUnit}` : 'N/A' },
+            { label: 'Actual Length:', value: item.actualLength ? `${item.actualLength} ${item.actualLengthUnit}` : 'N/A' },
+            { label: 'Wire Coil Code:', value: item.coilCode || 'N/A' },
+            { label: 'Adjust:', value: item.adjust ? 'Yes' : 'No', className: item.adjust ? 'text-orange-600 font-bold' : 'text-green-600' },
+            { label: 'Approved:', value: getApprovalText(item.approved), className: getApprovalClass(item.approved) },
+            { label: 'INA #:', value: item.inaNumber || 'N/A' },
+            { label: 'INA Date:', value: formatDateMMDDYYYY(item.inaDate || 'N/A') },
+            { label: 'Avg Cost:', value: item.averageCost && item.costUnit ? `${item.costUnit}${item.averageCost}` : 'N/A' },
+            { label: 'Value:', value: item.totalValue ? `$${item.totalValue}` : 'N/A' }
+        ];
+
+        fields.forEach(field => {
+            const div = document.createElement('div');
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'font-semibold text-gray-900';
+            labelSpan.textContent = field.label + ' ';
+            div.appendChild(labelSpan);
+
+            const valueSpan = document.createElement('span');
+            valueSpan.className = field.className || 'text-gray-700';
+            valueSpan.textContent = field.value;
+            div.appendChild(valueSpan);
+            gridDiv.appendChild(div);
         });
 
-        // Format reason for display
-        let displayReason = item.reason || '';
-        if (displayReason.toLowerCase() === 'tail end') {
-            displayReason = 'TAIL END';
-        } else if (displayReason.toLowerCase() === 'damaged') {
-            displayReason = 'DAMAGED';
-        } else {
-            displayReason = displayReason.toUpperCase();
-        }
+        itemDiv.appendChild(gridDiv);
 
-        // Format note for display
-        let displayNote = item.note || '';
-        if (displayNote.toLowerCase() === 'tail end') {
-            displayNote = 'TAIL END';
-        } else if (displayNote.toLowerCase() === 'damaged') {
-            displayNote = 'DAMAGED';
-        } else {
-            displayNote = displayNote.toUpperCase();
-        }
+        const date = new Date(item.timestamp).toLocaleString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        const metaP = document.createElement('p');
+        metaP.className = 'text-xs text-gray-500 mt-2';
+        metaP.textContent = `@ ${date} by Local`;
+        itemDiv.appendChild(metaP);
 
-        // Calculate review button title and text
-        let reviewButtonTitle = 'Mark as reviewed';
-        let reviewButtonText = 'Review';
+        const createdDate = new Date(item.createdAt || item.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const updatedDate = item.updatedAt && item.updatedAt !== item.createdAt ? ` | Updated: ${new Date(item.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : '';
+        const createdP = document.createElement('p');
+        createdP.className = 'text-xs text-gray-400';
+        createdP.textContent = `Created: ${createdDate}${updatedDate}`;
+        itemDiv.appendChild(createdP);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'flex justify-between flex-wrap mobile-stack items-center mt-2';
+
+        const leftActions = document.createElement('div');
+        leftActions.className = 'flex items-center gap-1';
+
+        const adjustBtn = document.createElement('button');
+        adjustBtn.onclick = () => toggleAdjust(item.id);
+        adjustBtn.className = 'text-xs bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded';
+        adjustBtn.textContent = 'Adjust';
+        adjustBtn.title = 'Toggle adjust status';
+        leftActions.appendChild(adjustBtn);
+
+        const approvalBtn = document.createElement('button');
+        approvalBtn.onclick = () => toggleApproval(item.id);
+        approvalBtn.className = `text-xs ${item.approved === true ? 'bg-green-500 hover:bg-green-600' : item.approved === false ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-2 py-1 rounded`;
+        approvalBtn.textContent = item.approved === true ? '✓ Approved' : item.approved === false ? '✗ Not Approved' : 'Not Set';
+        approvalBtn.title = 'Toggle approval';
+        leftActions.appendChild(approvalBtn);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.onclick = () => clearInventoryApproval(item.id);
+        clearBtn.className = 'text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded';
+        clearBtn.textContent = 'Clear';
+        clearBtn.title = 'Clear approval status';
+        leftActions.appendChild(clearBtn);
+
+        const approvalStatusSpan = document.createElement('span');
+        approvalStatusSpan.className = 'text-xs font-semibold ml-2 ' + getApprovalClass(item.approved);
+        approvalStatusSpan.textContent = getApprovalText(item.approved);
+        leftActions.appendChild(approvalStatusSpan);
+
+        const adjustStatusSpan = document.createElement('span');
+        adjustStatusSpan.className = 'text-xs font-semibold ml-2 ' + (item.adjust ? 'text-orange-600 font-bold' : 'text-green-600');
+        adjustStatusSpan.textContent = 'Adjust: ' + (item.adjust ? 'Yes' : 'No');
+        leftActions.appendChild(adjustStatusSpan);
+
+        actionsDiv.appendChild(leftActions);
+
+        const rightActions = document.createElement('div');
+        rightActions.className = 'flex items-center gap-1';
+
+        const reviewBtn = document.createElement('button');
+        reviewBtn.onclick = () => markAsReviewed(item.id);
+        reviewBtn.className = `text-xs ${item.reviewed ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'} text-white px-2 py-1 rounded`;
         if (item.reviewed) {
             const formattedDate = formatTimestampToMMDDYYYY(item.reviewedTimestamp || item.timestamp);
-            reviewButtonTitle = 'Reviewed on ' + formattedDate;
-            reviewButtonText = '✓ Reviewed';
+            reviewBtn.textContent = `✓ Reviewed (${formattedDate})`;
+            reviewBtn.title = 'Reviewed on ' + formattedDate;
+            reviewBtn.disabled = true;
+            reviewBtn.onclick = null;
+        } else {
+            reviewBtn.textContent = 'Review';
+            reviewBtn.title = 'Mark as reviewed';
         }
+        rightActions.appendChild(reviewBtn);
 
-        html += `
-            <div class="inventory-item bg-white p-3 rounded-lg shadow-sm border">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs">
-                    <div><span class="font-semibold text-gray-900">Date:</span> <span class="text-gray-700">${formatDateMMDDYYYY(item.inventoryDate || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Name:</span> <span class="text-gray-700">${escapeHTML(item.personName || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Reason:</span> <span class="text-gray-700">${escapeHTML(displayReason || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Notes:</span> <span class="text-gray-700">${escapeHTML(displayNote || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Comments:</span> <span class="text-gray-700">${escapeHTML(item.inventoryComments || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Line #:</span> <span class="text-gray-700">${escapeHTML(item.lineCode || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Product:</span> <span class="text-gray-700">${escapeHTML(item.productCode || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Current Length:</span> <span class="text-gray-700">${item.currentLength ? `${escapeHTML(item.currentLength)} ${escapeHTML(item.currentLengthUnit)}` : 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Actual Length:</span> <span class="text-gray-700">${item.actualLength ? `${escapeHTML(item.actualLength)} ${escapeHTML(item.actualLengthUnit)}` : 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Wire Coil Code:</span> <span class="text-gray-700">${escapeHTML(item.coilCode || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Adjust:</span> <span class="${item.adjust ? 'text-orange-600 font-bold' : 'text-green-600'}">${item.adjust ? 'Yes' : 'No'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Approved:</span> <span class="${getApprovalClass(item.approved)}">${getApprovalText(item.approved)}</span></div>
-                    <div><span class="font-semibold text-gray-900">INA #:</span> <span class="text-gray-700">${escapeHTML(item.inaNumber || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">INA Date:</span> <span class="text-gray-700">${formatDateMMDDYYYY(item.inaDate || 'N/A')}</span></div>
-                    <div><span class="font-semibold text-gray-900">Avg Cost:</span> <span class="text-gray-700">${item.averageCost && item.costUnit ? `${escapeHTML(item.costUnit)}${escapeHTML(item.averageCost)}` : 'N/A'}</span></div>
-                    <div><span class="font-semibold text-gray-900">Value:</span> <span class="text-gray-700">${item.totalValue ? `$${escapeHTML(item.totalValue)}` : 'N/A'}</span></div>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">@ ${date} by Local</p>
-                <p class="text-xs text-gray-400">Created: ${new Date(item.createdAt || item.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${item.updatedAt && item.updatedAt !== item.createdAt ? ` | Updated: ${new Date(item.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</p>
-                <div class="flex justify-between flex-wrap mobile-stack items-center mt-2">
-                    <!-- Left corner buttons -->
-                    <div class="flex items-center gap-1">
-                        <button onclick="toggleAdjust('${item.id}')" class="text-xs bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded" title="Toggle adjust status">Adjust</button>
-                        <button onclick="toggleApproval('${item.id}')" class="text-xs ${item.approved === true ? 'bg-green-500 hover:bg-green-600' : item.approved === false ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-2 py-1 rounded" title="Toggle approval">${item.approved === true ? '✓ Approved' : item.approved === false ? '✗ Not Approved' : 'Not Set'}</button>
-                        <button onclick="clearInventoryApproval('${item.id}')" class="text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded" title="Clear approval status">Clear</button>
-                        <span class="text-xs font-semibold ml-2 ${getApprovalClass(item.approved)}">${getApprovalText(item.approved)}</span>
-                        <span class="text-xs font-semibold ml-2 ${item.adjust ? 'text-orange-600 font-bold' : 'text-green-600'}">Adjust: ${item.adjust ? 'Yes' : 'No'}</span>
-                    </div>
-                    <!-- Right corner buttons -->
-                    <div class="flex items-center gap-1">
-                        <button onclick="markAsReviewed('${item.id}')" class="text-xs ${item.reviewed ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-500 hover:bg-gray-600'} text-white px-2 py-1 rounded" title="${reviewButtonTitle}">
-                            ${reviewButtonText}
-                        </button>
-                        <button onclick="updateINAdate('${item.id}')" class="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded" title="Update INA Date">INA Date</button>
-                        <button onclick="editInventoryItem('${item.id}')" class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">Edit</button>
-                        <button onclick="deleteInventoryItem('${item.id}')" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                    </div>
-                </div>
-            </div>
-        `;
+        const inaBtn = document.createElement('button');
+        inaBtn.onclick = () => updateINAdate(item.id);
+        inaBtn.className = 'text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded';
+        inaBtn.textContent = 'INA Date';
+        inaBtn.title = 'Update INA Date';
+        rightActions.appendChild(inaBtn);
+
+        const editBtn = document.createElement('button');
+        editBtn.onclick = () => editInventoryItem(item.id);
+        editBtn.className = 'text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded';
+        editBtn.textContent = 'Edit';
+        rightActions.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.onclick = () => deleteInventoryItem(item.id);
+        deleteBtn.className = 'text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded';
+        deleteBtn.textContent = 'Delete';
+        rightActions.appendChild(deleteBtn);
+
+        actionsDiv.appendChild(rightActions);
+        itemDiv.appendChild(actionsDiv);
+        inventoryList.appendChild(itemDiv);
     });
 
     if (displayedItemsCount < filteredItems.length) {
-        html += `
-            <div class="text-center mt-4">
-                <button
-                    onclick="loadMoreInventoryItems()"
-                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition duration-200"
-                >
-                    Load More Items (${filteredItems.length - displayedItemsCount} remaining)
-                </button>
-            </div>
-        `;
+        const moreDiv = document.createElement('div');
+        moreDiv.className = 'text-center mt-4';
+        const moreBtn = document.createElement('button');
+        moreBtn.onclick = loadMoreInventoryItems;
+        moreBtn.className = 'px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition duration-200';
+        moreBtn.textContent = `Load More Items (${filteredItems.length - displayedItemsCount} remaining)`;
+        moreDiv.appendChild(moreBtn);
+        inventoryList.appendChild(moreDiv);
     }
 
-    inventoryList.innerHTML = html;
     updateStats();
 }
 
@@ -1567,6 +1625,7 @@ async function clearAllInventoryItemsFromDB() {
 async function updateExportStatus() {
     try {
         const jsonSpan = document.getElementById('lastJsonExport');
+        if (!jsonSpan) return;
 
         // Get current time
         const now = Date.now();
@@ -1581,22 +1640,42 @@ async function updateExportStatus() {
             }
         }
 
-
+        while (jsonSpan.firstChild) {
+            jsonSpan.removeChild(jsonSpan.firstChild);
+        }
 
         // Update JSON export status
         if (lastJsonExport) {
             const daysSinceJsonExport = Math.floor((now - lastJsonExport) / (1000 * 60 * 60 * 24));
             if (daysSinceJsonExport < 3) {
                 // Recent export - show plain text with green styling
-                jsonSpan.innerHTML = `<span style="color: #10b981; font-weight: 600;">Last exported ${daysSinceJsonExport === 0 ? 'today' : daysSinceJsonExport + ' days ago'}</span>`;
+                const span = document.createElement('span');
+                span.style.color = '#10b981';
+                span.style.fontWeight = '600';
+                span.textContent = `Last exported ${daysSinceJsonExport === 0 ? 'today' : daysSinceJsonExport + ' days ago'}`;
+                jsonSpan.appendChild(span);
             } else {
                 // Stale export - show clickable link
                 const exportDate = new Date(lastJsonExport).toLocaleDateString();
-                jsonSpan.innerHTML = `<a href="#" onclick="exportJSONBackup(); return false;" style="color: #f59e0b; font-weight: 600; text-decoration: underline;">${exportDate} (${daysSinceJsonExport} days ago)</a>`;
+                const a = document.createElement('a');
+                a.href = '#';
+                a.onclick = (e) => { e.preventDefault(); exportJSONBackup(); };
+                a.style.color = '#f59e0b';
+                a.style.fontWeight = '600';
+                a.style.textDecoration = 'underline';
+                a.textContent = `${exportDate} (${daysSinceJsonExport} days ago)`;
+                jsonSpan.appendChild(a);
             }
         } else {
             // Never exported - show clickable link
-            jsonSpan.innerHTML = '<a href="#" onclick="exportJSONBackup(); return false;" style="color: #f59e0b; font-weight: 600; text-decoration: underline;">Never exported</a>';
+            const a = document.createElement('a');
+            a.href = '#';
+            a.onclick = (e) => { e.preventDefault(); exportJSONBackup(); };
+            a.style.color = '#f59e0b';
+            a.style.fontWeight = '600';
+            a.style.textDecoration = 'underline';
+            a.textContent = 'Never exported';
+            jsonSpan.appendChild(a);
         }
     } catch (error) {
         console.error('Error updating export status:', error);
@@ -1724,7 +1803,7 @@ async function markAsReviewed(id) {
         if (button) {
             button.className = button.className.replace('bg-gray-500 hover:bg-gray-600', 'bg-green-600 hover:bg-green-700');
             const reviewDate = formatTimestampToMMDDYYYY(now);
-            button.innerHTML = `✓ Reviewed (${reviewDate})`;
+            button.textContent = `✓ Reviewed (${reviewDate})`;
             button.setAttribute('title', `Marked as reviewed on ${reviewDate}`);
             button.disabled = true; // Disable button permanently
             button.onclick = null; // Remove onclick handler

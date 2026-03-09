@@ -120,7 +120,15 @@ import {
              if (capacityAbsolute) capacityAbsolute.textContent = '--';
              if (DdRatio) DdRatio.textContent = '--';
              if (targetAchievement) targetAchievement.textContent = '--';
-             if (layerList) layerList.innerHTML = '<p class="text-sm text-gray-500">Enter data and calculate to see layer breakdown.</p>';
+             if (layerList) {
+                 while (layerList.firstChild) {
+                     layerList.removeChild(layerList.firstChild);
+                 }
+                 const p = document.createElement('p');
+                 p.className = 'text-sm text-gray-500';
+                 p.textContent = 'Enter data and calculate to see layer breakdown.';
+                 layerList.appendChild(p);
+             }
              if (capacityWarning) capacityWarning.textContent = '';
              // Clear dynamic elements
              const capacityPercentage = document.getElementById('capacityPercentage');
@@ -294,6 +302,10 @@ import {
                     C_dead_m += L_n_m;
                 }
 
+                while (layerList.firstChild) {
+                    layerList.removeChild(layerList.firstChild);
+                }
+
                 // Show all physical layers that actually fit in the freeboard-limited space
                 for (let n = 1; n <= N_layers; n++) {
                     const D_n_m = Dc_m + (2 * n - 1) * d_m;
@@ -310,24 +322,37 @@ import {
 
                     const L_n_ft = metersToFeet(L_n_m);
 
+                    const layerP = document.createElement('p');
+                    layerP.className = 'text-xs font-medium';
+
+                    const mStr = L_n_m.toLocaleString('en-US', {maximumFractionDigits: 0});
+                    const ftStr = L_n_ft.toLocaleString('en-US', {maximumFractionDigits: 0});
+
                     // Style based on whether layer is a dead wrap or usable
                     if (n <= DEAD_WRAPS) {
                         // Dead wrap layer - red styling
-                        layersHtml += `<p class="text-xs font-medium text-red-600">📍 Layer ${n} [DEAD WRAP]: ${L_n_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${L_n_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</p>`;
+                        layerP.classList.add('text-red-600');
+                        layerP.textContent = `📍 Layer ${n} [DEAD WRAP]: ${mStr} m (${ftStr} ft)`;
                     } else {
                         // Usable layer - green styling
-                        layersHtml += `<p class="text-xs font-medium text-green-600">✅ Layer ${n}: ${L_n_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${L_n_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</p>`;
+                        layerP.classList.add('text-green-600');
+                        layerP.textContent = `✅ Layer ${n}: ${mStr} m (${ftStr} ft)`;
                     }
+                    layerList.appendChild(layerP);
                 }
 
-                // Add placeholder for educational summary - will be filled after calculations
-                layersHtml += `<div id="capacityBreakdownSummary" class="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                    <!-- Summary will be inserted here after calculations -->
-                </div>`;
-
-                if(N_layers === 0) {
-                    layersHtml = '<p class="text-sm text-gray-500">Zero full layers fit on the drum.</p>';
+                if (N_layers === 0) {
+                    const p = document.createElement('p');
+                    p.className = 'text-sm text-gray-500';
+                    p.textContent = 'Zero full layers fit on the drum.';
+                    layerList.appendChild(p);
                 }
+
+                // Add summary container
+                const breakdownElement = document.createElement('div');
+                breakdownElement.id = 'capacityBreakdownSummary';
+                breakdownElement.className = 'mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg';
+                layerList.appendChild(breakdownElement);
 
                 const C_total_final_m = C_total_m_by_layer; // Freeboard-based total (was absolute total before)
                 const C_working_final_m = C_total_final_m - C_dead_m;
@@ -343,34 +368,29 @@ import {
                 if (capacityAbsolute) capacityAbsolute.textContent = `${C_total_final_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_total_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
                 if (DdRatio) DdRatio.textContent = `${Dd_ratio_value.toFixed(1)}:1`;
 
-                layerList.innerHTML = layersHtml;
-
                 // Fill in the capacity breakdown summary
-                const breakdownElement = document.getElementById('capacityBreakdownSummary');
-                if (breakdownElement) {
-                    const usableLayersCount = Math.max(0, N_layers - DEAD_WRAPS);
-                    const deadWrapsLength = C_dead_m;
-                    const deadWrapsLengthFt = metersToFeet(deadWrapsLength);
+                const usableLayersCount = Math.max(0, N_layers - DEAD_WRAPS);
+                const deadWrapsLength = C_dead_m;
+                const deadWrapsLengthFt = metersToFeet(deadWrapsLength);
 
-                    breakdownElement.innerHTML = `
-                        <p class="text-xs font-bold text-blue-800 mb-1">🎯 Capacity Breakdown Summary</p>
-                        <div class="grid grid-cols-2 gap-2 text-xs">
-                            <div class="bg-white p-2 rounded border">
-                                <span class="font-semibold text-red-600">Dead Wraps (3 layers):</span><br>
-                                <span class="font-bold">${deadWrapsLength.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
-                                <span class="text-gray-600">(${deadWrapsLengthFt.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
-                            </div>
-                            <div class="bg-white p-2 rounded border">
-                                <span class="font-semibold text-green-600">Usable Capacity:</span><br>
-                                <span class="font-bold">${C_working_final_m_safe.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
-                                <span class="text-gray-600">(${C_working_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
-                            </div>
+                breakdownElement.innerHTML = `
+                    <p class="text-xs font-bold text-blue-800 mb-1">🎯 Capacity Breakdown Summary</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-white p-2 rounded border">
+                            <span class="font-semibold text-red-600">Dead Wraps (3 layers):</span><br>
+                            <span class="font-bold">${deadWrapsLength.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
+                            <span class="text-gray-600">(${deadWrapsLengthFt.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
                         </div>
-                        <p class="text-xs text-blue-700 mt-2 leading-relaxed">
-                            <strong>Why dead wraps?</strong> The first 3 layers provide structural stability and proper tension for the working layers above. This engineering requirement ensures safe, reliable winding operations.
-                        </p>
-                    `;
-                }
+                        <div class="bg-white p-2 rounded border">
+                            <span class="font-semibold text-green-600">Usable Capacity:</span><br>
+                            <span class="font-bold">${C_working_final_m_safe.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
+                            <span class="text-gray-600">(${C_working_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-blue-700 mt-2 leading-relaxed">
+                        <strong>Why dead wraps?</strong> The first 3 layers provide structural stability and proper tension for the working layers above. This engineering requirement ensures safe, reliable winding operations.
+                    </p>
+                `;
 
                 capacityWarning.textContent = `Note: Estimates include a ${efficiency * 100}% Winding Efficiency Factor.`;
 
@@ -1175,30 +1195,37 @@ function handleCableDesignationChange(event) {
         document.getElementById('wireDiameterPresetMm').disabled = true;
 
         // Show preset mode indicator with both buttons
-        document.getElementById('presetModeIndicator').classList.remove('hidden');
-        document.getElementById('presetModeIndicator').innerHTML = `
-            <span class="font-semibold">📏 Preset Mode Active:</span> Wire diameter locked to ${cableType} ${designation} (${(diameter * 25.4).toFixed(2)}mm / ${(diameter).toFixed(3)}")
-            <div class="flex gap-2 mt-2">
-                <button id="switchToManualBtn" class="px-3 py-1 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
-                    🔓 Switch to Manual Input
-                </button>
-                <button id="clearAllCableBtn" class="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors">
-                    🗑️ Clear All
-                </button>
-            </div>
-        `;
+        const indicator = document.getElementById('presetModeIndicator');
+        indicator.classList.remove('hidden');
+        while (indicator.firstChild) {
+            indicator.removeChild(indicator.firstChild);
+        }
 
-        // Add event listeners to the buttons
-        setTimeout(() => {
-            const manualBtn = document.getElementById('switchToManualBtn');
-            const clearBtn = document.getElementById('clearAllCableBtn');
-            if (manualBtn) {
-                manualBtn.addEventListener('click', switchToManualMode);
-            }
-            if (clearBtn) {
-                clearBtn.addEventListener('click', clearAllCableSelections);
-            }
-        }, 0);
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'font-semibold';
+        titleSpan.textContent = '📏 Preset Mode Active: ';
+        indicator.appendChild(titleSpan);
+
+        indicator.appendChild(document.createTextNode(`Wire diameter locked to ${cableType} ${designation} (${(diameter * 25.4).toFixed(2)}mm / ${(diameter).toFixed(3)}")`));
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'flex gap-2 mt-2';
+
+        const manualBtn = document.createElement('button');
+        manualBtn.id = 'switchToManualBtn';
+        manualBtn.className = 'px-3 py-1 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors';
+        manualBtn.textContent = '🔓 Switch to Manual Input';
+        manualBtn.onclick = switchToManualMode;
+        btnGroup.appendChild(manualBtn);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.id = 'clearAllCableBtn';
+        clearBtn.className = 'px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors';
+        clearBtn.textContent = '🗑️ Clear All';
+        clearBtn.onclick = clearAllCableSelections;
+        btnGroup.appendChild(clearBtn);
+
+        indicator.appendChild(btnGroup);
     }
 
         // Update freeboard and trigger calculation

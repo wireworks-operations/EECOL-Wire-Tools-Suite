@@ -708,13 +708,13 @@ function calculateWeight(showErrors = false) {
     // 5. Display Results
 
     // Update Unit Weight Display
-    unitWeightValueDisplay.innerHTML = `
-        <span class="text-blue-800">
-            ${unitWeightLbsPer1000Ft.toFixed(0)} lbs / 1,000 ft
-            &nbsp; | &nbsp;
-            ${unitWeightKgPer1000M.toFixed(1)} kg / 1,000 m
-        </span>
-    `;
+    while (unitWeightValueDisplay.firstChild) {
+        unitWeightValueDisplay.removeChild(unitWeightValueDisplay.firstChild);
+    }
+    const span = document.createElement('span');
+    span.className = 'text-blue-800';
+    span.textContent = `${unitWeightLbsPer1000Ft.toFixed(0)} lbs / 1,000 ft | ${unitWeightKgPer1000M.toFixed(1)} kg / 1,000 m`;
+    unitWeightValueDisplay.appendChild(span);
 
     // Update Wire Weight Display
     totalWireWeightLbsDisplay.textContent = `${totalWireWeightLbs.toFixed(2)} lbs`;

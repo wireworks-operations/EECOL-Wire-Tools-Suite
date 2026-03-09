@@ -176,15 +176,32 @@ function initializeChecklists() {
             const skipIndexes = skipLists[i] || [];
             if (!skipIndexes.includes(itemIndex)) {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="item-cell">${item}</td>
-                    <td class="checkbox-cell">
-                        <input type="checkbox" class="ok-checkbox" data-machine="${i}" data-item="${itemIndex}">
-                    </td>
-                    <td class="checkbox-cell">
-                        <input type="checkbox" class="not-ok-checkbox" data-machine="${i}" data-item="${itemIndex}">
-                    </td>
-                `;
+
+                const itemTd = document.createElement('td');
+                itemTd.className = 'item-cell';
+                itemTd.textContent = item;
+                row.appendChild(itemTd);
+
+                const okTd = document.createElement('td');
+                okTd.className = 'checkbox-cell';
+                const okInput = document.createElement('input');
+                okInput.type = 'checkbox';
+                okInput.className = 'ok-checkbox';
+                okInput.dataset.machine = i;
+                okInput.dataset.item = itemIndex;
+                okTd.appendChild(okInput);
+                row.appendChild(okTd);
+
+                const notOkTd = document.createElement('td');
+                notOkTd.className = 'checkbox-cell';
+                const notOkInput = document.createElement('input');
+                notOkInput.type = 'checkbox';
+                notOkInput.className = 'not-ok-checkbox';
+                notOkInput.dataset.machine = i;
+                notOkInput.dataset.item = itemIndex;
+                notOkTd.appendChild(notOkInput);
+                row.appendChild(notOkTd);
+
                 tbody.appendChild(row);
             }
         });

@@ -29,10 +29,11 @@ function printReelLabel() {
 
     // Generate label content dynamically
     const labelDiv = document.querySelector('#labelContent div');
+    if (!labelDiv) return;
+    labelDiv.innerHTML = '';
 
-    // Build label content conditionally
-    let labelHTML = `
-        <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.3; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 15px;">`;
+    const container = document.createElement('div');
+    container.style.cssText = "font-family: Arial, sans-serif; font-size: 12px; line-height: 1.3; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 15px;";
 
     // Add reel dimensions only if any dimension has a meaningful value (> 0)
     const hasFlange = flangeDiameterInput.value && parseFloat(flangeDiameterInput.value) > 0;
@@ -41,31 +42,40 @@ function printReelLabel() {
     const hasAnyDimension = hasFlange || hasCore || hasWidth;
 
     if (hasAnyDimension) {
-        labelHTML += `
-            <div style="margin: 10px 0; text-align: left; font-size: 10px; color: #666;">
-                ${hasFlange ? `Flange: ${window.escapeHTML(flangeDiameterInput.value)} ${window.escapeHTML(flangeDiameterUnit.value)}` : ''}
-                ${hasCore || hasWidth ? `Core: ${hasCore ? window.escapeHTML(coreDiameterInput.value) : '0'} ${window.escapeHTML(coreDiameterUnit.value)} | Width: ${hasWidth ? window.escapeHTML(traverseWidthInput.value) : '0'} ${window.escapeHTML(traverseWidthUnit.value)}` : ''}
-            </div>`;
+        const dimensionsDiv = document.createElement('div');
+        dimensionsDiv.style.cssText = "margin: 10px 0; text-align: left; font-size: 10px; color: #666;";
+
+        const parts = [];
+        if (hasFlange) {
+            parts.push(`Flange: ${flangeDiameterInput.value} ${flangeDiameterUnit.value}`);
+        }
+        if (hasCore || hasWidth) {
+            parts.push(`Core: ${hasCore ? coreDiameterInput.value : '0'} ${coreDiameterUnit.value} | Width: ${hasWidth ? traverseWidthInput.value : '0'} ${traverseWidthUnit.value}`);
+        }
+        dimensionsDiv.textContent = parts.join(' ');
+        container.appendChild(dimensionsDiv);
     }
 
-    labelHTML += `
-            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                <div style="text-align: center; font-size: 32px; font-weight: bold; color: #0058B3;">
-                    Wire ID: ${window.escapeHTML(wireIdInput.value.toUpperCase())}
-                </div>
+    const contentDiv = document.createElement('div');
+    contentDiv.style.cssText = "flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;";
 
-                <div style="text-align: center; font-size: 24px; font-weight: bold; color: #333;">
-                    Length: ${window.escapeHTML(lengthInput.value)} ${window.escapeHTML(lengthUnit.value)}
-                </div>
+    const wireIdDiv = document.createElement('div');
+    wireIdDiv.style.cssText = "text-align: center; font-size: 32px; font-weight: bold; color: #0058B3;";
+    wireIdDiv.textContent = `Wire ID: ${wireIdInput.value.toUpperCase()}`;
+    contentDiv.appendChild(wireIdDiv);
 
-                <div style="text-align: center; font-size: 24px; font-weight: bold; color: #0058B3;">
-                    L:${window.escapeHTML(lineCodeInput.value.toUpperCase())}
-                </div>
-            </div>
-        </div>
-    `;
+    const lengthDiv = document.createElement('div');
+    lengthDiv.style.cssText = "text-align: center; font-size: 24px; font-weight: bold; color: #333;";
+    lengthDiv.textContent = `Length: ${lengthInput.value} ${lengthUnit.value}`;
+    contentDiv.appendChild(lengthDiv);
 
-    labelDiv.innerHTML = labelHTML;
+    const lineCodeDiv = document.createElement('div');
+    lineCodeDiv.style.cssText = "text-align: center; font-size: 24px; font-weight: bold; color: #0058B3;";
+    lineCodeDiv.textContent = `L:${lineCodeInput.value.toUpperCase()}`;
+    contentDiv.appendChild(lineCodeDiv);
+
+    container.appendChild(contentDiv);
+    labelDiv.appendChild(container);
 
     // Print the label
     window.print();

@@ -45,21 +45,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const renderRecords = async (storeName, listElement) => {
         const records = await db.getAll(storeName);
-        listElement.innerHTML = '';
+        while (listElement.firstChild) {
+            listElement.removeChild(listElement.firstChild);
+        }
         if (records.length === 0) {
-            listElement.innerHTML = '<p class="text-gray-500">No records found.</p>';
+            const emptyP = document.createElement('p');
+            emptyP.className = 'text-gray-500';
+            emptyP.textContent = 'No records found.';
+            listElement.appendChild(emptyP);
             return;
         }
         records.forEach(record => {
             const div = document.createElement('div');
             div.className = 'flex items-center justify-between p-2 border-b';
-            div.innerHTML = `
-                <div class="flex items-center">
-                    <input type="checkbox" data-id="${record.id}" class="mr-2">
-                    <span class="text-sm">${formatRecord(storeName, record)}</span>
-                </div>
-                <button data-id="${record.id}" class="delete-record text-red-500 hover:text-red-700 text-xs">Delete</button>
-            `;
+
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'flex items-center';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.dataset.id = record.id;
+            checkbox.className = 'mr-2';
+            leftDiv.appendChild(checkbox);
+
+            const span = document.createElement('span');
+            span.className = 'text-sm';
+            span.textContent = formatRecord(storeName, record);
+            leftDiv.appendChild(span);
+
+            div.appendChild(leftDiv);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.dataset.id = record.id;
+            deleteBtn.className = 'delete-record text-red-500 hover:text-red-700 text-xs';
+            deleteBtn.textContent = 'Delete';
+            div.appendChild(deleteBtn);
+
             listElement.appendChild(div);
         });
     };
@@ -557,27 +578,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const renderFilteredRecords = (storeName, records, listElement) => {
-        listElement.innerHTML = '';
+        while (listElement.firstChild) {
+            listElement.removeChild(listElement.firstChild);
+        }
         if (records.length === 0) {
             const searchTerm = listElement.closest('.grid').querySelector('input[type="text"]').value;
+            const emptyP = document.createElement('p');
+            emptyP.className = 'text-gray-500';
             if (searchTerm.trim()) {
-                listElement.innerHTML = '<p class="text-gray-500">No records match your search.</p>';
+                emptyP.textContent = 'No records match your search.';
             } else {
-                listElement.innerHTML = '<p class="text-gray-500">No records found.</p>';
+                emptyP.textContent = 'No records found.';
             }
+            listElement.appendChild(emptyP);
             return;
         }
 
         records.forEach(record => {
             const div = document.createElement('div');
             div.className = 'flex items-center justify-between p-2 border-b';
-            div.innerHTML = `
-                <div class="flex items-center">
-                    <input type="checkbox" data-id="${record.id}" class="mr-2">
-                    <span class="text-sm">${formatRecord(storeName, record)}</span>
-                </div>
-                <button data-id="${record.id}" class="delete-record text-red-500 hover:text-red-700 text-xs">Delete</button>
-            `;
+
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'flex items-center';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.dataset.id = record.id;
+            checkbox.className = 'mr-2';
+            leftDiv.appendChild(checkbox);
+
+            const span = document.createElement('span');
+            span.className = 'text-sm';
+            span.textContent = formatRecord(storeName, record);
+            leftDiv.appendChild(span);
+
+            div.appendChild(leftDiv);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.dataset.id = record.id;
+            deleteBtn.className = 'delete-record text-red-500 hover:text-red-700 text-xs';
+            deleteBtn.textContent = 'Delete';
+            div.appendChild(deleteBtn);
+
             listElement.appendChild(div);
         });
     };
