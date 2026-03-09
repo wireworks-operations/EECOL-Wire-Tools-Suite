@@ -2021,26 +2021,26 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </label>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" placeholder="Wire Type/ID" class="p-1 border border-gray-300 rounded text-sm flex-grow" value="${data.wireId || ''}" />
-                <input type="number" placeholder="Cut Length" class="p-1 border border-gray-300 rounded text-sm w-20" value="${data.cutLength || ''}" />
+                <input type="text" placeholder="Wire Type/ID" class="p-1 border border-gray-300 rounded text-sm flex-grow" value="${window.escapeHTML(data.wireId || '')}" />
+                <input type="number" placeholder="Cut Length" class="p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.cutLength || '')}" />
                 <select class="p-1 border border-gray-300 rounded text-sm w-24">
                     <option value="m" ${data.cutLengthUnit === 'm' ? 'selected' : ''}>Meters (m)</option>
                     <option value="ft" ${data.cutLengthUnit === 'ft' ? 'selected' : ''}>Feet (ft)</option>
                 </select>
-                <input type="text" placeholder="Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-20" value="${data.lineCode || ''}" />
-                <input type="text" placeholder="Turned To Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-24" value="${data.turnedToLineCode || ''}" />
-                <input type="text" placeholder="Cutter Name" class="p-1 border border-gray-300 rounded text-sm w-32" value="${data.cutterName || ''}" />
+                <input type="text" placeholder="Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.lineCode || '')}" />
+                <input type="text" placeholder="Turned To Line Code" maxlength="3" class="p-1 border border-gray-300 rounded text-sm w-24" value="${window.escapeHTML(data.turnedToLineCode || '')}" />
+                <input type="text" placeholder="Cutter Name" class="p-1 border border-gray-300 rounded text-sm w-32" value="${window.escapeHTML(data.cutterName || '')}" />
             </div>
             <div class="flex flex-wrap gap-2 items-center">
                 <div class="flex items-center gap-1">
-                    <input type="number" placeholder="Start Mark" class="batchEntryStartingMark p-1 border border-gray-300 rounded text-sm w-20" value="${data.startingMark || ''}" />
+                    <input type="number" placeholder="Start Mark" class="batchEntryStartingMark p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.startingMark || '')}" />
                     <select class="batchEntryStartingMarkUnit p-1 border border-gray-300 rounded text-sm w-16">
                         <option value="m" ${data.startingMarkUnit === 'm' ? 'selected' : ''}>m</option>
                         <option value="ft" ${data.startingMarkUnit === 'ft' ? 'selected' : ''}>ft</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-1">
-                    <input type="number" placeholder="End Mark" class="batchEntryEndingMark p-1 border border-gray-300 rounded text-sm w-20" value="${data.endingMark || ''}" />
+                    <input type="number" placeholder="End Mark" class="batchEntryEndingMark p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.endingMark || '')}" />
                     <select class="batchEntryEndingMarkUnit p-1 border border-gray-300 rounded text-sm w-16">
                         <option value="m" ${data.endingMarkUnit === 'm' ? 'selected' : ''}>m</option>
                         <option value="ft" ${data.endingMarkUnit === 'ft' ? 'selected' : ''}>ft</option>
@@ -2050,7 +2050,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     <option value="coil" ${data.coilOrReel === 'coil' ? 'selected' : ''}>Coil</option>
                     <option value="reel" ${data.coilOrReel === 'reel' ? 'selected' : ''}>Reel</option>
                 </select>
-                <input type="number" placeholder="Reel Size" class="p-1 border border-gray-300 rounded text-sm w-20" value="${data.reelSize || ''}" disabled />
+                <input type="number" placeholder="Reel Size" class="p-1 border border-gray-300 rounded text-sm w-20" value="${window.escapeHTML(data.reelSize || '')}" disabled />
                 <select class="p-1 border border-gray-300 rounded text-sm w-24" disabled>
                     <option value="">Chargeable?</option>
                     <option value="yes" ${data.chargeable === 'yes' ? 'selected' : ''}>Yes</option>
