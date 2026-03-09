@@ -1604,10 +1604,29 @@ async function updateExportStatus() {
 }
 
 function updateStats() {
+    /**
+     * BOLT OPTIMIZATION: Single-pass metrics calculation
+     * Consolidates 3 redundant O(N) passes (filter and reduce) into a single iteration
+     * to avoid redundant passes over the inventoryItems dataset.
+     */
     const totalItems = inventoryItems.length;
-    const totalLength = inventoryItems.reduce((sum, item) => sum + (item.length || item.actualLength || item.currentLength || 0), 0);
-    const damagedItems = inventoryItems.filter(item => item.reason && item.reason.trim().toLowerCase() === 'damaged').length;
-    const tailendReasons = inventoryItems.filter(item => item.reason && (item.reason.trim().toLowerCase() === 'tail end' || item.reason.trim().toLowerCase() === 'tailend')).length;
+    let totalLength = 0;
+    let damagedItems = 0;
+    let tailendReasons = 0;
+
+    for (const item of inventoryItems) {
+        totalLength += (item.length || item.actualLength || item.currentLength || 0);
+
+        if (item.reason) {
+            const reasonLower = item.reason.trim().toLowerCase();
+            if (reasonLower === 'damaged') {
+                damagedItems++;
+            } else if (reasonLower === 'tail end' || reasonLower === 'tailend') {
+                tailendReasons++;
+            }
+        }
+    }
+
     const avgLength = totalItems > 0 ? totalLength / totalItems : 0;
 
     // Update DOM elements
