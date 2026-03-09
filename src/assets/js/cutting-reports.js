@@ -723,12 +723,27 @@ function updateReportsTable() {
         metrics.forEach(metric => {
             const row = document.createElement('tr');
             row.className = 'border-t';
-            row.innerHTML = `
-                <td class="p-2 font-medium text-gray-900">${metric.name}</td>
-                <td class="p-2 text-center text-gray-700">${metric.current}</td>
-                <td class="p-2 text-center text-gray-700">${metric.previous}</td>
-                <td class="p-2 text-center ${metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'} font-medium">${metric.change}</td>
-            `;
+
+            const nameTd = document.createElement('td');
+            nameTd.className = 'p-2 font-medium text-gray-900';
+            nameTd.textContent = metric.name;
+            row.appendChild(nameTd);
+
+            const currentTd = document.createElement('td');
+            currentTd.className = 'p-2 text-center text-gray-700';
+            currentTd.textContent = metric.current;
+            row.appendChild(currentTd);
+
+            const previousTd = document.createElement('td');
+            previousTd.className = 'p-2 text-center text-gray-700';
+            previousTd.textContent = metric.previous;
+            row.appendChild(previousTd);
+
+            const changeTd = document.createElement('td');
+            changeTd.className = `p-2 text-center ${String(metric.change).startsWith('+') ? 'text-green-600' : 'text-red-600'} font-medium`;
+            changeTd.textContent = metric.change;
+            row.appendChild(changeTd);
+
             tableBody.appendChild(row);
         });
         return;
@@ -771,12 +786,27 @@ function updateReportsTable() {
     metrics.forEach(metric => {
         const row = document.createElement('tr');
         row.className = 'border-t';
-        row.innerHTML = `
-            <td class="p-2 font-medium text-gray-900">${metric.name}</td>
-            <td class="p-2 text-center text-gray-700">${metric.current}</td>
-            <td class="p-2 text-center text-gray-700">${metric.previous}</td>
-            <td class="p-2 text-center ${metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'} font-medium">${metric.change}</td>
-        `;
+
+        const nameTd = document.createElement('td');
+        nameTd.className = 'p-2 font-medium text-gray-900';
+        nameTd.textContent = metric.name;
+        row.appendChild(nameTd);
+
+        const currentTd = document.createElement('td');
+        currentTd.className = 'p-2 text-center text-gray-700';
+        currentTd.textContent = metric.current;
+        row.appendChild(currentTd);
+
+        const previousTd = document.createElement('td');
+        previousTd.className = 'p-2 text-center text-gray-700';
+        previousTd.textContent = metric.previous;
+        row.appendChild(previousTd);
+
+        const changeTd = document.createElement('td');
+        changeTd.className = `p-2 text-center ${String(metric.change).startsWith('+') ? 'text-green-600' : 'text-red-600'} font-medium`;
+        changeTd.textContent = metric.change;
+        row.appendChild(changeTd);
+
         tableBody.appendChild(row);
     });
 }

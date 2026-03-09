@@ -167,7 +167,11 @@ function initializeChecklists() {
     const tbody = document.getElementById('checklistTableBody');
     maintenanceItems.forEach((item, itemIndex) => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td class="item-cell">${item}</td>`;
+        const itemTd = document.createElement('td');
+        itemTd.className = 'item-cell';
+        itemTd.textContent = item;
+        row.appendChild(itemTd);
+
         for (let i = 1; i <= 6; i++) {
             // Skip checkboxes for Manual Hand Coiler (i=1) on specific items
             const isManualHandCoilerSkip = i === 1 && [1,2,3,4,5,6,7].includes(itemIndex);
@@ -176,14 +180,32 @@ function initializeChecklists() {
             // Skip checkboxes for Blue Coiler (i=3) on specific items
             const isBlueCoilerSkip = i === 3 && [3,4,5].includes(itemIndex);
             if (isManualHandCoilerSkip || isGreenCoilerSkip || isBlueCoilerSkip) {
-                row.innerHTML += `<td class="checkbox-cell">-</td>`;
+                const td = document.createElement('td');
+                td.className = 'checkbox-cell';
+                td.textContent = '-';
+                row.appendChild(td);
             } else {
-                row.innerHTML += `<td class="checkbox-cell">
-                    <div class="checkbox-group">
-                        <input type="checkbox" class="ok-checkbox" data-machine="${i}" data-item="${itemIndex}">
-                        <input type="checkbox" class="not-ok-checkbox" data-machine="${i}" data-item="${itemIndex}">
-                    </div>
-                </td>`;
+                const td = document.createElement('td');
+                td.className = 'checkbox-cell';
+                const group = document.createElement('div');
+                group.className = 'checkbox-group';
+
+                const ok = document.createElement('input');
+                ok.type = 'checkbox';
+                ok.className = 'ok-checkbox';
+                ok.dataset.machine = i;
+                ok.dataset.item = itemIndex;
+                group.appendChild(ok);
+
+                const notOk = document.createElement('input');
+                notOk.type = 'checkbox';
+                notOk.className = 'not-ok-checkbox';
+                notOk.dataset.machine = i;
+                notOk.dataset.item = itemIndex;
+                group.appendChild(notOk);
+
+                td.appendChild(group);
+                row.appendChild(td);
             }
         }
         tbody.appendChild(row);

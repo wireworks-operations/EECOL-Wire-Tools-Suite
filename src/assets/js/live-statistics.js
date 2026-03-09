@@ -919,20 +919,29 @@ function updateINAItems() {
     const inaItems = inventoryItems.filter(item => item.inaNumber && item.inaNumber.trim() !== '')
         .slice(0, 5);
 
+    while (inaList.firstChild) {
+        inaList.removeChild(inaList.firstChild);
+    }
+
     if (inaItems.length === 0) {
-        inaList.innerHTML = '<li class="text-gray-500">No INA items found</li>';
+        const emptyLi = document.createElement('li');
+        emptyLi.className = 'text-gray-500';
+        emptyLi.textContent = 'No INA items found';
+        inaList.appendChild(emptyLi);
         return;
     }
 
-    const listItems = inaItems.map(item => {
+    inaItems.forEach(item => {
         const date = new Date(item.timestamp).toLocaleDateString();
         const inaNum = item.inaNumber;
         const value = item.totalValue ? '$' + item.totalValue.toFixed(2) : 'N/A';
         const product = item.productCode || 'Unknown';
-        return `<li class="text-xs">${date}: INA ${window.escapeHTML(inaNum)} - ${window.escapeHTML(product)} (${window.escapeHTML(value)})</li>`;
-    }).join('');
 
-    inaList.innerHTML = listItems;
+        const li = document.createElement('li');
+        li.className = 'text-xs';
+        li.textContent = `${date}: INA ${inaNum} - ${product} (${value})`;
+        inaList.appendChild(li);
+    });
 }
 
 // Utility function

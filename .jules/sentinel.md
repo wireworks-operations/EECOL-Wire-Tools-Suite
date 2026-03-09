@@ -1,4 +1,6 @@
-## 2026-01-26 - [XSS via Template Literals and innerHTML]
-**Vulnerability:** Widespread Cross-Site Scripting (XSS) vulnerabilities due to direct injection of user-controllable data into HTML template literals, which were then inserted into the DOM using `innerHTML`.
-**Learning:** In a vanilla JavaScript application without a rendering framework that provides automatic escaping, every single piece of user-provided data must be manually sanitized. Numeric fields should also be escaped defensively to ensure consistency and safety against future type changes.
-**Prevention:** Use the global `window.escapeHTML` utility to wrap all dynamic variables within HTML template strings. Avoid `innerHTML` where possible, or ensure strict sanitization is applied immediately before use.
+# Sentinel Security Journal 🛡️
+
+## 2026-03-09 - Project-wide XSS Mitigation
+**Vulnerability:** Widespread use of `innerHTML` for rendering dynamic data from IndexedDB and user inputs across almost all application modules (Inventory, Cutting, Shipping, Estimators).
+**Learning:** Manual escaping with `window.escapeHTML()` was inconsistently applied and cumbersome for complex data types. Using `document.createElement()` and `.textContent` provides a more robust, native defense that is easier to verify and harder to accidentally bypass.
+**Prevention:** Establish a "Secure by Default" pattern where `innerHTML` is strictly forbidden for dynamic content. Prefer `textContent` for data and `createElement` for structure. Use `innerHTML` only for static, predefined templates where dynamic parts are everything.
