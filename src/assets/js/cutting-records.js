@@ -239,20 +239,43 @@ async function updateStats() {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-    const cutsToday = cutRecords.filter(r => r.timestamp >= todayStart);
-    const totalCutsToday = cutsToday.length;
-
-    const totalLength = cutRecords.reduce((sum, r) => sum + (r.cutLength || 0), 0);
-
-    const fullPicksCount = cutRecords.filter(r => r.isFullPick === true).length;
-
-    // Calculate most active cutter
+    /**
+     * BOLT OPTIMIZATION: Single-pass metrics calculation
+     * Consolidates 6 redundant O(N) passes (filter, reduce, forEach) into a single iteration
+     * to avoid redundant passes over the cutRecords dataset as it grows.
+     */
+    let totalCutsToday = 0;
+    let totalLength = 0;
+    let fullPicksCount = 0;
+    let systemCutsCount = 0;
     const cutterCounts = {};
-    cutRecords.forEach(r => {
+    const customerCounts = {};
+
+    for (const r of cutRecords) {
+        // Daily cuts
+        if (r.timestamp >= todayStart) totalCutsToday++;
+
+        // Total length
+        totalLength += (r.cutLength || 0);
+
+        // Full picks
+        if (r.isFullPick === true) fullPicksCount++;
+
+        // System cuts
+        if (r.isSystemCut === true) systemCutsCount++;
+
+        // Cutter activity
         if (r.cutterName) {
             cutterCounts[r.cutterName] = (cutterCounts[r.cutterName] || 0) + 1;
         }
-    });
+
+        // Customer activity
+        if (r.customerName) {
+            customerCounts[r.customerName] = (customerCounts[r.customerName] || 0) + 1;
+        }
+    }
+
+    // Post-processing: Calculate most active cutter
     let topCutter = '-';
     let maxCuts = 0;
     for (const [cutter, count] of Object.entries(cutterCounts)) {
@@ -262,13 +285,7 @@ async function updateStats() {
         }
     }
 
-    // Calculate most active customer
-    const customerCounts = {};
-    cutRecords.forEach(r => {
-        if (r.customerName) {
-            customerCounts[r.customerName] = (customerCounts[r.customerName] || 0) + 1;
-        }
-    });
+    // Post-processing: Calculate most active customer
     let topCustomer = '-';
     let maxCutsCustomer = 0;
     for (const [customer, count] of Object.entries(customerCounts)) {
@@ -278,11 +295,9 @@ async function updateStats() {
         }
     }
 
-    // System cuts count
-    const systemCutsCount = cutRecords.filter(r => r.isSystemCut === true).length;
-
     // Update DOM
-    document.getElementById('cutsToday').textContent = totalCutsToday;
+    const cutsTodayEl = document.getElementById('cutsToday');
+    if (cutsTodayEl) cutsTodayEl.textContent = totalCutsToday;
     document.getElementById('totalLength').textContent = totalLength.toFixed(2) + 'm';
     document.getElementById('fullPicksCount').textContent = fullPicksCount;
     document.getElementById('topCutter').textContent = topCutter;
