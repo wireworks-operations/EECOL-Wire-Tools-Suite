@@ -7,3 +7,7 @@
 ## 2025-05-16 - Single-pass Inventory Reports
 **Learning:** `updateDashboard` and `updateReportsTable` in `inventory-reports.js` were performing multiple O(N) passes (7+ and 2+ respectively) over the inventory datasets. Consolidating these into single-pass loops ensures the reporting dashboard remains responsive even with thousands of records.
 **Action:** Consolidate multiple filter/reduce calls into a single `for...of` loop in `updateDashboard` and `updateReportsTable`.
+
+## 2025-06-12 - Single-pass Cutting Records Statistics
+**Learning:** `updateStats` in `cutting-records.js` was performing six separate O(N) passes (filter, reduce, forEach) to update basic dashboard metrics. Consolidating these into a single iteration ensures the record-keeping interface remains responsive as the user's local history grows.
+**Action:** Consolidate 6 O(N) passes into a single `for...of` loop in `updateStats`.
