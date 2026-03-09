@@ -314,19 +314,18 @@ function getSortedPeriodKeys(groups) {
 function updateDashboard() {
     console.log('📊 Updating inventory dashboard statistics...');
 
+    const totalItems = inventoryItems.length;
+
     /**
      * BOLT OPTIMIZATION: Single-pass metrics calculation
-     * Consolidates 7 redundant O(N) passes (filters and reduce) into a single iteration
-     * to avoid redundant passes over the inventoryItems dataset.
+     * Consolidates approximately 7 separate O(N) passes (filters and reduces) into a single loop
+     * to avoid redundant passes over the large inventoryItems dataset.
      */
-    const totalItems = inventoryItems.length;
     let approvedItems = 0;
     let totalProcessed = 0;
     let totalValue = 0;
     let damagedItems = 0;
     let tailendItems = 0;
-    let currentWeekCount = 0;
-    let previousWeekCount = 0;
 
     const now = new Date();
     const oneWeekAgo = new Date();
@@ -334,27 +333,28 @@ function updateDashboard() {
     const twoWeeksAgo = new Date(oneWeekAgo);
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 7);
 
+    let currentWeekCount = 0;
+    let previousWeekCount = 0;
+
     for (const item of inventoryItems) {
-        // Approval status
-        if (item.approved !== null && item.approved !== undefined) {
+        // Approval stats
+        if (item.approved === true) {
+            approvedItems++;
             totalProcessed++;
-            if (item.approved === true) {
-                approvedItems++;
-            }
+        } else if (item.approved === false) {
+            totalProcessed++;
         }
 
         // Value
         totalValue += (item.totalValue || 0);
 
-        // Quality/Reason
-        if (item.reason) {
-            const reasonLower = item.reason.toLowerCase();
-            if (reasonLower.includes('damaged')) {
-                damagedItems++;
-            }
-            if (reasonLower.includes('tail end') || reasonLower.includes('tailend')) {
-                tailendItems++;
-            }
+        // Quality reasons
+        const reason = (item.reason || '').toLowerCase();
+        if (reason.includes('damaged')) {
+            damagedItems++;
+        }
+        if (reason.includes('tail end') || reason.includes('tailend')) {
+            tailendItems++;
         }
 
         // Weekly change tracking
@@ -651,10 +651,10 @@ function updateReportsTable() {
     const previousRecords = previousPeriodKey ? groups[previousPeriodKey].records : [];
 
     /**
-     * BOLT OPTIMIZATION: Single-pass metrics for report periods
-     * Consolidates filter and reduce calls into single iterations for each period.
+     * BOLT OPTIMIZATION: Single-pass metrics calculation
+     * Consolidates multiple O(N) passes into single iterations for current and previous records.
      */
-    const currentItems = currentRecords.length;
+    let currentItems = currentRecords.length;
     let currentApproved = 0;
     let currentValue = 0;
     for (const item of currentRecords) {
@@ -663,7 +663,7 @@ function updateReportsTable() {
     }
     const currentAvgValue = currentItems > 0 ? (currentValue / currentItems) : 0;
 
-    const previousItems = previousRecords.length;
+    let previousItems = previousRecords.length;
     let previousApproved = 0;
     let previousValue = 0;
     for (const item of previousRecords) {
