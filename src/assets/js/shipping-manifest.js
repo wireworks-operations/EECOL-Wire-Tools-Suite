@@ -181,13 +181,16 @@ function showAlert(message, title = "Notification") {
                         <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="#0058B3" stroke-width="3.5" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <h3 class="text-lg font-bold text-center mb-3" style="background-image: linear-gradient(90deg, #0058B3, #004a99); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent;">${title}</h3>
-                <div class="text-sm text-gray-700 mb-6 text-center">${message}</div>
+                <h3 class="text-lg font-bold text-center mb-3" style="background-image: linear-gradient(90deg, #0058B3, #004a99); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent;"></h3>
+                <div class="text-sm text-gray-700 mb-6 text-center whitespace-pre-line"></div>
                 <div class="flex justify-center">
                     <button class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 text-sm font-semibold">OK</button>
                 </div>
             </div>
         `;
+
+        modal.querySelector('h3').textContent = title;
+        modal.querySelector('.text-sm.text-gray-700').textContent = message;
 
         document.body.appendChild(modal);
 
