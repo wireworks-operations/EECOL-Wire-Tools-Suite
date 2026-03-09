@@ -43,23 +43,23 @@ function printReelLabel() {
     if (hasAnyDimension) {
         labelHTML += `
             <div style="margin: 10px 0; text-align: left; font-size: 10px; color: #666;">
-                ${hasFlange ? `Flange: ${flangeDiameterInput.value} ${flangeDiameterUnit.value}` : ''}
-                ${hasCore || hasWidth ? `Core: ${hasCore ? coreDiameterInput.value : '0'} ${coreDiameterUnit.value} | Width: ${hasWidth ? traverseWidthInput.value : '0'} ${traverseWidthUnit.value}` : ''}
+                ${hasFlange ? `Flange: ${window.escapeHTML(flangeDiameterInput.value)} ${window.escapeHTML(flangeDiameterUnit.value)}` : ''}
+                ${hasCore || hasWidth ? `Core: ${hasCore ? window.escapeHTML(coreDiameterInput.value) : '0'} ${window.escapeHTML(coreDiameterUnit.value)} | Width: ${hasWidth ? window.escapeHTML(traverseWidthInput.value) : '0'} ${window.escapeHTML(traverseWidthUnit.value)}` : ''}
             </div>`;
     }
 
     labelHTML += `
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
                 <div style="text-align: center; font-size: 32px; font-weight: bold; color: #0058B3;">
-                    Wire ID: ${wireIdInput.value.toUpperCase()}
+                    Wire ID: ${window.escapeHTML(wireIdInput.value.toUpperCase())}
                 </div>
 
                 <div style="text-align: center; font-size: 24px; font-weight: bold; color: #333;">
-                    Length: ${lengthInput.value} ${lengthUnit.value}
+                    Length: ${window.escapeHTML(lengthInput.value)} ${window.escapeHTML(lengthUnit.value)}
                 </div>
 
                 <div style="text-align: center; font-size: 24px; font-weight: bold; color: #0058B3;">
-                    L:${lineCodeInput.value.toUpperCase()}
+                    L:${window.escapeHTML(lineCodeInput.value.toUpperCase())}
                 </div>
             </div>
         </div>

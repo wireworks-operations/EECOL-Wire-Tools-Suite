@@ -929,7 +929,7 @@ function updateINAItems() {
         const inaNum = item.inaNumber;
         const value = item.totalValue ? '$' + item.totalValue.toFixed(2) : 'N/A';
         const product = item.productCode || 'Unknown';
-        return `<li class="text-xs">${date}: INA ${inaNum} - ${product} (${value})</li>`;
+        return `<li class="text-xs">${date}: INA ${window.escapeHTML(inaNum)} - ${window.escapeHTML(product)} (${window.escapeHTML(value)})</li>`;
     }).join('');
 
     inaList.innerHTML = listItems;

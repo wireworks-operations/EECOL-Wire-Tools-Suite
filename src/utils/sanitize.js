@@ -1,14 +1,19 @@
 (function () {
   // Simple HTML-escape helper to prevent injection when inserting strings into innerHTML / template HTML.
-  // Usage: const safe = window.escapeHtml(unsafeString);
+  // DEPRECATED: Use the global window.escapeHTML instead.
   function escapeHtml(str) {
+    if (typeof window.escapeHTML === 'function') {
+      return window.escapeHTML(str);
+    }
+    // Fallback if window.escapeHTML is not yet defined
     if (str === null || str === undefined) return '';
     return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .replace(/'/g, '&#39;')
+      .replace(/\//g, '&#x2F;');
   }
 
   // Safe open print window helper that checks for popup blockers and closes the document stream.
