@@ -314,34 +314,65 @@ function getSortedPeriodKeys(groups) {
 function updateDashboard() {
     console.log('📊 Updating inventory dashboard statistics...');
 
+    /**
+     * BOLT OPTIMIZATION: Single-pass metrics calculation
+     * Consolidates 7 redundant O(N) passes (filters and reduce) into a single iteration
+     * to avoid redundant passes over the inventoryItems dataset.
+     */
     const totalItems = inventoryItems.length;
-    const approvedItems = inventoryItems.filter(item => item.approved === true).length;
-    const totalProcessed = inventoryItems.filter(item => item.approved !== null && item.approved !== undefined).length;
-    const approvedRate = totalProcessed > 0 ? Math.round((approvedItems / totalProcessed) * 100) : 0;
+    let approvedItems = 0;
+    let totalProcessed = 0;
+    let totalValue = 0;
+    let damagedItems = 0;
+    let tailendItems = 0;
+    let currentWeekCount = 0;
+    let previousWeekCount = 0;
 
-    const totalValue = inventoryItems.reduce((sum, item) => sum + (item.totalValue || 0), 0);
-    const avgValue = totalItems > 0 ? (totalValue / totalItems) : 0;
-
-    const damagedItems = inventoryItems.filter(item =>
-        item.reason && item.reason.toLowerCase().includes('damaged')).length;
-    const damagedPercent = totalItems > 0 ? ((damagedItems / totalItems) * 100).toFixed(1) : 0;
-
-    const tailendItems = inventoryItems.filter(item =>
-        item.reason && (item.reason.toLowerCase().includes('tail end') || item.reason.toLowerCase().includes('tailend'))).length;
-    const tailendPercent = totalItems > 0 ? ((tailendItems / totalItems) * 100).toFixed(1) : 0;
-
-    // Weekly change calculation
+    const now = new Date();
     const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const currentWeekRecords = inventoryItems.filter(record => {
-        const recordDate = parseDate(record.timestamp);
-        return recordDate && recordDate >= oneWeekAgo;
-    });
-    const previousWeekRecords = inventoryItems.filter(record => {
-        const recordDate = parseDate(record.timestamp);
-        return recordDate && recordDate >= new Date(oneWeekAgo.getTime() - 7 * 24 * 60 * 60 * 1000) && recordDate < oneWeekAgo;
-    });
-    const itemsChange = calculateChange(currentWeekRecords.length, previousWeekRecords.length);
+    oneWeekAgo.setDate(now.getDate() - 7);
+    const twoWeeksAgo = new Date(oneWeekAgo);
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 7);
+
+    for (const item of inventoryItems) {
+        // Approval status
+        if (item.approved !== null && item.approved !== undefined) {
+            totalProcessed++;
+            if (item.approved === true) {
+                approvedItems++;
+            }
+        }
+
+        // Value
+        totalValue += (item.totalValue || 0);
+
+        // Quality/Reason
+        if (item.reason) {
+            const reasonLower = item.reason.toLowerCase();
+            if (reasonLower.includes('damaged')) {
+                damagedItems++;
+            }
+            if (reasonLower.includes('tail end') || reasonLower.includes('tailend')) {
+                tailendItems++;
+            }
+        }
+
+        // Weekly change tracking
+        const recordDate = parseDate(item.timestamp);
+        if (recordDate) {
+            if (recordDate >= oneWeekAgo) {
+                currentWeekCount++;
+            } else if (recordDate >= twoWeeksAgo) {
+                previousWeekCount++;
+            }
+        }
+    }
+
+    const approvedRate = totalProcessed > 0 ? Math.round((approvedItems / totalProcessed) * 100) : 0;
+    const avgValue = totalItems > 0 ? (totalValue / totalItems) : 0;
+    const damagedPercent = totalItems > 0 ? ((damagedItems / totalItems) * 100).toFixed(1) : 0;
+    const tailendPercent = totalItems > 0 ? ((tailendItems / totalItems) * 100).toFixed(1) : 0;
+    const itemsChange = calculateChange(currentWeekCount, previousWeekCount);
 
     // Update DOM elements
     document.getElementById('totalItemsStat').textContent = totalItems;
@@ -619,14 +650,26 @@ function updateReportsTable() {
     const currentRecords = currentPeriodKey ? groups[currentPeriodKey].records : [];
     const previousRecords = previousPeriodKey ? groups[previousPeriodKey].records : [];
 
+    /**
+     * BOLT OPTIMIZATION: Single-pass metrics for report periods
+     * Consolidates filter and reduce calls into single iterations for each period.
+     */
     const currentItems = currentRecords.length;
-    const currentApproved = currentRecords.filter(item => item.approved === true).length;
-    const currentValue = currentRecords.reduce((sum, item) => sum + (item.totalValue || 0), 0);
+    let currentApproved = 0;
+    let currentValue = 0;
+    for (const item of currentRecords) {
+        if (item.approved === true) currentApproved++;
+        currentValue += (item.totalValue || 0);
+    }
     const currentAvgValue = currentItems > 0 ? (currentValue / currentItems) : 0;
 
     const previousItems = previousRecords.length;
-    const previousApproved = previousRecords.filter(item => item.approved === true).length;
-    const previousValue = previousRecords.reduce((sum, item) => sum + (item.totalValue || 0), 0);
+    let previousApproved = 0;
+    let previousValue = 0;
+    for (const item of previousRecords) {
+        if (item.approved === true) previousApproved++;
+        previousValue += (item.totalValue || 0);
+    }
     const previousAvgValue = previousItems > 0 ? (previousValue / previousItems) : 0;
 
     const itemsChange = calculateChange(currentItems, previousItems);
