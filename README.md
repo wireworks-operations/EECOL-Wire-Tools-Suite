@@ -1,182 +1,161 @@
-# EECOL Wire Tools Suite v0.8.0.3
+# EECOL Wire Tools Suite v0.8.0.4 📘 Industrial-grade PWA for wire processing
 
-## 🎯 **Overview**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-green.svg)](https://nodejs.org/)
 
-A comprehensive Progressive Web Application (PWA) for industrial wire processing operations. Provides tools for wire inventory management, cutting operations tracking, reporting/analytics, and various wire calculation utilities.
-
-### **Core Features**
-- **Complete Tool Suite**: Cutting records, inventory management, calculators, reports
-- **Offline-First Design**: Works seamlessly without internet connectivity
-- **Professional Code**: Clean, production-ready with proper error handling
-- **Mobile Responsive**: Optimized for all screen sizes and devices
-- **PWA Installable**: Can be installed as a native app on desktop and mobile
-- **Premium UI Experience**: Dark mode support and polished, boxed layouts for calculation results
-
-### **Architecture**
-- **IndexedDB Backend**: High-performance local database for all data persistence
-- **PWA Features**: Offline functionality, installable app, service workers
-- **Professional UI**: EECOL-branded modal dialogs, responsive design
-- **Storage Strategy**: IndexedDB used as main storage, with localStorage as fallback if IndexedDB isn't working
+A comprehensive Progressive Web Application (PWA) for industrial wire processing
+operations. Provides tools for wire inventory management, cutting operations
+tracking, reporting/analytics, and various wire calculation utilities.
 
 ---
 
-## 📋 **Available Tools**
+## 🚀 Getting Started
 
-### **Core Operations**
-- **Cutting Records**: Track wire cutting operations and history
-- **Inventory Records**: Material inventory management and tracking
-- **Maintenance Checklists**: Equipment maintenance logging and scheduling
+> The commands below are verified for this repo. If your platform differs, see
+> **Troubleshooting**.
 
-### **Calculators**
-- **Wire Weight Estimator**: Calculate wire weight by dimensions
-- **Wire Mark Calculator**: Precise cutting mark calculations
-- **Stop Mark Calculator**: Stop mark positioning calculations
-- **Reel Capacity Estimator**: Calculate reel capacity for different wire sizes
-- **Reel Size Estimator**: Recommend optimal reel sizes
+### Prerequisites
 
-### **Reports & Analytics**
-- **Cutting Reports**: Analytics and reporting for cutting operations
-- **Inventory Reports**: Inventory analytics and usage tracking
-- **Live Statistics Dashboard**: Real-time metrics and combined data views
+- **Node.js**: >= 16.0.0
+- **Package Manager**: [pnpm](https://pnpm.io/) (preferred) or npm
 
-### **Additional Tools**
-- **Shipping Manifest**: Generate shipping documentation
-- **Reel Labels**: Print professional wire reel labels
-- **Multi-Cut Planner**: Multi-cut planner reverted to placeholder due to breaking changes that took place
-- **Education Center**: Learning resources and reference materials
+### 1) Clone & Install
 
----
-
-## 🔧 **Technical Details**
-
-### **Storage Layer (IndexedDB)**
-```javascript
-const db = new EECOLIndexedDB({
-  stores: ['cuttingRecords', 'inventoryRecords', 'maintenanceLogs', 'settings']
-});
+```bash
+git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
+cd eecol-wire-tools-suite-v2
+pnpm install
 ```
 
-**Database Stores:**
-- `cuttingRecords` - Wire cutting operations and history
-- `inventoryRecords` - Material inventory tracking
-- `maintenanceLogs` - Equipment maintenance records
-- `settings` - App configuration and preferences
+### 2) Run (Local)
 
-
-
-### **PWA Features**
-- **Service Workers**: Background caching and offline functionality
-- **Web App Manifest**: Installable on desktop and mobile devices
-- **Offline Support**: Full functionality without internet connection
-- **Background Sync**: Queues operations for when connectivity returns
-
----
-
-## 🚀 **Getting Started**
-
-### **Running the Application**
 ```bash
-# Install dependencies
-npm install
-
 # Start development server
-npm start
-
-# Or serve static files
-npx http-server
+pnpm dev
 ```
 
-### **Docker (In Progress)**
-The project includes Docker support for containerized deployment.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### 3) Build & Test (Experimental)
+
+> **Note:** Build and test tools are currently under configuration.
+
 ```bash
-# Build the image
-npm run docker:build
-
-# Run the container
-npm run docker:run
+pnpm build     # Build for production
+pnpm test      # Run unit tests
+pnpm lint      # Run ESLint
 ```
-
-### **Development Commands**
-```bash
-# Build for production
-npm run build
-
-# Run linting
-npm run lint
-
-# Run type checking
-npm run type-check
-```
-
-### **Access the Application**
-- Open `http://localhost:8080` (or your server port)
-- The app works completely offline once loaded
-- Install as PWA from browser menu for native app experience
 
 ---
 
-## 📊 **Current Status & Known Issues**
+## 🧭 Quickstart (90-second path)
 
-### **Working Features**
-- ✅ All calculator tools (weight, mark, stop mark, reel capacity/size estimators)
-- ✅ Cutting and inventory record management
-- ✅ Reports and analytics dashboards
-- ✅ Maintenance checklists
-- ✅ Shipping manifests and reel labels
-- ✅ Education center and learning resources
-- ✅ PWA offline functionality
-- ✅ Mobile responsive design
+```bash
+# 1. Clone & move
+git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
+cd eecol-wire-tools-suite-v2
 
-### **Known Issues**
-- ❌ **Multi-Cut Planner**: Multi-cut planner reverted to placeholder due to breaking changes that took place
+# 2. Start server
+pnpm dev
 
-### **Recent Updates & Roadmap**
-- **v0.8.0.3**: Dark mode feature with smooth theme transitions and Premium Calculation Results Layouts
-- **v0.8.0.2**: Database configuration page remake with modern design patterns
-- **Architectural Alignment**: Complete page reconstruction following project standards
-- **UI Standardization**: Integrated standard footer, navigation buttons, and shared stylesheet
-- **Database Integration**: Refactored JavaScript to use global window.eecolDB instance
-- **Version Synchronization**: Harmonized package.json version for application consistency
-- **Upcoming**: Saved configuration management page, multi-cut planner rebuild, v2.0.0 enterprise features
-
-### **Version History**
-- **v0.8.0.3** (Current): Dark mode feature with smooth theme transitions, full application coverage, and premium boxed layouts for calculation results
-- **v0.8.0.2**: Database configuration page remake with modern design patterns and UI standardization
-- **v0.8.0.1**: Code modernization, professional UI, comprehensive tool suite
-- **v0.8.0.0**: Complete backend overhaul with IndexedDB and PWA support
-- **v0.7.x**: Initial IndexedDB implementation and calculator tools suite
+# 3. Open app
+http://localhost:3000
+```
 
 ---
 
-## 🛠️ **Development**
+## 🏗️ Architecture
 
-### **Project Structure**
-```
-src/
-├── core/database/          # IndexedDB storage
-├── pages/                  # HTML pages and JavaScript
-├── assets/                 # CSS, icons, shared resources
-├── utils/                  # Helper utilities
-└── core/modules/           # Industry standards and data
-```
+See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII blueprint and component
+interactions.
 
-### **Key Technologies**
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3, Tailwind CSS
-- **Build**: Webpack
-- **Storage**: IndexedDB used as main storage, with localStorage as fallback if IndexedDB isn't working
+<details>
+<summary>Click to expand: Key Technologies</summary>
+
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3, [Tailwind CSS](https://tailwindcss.com/)
+- **Build**: [Webpack](https://webpack.js.org/) (under configuration)
+- **Storage**: [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (primary),
+  localStorage (fallback)
 - **PWA**: Service Workers, Web App Manifest
-- **Charts**: Chart.js for data visualization
+- **Charts**: [Chart.js](https://www.chartjs.org/) for data visualization
 
-
-### **Contributing**
-- Follow the established patterns in existing tools
-- Use EECOL-branded modal system for user feedback
-- Maintain mobile-responsive design
-- Test offline functionality
-- Document changes in CONTEXT.md before implementation
+</details>
 
 ---
 
-## 📄 **License**
+## 📋 Available Tools
+
+<details>
+<summary>Core Operations & Records</summary>
+
+- **Cutting Records**: Log, track, and analyze wire cuts efficiently.
+- **Inventory Records**: Material inventory management and tracking.
+- **Machine Maintenance**: Daily equipment inspection checklists.
+- **Shipping Manifest**: Generate shipping documentation and labels.
+
+</details>
+
+<details>
+<summary>Calculators & Estimators</summary>
+
+- **Mark Calculator**: Calculate length between wire marks.
+- **Stop Mark Calculator**: Determine exact stopping points for machine cuts.
+- **Reel Capacity Estimator**: Calculate maximum wire capacity for specific
+  reels.
+- **Reel Size Estimator**: Recommend optimal reel sizes based on length.
+- **Weight Calculator**: Estimate wire weight by dimensions and length.
+
+</details>
+
+<details>
+<summary>Reports & Analytics</summary>
+
+- **Cutting Reports**: Analytics and reporting for cutting operations.
+- **Inventory Reports**: Inventory analytics and usage tracking.
+- **Live Statistics**: Real-time metrics and combined data views.
+
+</details>
+
+---
+
+## 🔧 Technical Details
+
+<details>
+<summary>Storage Layer (IndexedDB)</summary>
+
+The application uses a singleton `EECOLIndexedDB` class to manage 14 specialized
+stores, including:
+
+- `cuttingRecords`
+- `inventoryRecords`
+- `maintenanceLogs`
+- `settings`
+- Tool-specific stores (markConverter, stopmarkConverter, etc.)
+
+</details>
+
+<details>
+<summary>Security & Privacy</summary>
+
+- **Local-First**: All data is stored exclusively on the client-side. No server
+  or cloud transmission.
+- **CSP**: Strict Content Security Policy enforced in `index.html`.
+- **Offline-First**: Fully functional without internet connectivity once cached.
+
+See **[SECURITY.md](SECURITY.md)** for more details.
+
+</details>
+
+---
+
+## 📊 Status & Roadmap
+
+- ✅ **Working**: All core calculators, records, reports, and PWA functionality.
+- ❌ **Known Issues**: Multi-Cut Planner is currently a placeholder.
+- 🚧 **Upcoming**: Improved build/test configuration, multi-cut planner rebuild.
+
+---
+
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
