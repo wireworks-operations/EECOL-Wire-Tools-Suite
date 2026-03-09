@@ -95,8 +95,20 @@ class EECOLIndexedDB {
         reject(request.error);
       };
 
+      request.onblocked = () => {
+        console.warn('⚠️ IndexedDB upgrade blocked by another connection');
+      };
+
       request.onsuccess = (event) => {
         this.db = event.target.result;
+
+        // Close connection if another tab requests an upgrade
+        this.db.onversionchange = () => {
+          this.db.close();
+          console.log('🔄 Database closed due to version change request from another tab');
+          // Optionally notify user or reload
+        };
+
         resolve();
       };
 

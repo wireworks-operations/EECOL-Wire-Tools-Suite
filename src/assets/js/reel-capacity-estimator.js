@@ -1359,7 +1359,7 @@ async function handleSaveReelSpecifications() {
         }
 
         // Initialize database connection
-        const db = new EECOLIndexedDB();
+        const db = EECOLIndexedDB.getInstance();
         await db.ready;
 
         // Save to IndexedDB
