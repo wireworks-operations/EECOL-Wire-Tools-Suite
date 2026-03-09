@@ -230,6 +230,10 @@ function calculateConversion(showErrors = false) {
     if (referenceList) {
         referenceList.innerHTML = `
             <div class="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100">
+                <span class="text-xs font-bold text-gray-700 flex items-center"><span class="mr-1">🏁</span> Starting Mark</span>
+                <span class="text-sm font-bold text-blue-600">${startValue.toFixed(3)} ${stoppingMarkUnit}</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100">
                 <span class="text-xs font-bold text-gray-700 flex items-center"><span class="mr-1">✅</span> Mark at Counter</span>
                 <span class="text-sm font-bold text-green-600">${markAtCounter.toFixed(3)} ${stoppingMarkUnit}</span>
             </div>
