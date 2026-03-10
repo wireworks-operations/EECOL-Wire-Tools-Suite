@@ -22,10 +22,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const markConverterList = document.getElementById('markConverterList');
     const stopmarkConverterList = document.getElementById('stopmarkConverterList');
+    const wireCutListList = document.getElementById('wireCutListList');
     const reelcapacityEstimatorList = document.getElementById('reelcapacityEstimatorList');
 
     const deleteSelectedMarkConverterBtn = document.getElementById('deleteSelectedMarkConverter');
     const deleteSelectedStopmarkConverterBtn = document.getElementById('deleteSelectedStopmarkConverter');
+    const deleteSelectedWireCutListBtn = document.getElementById('deleteSelectedWireCutList');
     const deleteSelectedReelcapacityEstimatorBtn = document.getElementById('deleteSelectedReelcapacityEstimator');
 
     // Load and render records
@@ -38,6 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return `Start: ${record.startMark}, Length: ${record.cutLength}, Unit: ${record.unit} (${timestamp})`;
             case 'reelcapacityEstimator':
                 return `Flange: ${record.flangeDiameter.value} ${record.flangeDiameter.unit}, Core: ${record.coreDiameter.value} ${record.coreDiameter.unit}, Traverse: ${record.traverseWidth.value} ${record.traverseWidth.unit} (${timestamp})`;
+            case 'wireCutList':
+                const urgencyPrefix = record.urgency && record.urgency !== 'normal' ? `[${record.urgency.toUpperCase()}] ` : '';
+                let wireSummary = `${urgencyPrefix}Order: ${record.orderNumber}, Cust: ${record.customerName}, Wire: ${record.wireType}, Status: ${record.status}`;
+                if (record.status === 'removed' && record.removalReason) {
+                    wireSummary += ` | Reason: ${record.removalReason}`;
+                }
+                return `${wireSummary} (${timestamp})`;
             default:
                 return JSON.stringify(record);
         }
@@ -95,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 reelRecords: 0,
                 cuttingRecords: 0,
                 inventoryRecords: 0,
+                wireCutListRecords: 0,
                 storageSize: 0,
                 largestStore: { name: 'None', count: 0 }
             };
@@ -121,6 +131,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         break;
                     case 'inventoryRecords':
                         stats.inventoryRecords = recordCount;
+                        break;
+                    case 'wireCutList':
+                        stats.wireCutListRecords = recordCount;
                         break;
                 }
 
@@ -152,6 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('reelRecords').textContent = stats.reelRecords;
         document.getElementById('cuttingRecords').textContent = stats.cuttingRecords;
         document.getElementById('inventoryRecords').textContent = stats.inventoryRecords;
+        document.getElementById('wireCutListRecords').textContent = stats.wireCutListRecords;
 
         // Update storage analysis
         document.getElementById('dbSize').textContent = formatBytes(stats.storageSize);
@@ -262,10 +276,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    deleteSelectedMarkConverterBtn.addEventListener('click', () => handleDeleteSelected('markConverter', markConverterList));
-    deleteSelectedStopmarkConverterBtn.addEventListener('click', () => handleDeleteSelected('stopmarkConverter', stopmarkConverterList));
-    deleteSelectedReelcapacityEstimatorBtn.addEventListener('click', () => handleDeleteSelected('reelcapacityEstimator', reelcapacityEstimatorList));
-
     document.body.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-record')) {
             const id = e.target.dataset.id;
@@ -285,6 +295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bulkState = {
         markConverter: { selected: new Set(), selectAll: false },
         stopmarkConverter: { selected: new Set(), selectAll: false },
+        wireCutList: { selected: new Set(), selectAll: false },
         reelcapacityEstimator: { selected: new Set(), selectAll: false }
     };
 
@@ -477,6 +488,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let originalRecords = {
         markConverter: [],
         stopmarkConverter: [],
+        wireCutList: [],
         reelcapacityEstimator: []
     };
 
@@ -516,6 +528,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return (a.coreDiameter?.value || 0) - (b.coreDiameter?.value || 0);
                 case 'coreDesc':
                     return (b.coreDiameter?.value || 0) - (a.coreDiameter?.value || 0);
+                case 'orderAsc':
+                    return (a.orderNumber || '').localeCompare(b.orderNumber || '');
+                case 'orderDesc':
+                    return (b.orderNumber || '').localeCompare(a.orderNumber || '');
                 default:
                     return 0;
             }
@@ -629,11 +645,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Load records for each store
         originalRecords.markConverter = await db.getAll('markConverter');
         originalRecords.stopmarkConverter = await db.getAll('stopmarkConverter');
+        originalRecords.wireCutList = await db.getAll('wireCutList');
         originalRecords.reelcapacityEstimator = await db.getAll('reelcapacityEstimator');
 
         // Render initial (unfiltered) records
         await renderRecords('markConverter', markConverterList);
         await renderRecords('stopmarkConverter', stopmarkConverterList);
+        await renderRecords('wireCutList', wireCutListList);
         await renderRecords('reelcapacityEstimator', reelcapacityEstimatorList);
 
         // Calculate and display statistics after loading records
@@ -678,6 +696,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         stopmarkSearchInput.value = '';
         stopmarkSortSelect.value = 'newest';
         updateFilteredRecords('stopmarkConverter', stopmarkConverterList, stopmarkSearchInput, stopmarkSortSelect);
+    });
+
+    // Wire Cut List search and filter
+    const wireCutSearchInput = document.getElementById('wireCutSearchInput');
+    const wireCutSortSelect = document.getElementById('wireCutSortSelect');
+    const wireCutClearSearch = document.getElementById('wireCutClearSearch');
+
+    wireCutSearchInput.addEventListener('input', () => {
+        updateFilteredRecords('wireCutList', wireCutListList, wireCutSearchInput, wireCutSortSelect);
+    });
+
+    wireCutSortSelect.addEventListener('change', () => {
+        updateFilteredRecords('wireCutList', wireCutListList, wireCutSearchInput, wireCutSortSelect);
+    });
+
+    wireCutClearSearch.addEventListener('click', () => {
+        wireCutSearchInput.value = '';
+        wireCutSortSelect.value = 'newest';
+        updateFilteredRecords('wireCutList', wireCutListList, wireCutSearchInput, wireCutSortSelect);
     });
 
     // Reel Capacity Estimator search and filter
@@ -736,6 +773,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         handleSelectAll('stopmarkConverter', e.target.checked);
     });
 
+    document.getElementById('selectAllWireCutList').addEventListener('change', (e) => {
+        handleSelectAll('wireCutList', e.target.checked);
+    });
+
     document.getElementById('selectAllReelcapacityEstimator').addEventListener('change', (e) => {
         handleSelectAll('reelcapacityEstimator', e.target.checked);
     });
@@ -755,6 +796,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('exportSelectedStopmarkConverter').addEventListener('click', () => {
         handleBulkExport('stopmarkConverter');
+    });
+
+    document.getElementById('deleteSelectedWireCutList').addEventListener('click', () => {
+        handleBulkDelete('wireCutList');
+    });
+
+    document.getElementById('exportSelectedWireCutList').addEventListener('click', () => {
+        handleBulkExport('wireCutList');
     });
 
     document.getElementById('deleteSelectedReelcapacityEstimator').addEventListener('click', () => {
@@ -788,7 +837,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
         ],
-        version: 'v0.8.0.3',
+        version: 'v0.8.0.4',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Database Config'
     });

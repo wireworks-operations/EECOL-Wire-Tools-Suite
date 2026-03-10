@@ -16,7 +16,7 @@
                                   v
                     +-------------+-------------+
                     |          IndexedDB        |
-                    |  14 Specialized Stores    |
+                    |  15 Specialized Stores    |
                     |  EECOLIndexedDB Singleton |
                     +-------------+-------------+
                                   |

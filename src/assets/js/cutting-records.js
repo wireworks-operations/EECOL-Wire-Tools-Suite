@@ -17,6 +17,12 @@ let maxHistorySize = 20; // Keep last 20 states
 let batchUndoStack = [];
 let batchRedoStack = [];
 
+// Wire Cut List variables
+let wireCutList = [];
+let wireListEditingId = null;
+let currentContextMenuId = null;
+let draggedItemId = null;
+
 // Diagnostic function to test database connectivity
 async function testDatabaseConnection() {
 
@@ -1489,10 +1495,12 @@ async function syncToCloudCSV() {
 async function exportJSONBackup() {
     const backup = {
         records: cutRecords,
+        wireCutList: wireCutList,
         timestamp: Date.now(),
         version: '0.7.9.7',
         exportDate: new Date().toISOString(),
-        totalRecords: cutRecords.length
+        totalRecords: cutRecords.length,
+        totalWireCutListItems: wireCutList.length
     };
 
     // Save export timestamp to IndexedDB
@@ -1533,23 +1541,27 @@ async function importJSONBackup(event) {
                 return;
             }
 
-            const importRecords = backupData.records;
+            const importRecords = backupData.records || [];
+            const importWireCutList = backupData.wireCutList || [];
             const backupVersion = backupData.version || 'unknown';
             const exportDate = backupData.exportDate ? new Date(backupData.exportDate).toLocaleDateString() : 'unknown';
 
             // Show import options
-            const merge = await showConfirm(`JSON Backup Import:\n\nBackup Details:\n- Version: ${backupVersion}\n- Export Date: ${exportDate}\n- Records: ${importRecords.length}\n- Current Records: ${cutRecords.length}\n\nChoose:\nOK = Merge with existing data\nCancel = Replace all existing data`, 'Import Options');
+            const merge = await showConfirm(`JSON Backup Import:\n\nBackup Details:\n- Version: ${backupVersion}\n- Export Date: ${exportDate}\n- Cut Records: ${importRecords.length}\n- Wire List Items: ${importWireCutList.length}\n\nChoose:\nOK = Merge with existing data\nCancel = Replace all existing data`, 'Import Options');
 
             cutRecords = merge ? [...cutRecords, ...importRecords] : importRecords;
+            wireCutList = merge ? [...wireCutList, ...importWireCutList] : importWireCutList;
 
             // Clean up records (ensure IDs, etc.)
             cutRecords.forEach(record => {
-                if (!record.id) {
-                    record.id = crypto.randomUUID();
-                }
+                if (!record.id) record.id = crypto.randomUUID();
+            });
+            wireCutList.forEach(item => {
+                if (!item.id) item.id = crypto.randomUUID();
             });
 
             cutRecords.sort((a, b) => b.timestamp - a.timestamp);
+            wireCutList.sort((a, b) => (a.position || 0) - (b.position || 0));
 
             // Save to database
             await clearAllCutRecordsFromDB();
@@ -1557,8 +1569,16 @@ async function importJSONBackup(event) {
                 await saveCutRecordToDB(record);
             }
 
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                if (!merge) await window.eecolDB.clear('wireCutList');
+                for (const item of wireCutList) {
+                    await window.eecolDB.update('wireCutList', item);
+                }
+            }
+
             displayedRecordsCount = 0;
             renderCutRecords();
+            renderWireCutList();
 
             await showAlert(`JSON import successful!\n${merge ? 'Merged' : 'Replaced'} with ${importRecords.length} records.\nTotal records: ${cutRecords.length}`, 'Import Successful');
 
@@ -2087,6 +2107,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Initialize button states
     updateButtonStates();
+
+    // Wire Cut List initialization
+    initWireCutList();
 
     // Batch Cut List management
     const batchCutList = document.getElementById('batchCutList');
@@ -2694,6 +2717,519 @@ function hideImportModal() {
     setTimeout(() => {
         modal.classList.add('hidden');
     }, 200);
+}
+
+// ====================================================================
+// WIRE CUT LIST FUNCTIONS
+// ====================================================================
+
+async function initWireCutList() {
+    const toggleBtn = document.getElementById('toggleWireList');
+    const content = document.getElementById('wireListContent');
+    const toggleArrow = document.getElementById('wireListToggle');
+    const addBtn = document.getElementById('addWireListItemBtn');
+    const refreshBtn = document.getElementById('refreshWireListBtn');
+    const statusFilter = document.getElementById('wireListStatusFilter');
+    const searchInput = document.getElementById('wireListSearch');
+
+    if (toggleBtn && content) {
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = content.classList.contains('hidden');
+            if (isHidden) {
+                content.classList.remove('hidden');
+                toggleArrow.textContent = '▼';
+                loadWireCutList();
+            } else {
+                content.classList.add('hidden');
+                toggleArrow.textContent = '►';
+            }
+        });
+    }
+
+    if (addBtn) addBtn.addEventListener('click', () => showWireListItemModal());
+    if (refreshBtn) refreshBtn.addEventListener('click', loadWireCutList);
+    if (statusFilter) statusFilter.addEventListener('change', renderWireCutList);
+    if (searchInput) searchInput.addEventListener('input', renderWireCutList);
+
+    // Modal events
+    const cancelBtn = document.getElementById('cancelWireListItemBtn');
+    const saveBtn = document.getElementById('saveWireListItemBtn');
+    const backdrop = document.getElementById('wireModalBackdrop');
+
+    if (cancelBtn) cancelBtn.addEventListener('click', hideWireListItemModal);
+    if (saveBtn) saveBtn.addEventListener('click', saveWireListItem);
+    if (backdrop) backdrop.addEventListener('click', hideWireListItemModal);
+
+    // Removal reason modal events
+    const cancelRemBtn = document.getElementById('cancelRemovalBtn');
+    const confirmRemBtn = document.getElementById('confirmRemovalBtn');
+    const remBackdrop = document.getElementById('removalModalBackdrop');
+
+    if (cancelRemBtn) cancelRemBtn.addEventListener('click', hideRemovalReasonModal);
+    if (confirmRemBtn) confirmRemBtn.addEventListener('click', saveRemovalWithReason);
+    if (remBackdrop) remBackdrop.addEventListener('click', hideRemovalReasonModal);
+
+    // Context menu events
+    document.addEventListener('click', hideWireListContextMenu);
+    document.getElementById('ctxEdit').addEventListener('click', () => {
+        if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
+    });
+    document.getElementById('ctxRemove').addEventListener('click', async () => {
+        if (currentContextMenuId) {
+            const confirm = await showConfirm('Remove this item from the list?', 'Remove Item');
+            if (confirm) {
+                await deleteWireListItem(currentContextMenuId);
+            }
+        }
+    });
+    document.getElementById('ctxColorPicker').addEventListener('input', (e) => {
+        if (currentContextMenuId) {
+            updateWireListItemColor(currentContextMenuId, e.target.value);
+        }
+    });
+
+    // Drag and drop events for the container
+    const container = document.getElementById('wireCutListItems');
+    container.addEventListener('dragover', e => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(container, e.clientY);
+        const dragging = document.querySelector('.dragging');
+        if (afterElement == null) {
+            container.appendChild(dragging);
+        } else {
+            container.insertBefore(dragging, afterElement);
+        }
+    });
+
+    container.addEventListener('drop', async e => {
+        e.preventDefault();
+        await saveWireListOrder();
+    });
+
+    // Load initial data
+    await loadWireCutList();
+}
+
+async function loadWireCutList() {
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            const records = await window.eecolDB.getAll('wireCutList');
+            wireCutList = records.sort((a, b) => (a.position || 0) - (b.position || 0));
+            renderWireCutList();
+        }
+    } catch (error) {
+        console.error("Error loading wire cut list:", error);
+    }
+}
+
+function renderWireCutList() {
+    const container = document.getElementById('wireCutListItems');
+    const filter = document.getElementById('wireListStatusFilter').value;
+    const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
+
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+
+    const filtered = wireCutList.filter(item => {
+        // Status filter
+        if (filter !== 'all' && item.status !== filter) return false;
+
+        // Search filter
+        if (searchTerm) {
+            const searchFields = [
+                item.orderNumber,
+                item.customerName,
+                item.wireType,
+                item.description,
+                item.orderComments,
+                item.shipperComments
+            ].map(f => (f || '').toLowerCase());
+
+            if (!searchFields.some(f => f.includes(searchTerm))) return false;
+        }
+
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.className = 'text-center text-gray-500 italic';
+        emptyMsg.textContent = searchTerm ? 'No items match your search.' : (filter === 'all' ? 'No items in the list.' : `No ${filter} items found.`);
+        container.appendChild(emptyMsg);
+        return;
+    }
+
+    filtered.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'wire-list-item';
+        itemDiv.draggable = true;
+        itemDiv.dataset.id = item.id;
+
+        const card = document.createElement('div');
+        card.className = 'wire-list-card';
+        if (item.color) {
+            card.style.backgroundColor = item.color;
+            card.style.borderColor = 'rgba(0,0,0,0.1)';
+        }
+
+        // Secure rendering using createElement and textContent
+        const headerRow = document.createElement('div');
+        headerRow.className = 'flex justify-between items-start border-b border-black/10 pb-1 mb-1 font-bold text-[10px] uppercase';
+
+        ['ORDER / LINE CUSTOMER', 'ORDER COMMENTS', 'SHIPPER COMMENTS'].forEach(text => {
+            const div = document.createElement('div');
+            div.textContent = text;
+            headerRow.appendChild(div);
+        });
+
+        const bodyRow = document.createElement('div');
+        bodyRow.className = 'flex gap-2';
+
+        // Left Column (Details)
+        const detailsCol = document.createElement('div');
+        detailsCol.className = 'w-1/3';
+
+        const orderLine = document.createElement('div');
+        orderLine.className = 'font-bold text-sm flex items-center gap-2';
+        orderLine.textContent = `${item.orderNumber || 'N/A'} / ${item.lineNumber || '1'}`;
+
+        if (item.urgency && item.urgency !== 'normal') {
+            const urgencyBadge = document.createElement('span');
+            urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
+            urgencyBadge.textContent = item.urgency;
+            orderLine.appendChild(urgencyBadge);
+        }
+
+        const meta = document.createElement('div');
+        meta.className = 'text-[9px] font-bold';
+        const dateStr = new Date(item.timestamp).toLocaleString('en-US', {
+            month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+        }).toUpperCase();
+        meta.textContent = `${dateStr} @ ${item.customerName || 'N/A'}`;
+
+        const highlightBox = document.createElement('div');
+        highlightBox.className = 'mt-2 bg-black/5 border border-black/10 p-1 rounded italic font-black text-xs';
+
+        const typeLength = document.createElement('div');
+        typeLength.textContent = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
+
+        const desc = document.createElement('span');
+        desc.className = 'text-[9px] font-normal';
+        desc.textContent = item.description || '';
+
+        highlightBox.appendChild(typeLength);
+        highlightBox.appendChild(desc);
+
+        detailsCol.appendChild(orderLine);
+        detailsCol.appendChild(meta);
+        detailsCol.appendChild(highlightBox);
+
+        // Middle Column (Order Comments)
+        const orderCommentsCol = document.createElement('div');
+        orderCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+        orderCommentsCol.textContent = item.orderComments || '';
+
+        // Right Column (Shipper Comments)
+        const shipperCommentsCol = document.createElement('div');
+        shipperCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+        shipperCommentsCol.textContent = item.shipperComments || '';
+
+        bodyRow.appendChild(detailsCol);
+        bodyRow.appendChild(orderCommentsCol);
+        bodyRow.appendChild(shipperCommentsCol);
+
+        card.appendChild(headerRow);
+        card.appendChild(bodyRow);
+
+        // Removal Reason (if exists)
+        if (item.status === 'removed' && item.removalReason) {
+            const reasonDiv = document.createElement('div');
+            reasonDiv.className = 'mt-1 p-1 bg-red-100/50 border border-red-200 rounded text-[9px] italic';
+            reasonDiv.textContent = `Removal Reason: ${item.removalReason}`;
+            card.appendChild(reasonDiv);
+        }
+
+        // Action Buttons (only for active items)
+        if (item.status === 'active') {
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+
+            const completeBtn = document.createElement('button');
+            completeBtn.className = 'px-2 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold hover:bg-green-700 transition';
+            completeBtn.textContent = '✅ Complete';
+            completeBtn.onclick = (e) => {
+                e.stopPropagation();
+                completeWireListItem(item.id);
+            };
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'px-2 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold hover:bg-red-700 transition';
+            removeBtn.textContent = '❌ Remove';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                showRemovalReasonModal(item.id);
+            };
+
+            actionsRow.appendChild(completeBtn);
+            actionsRow.appendChild(removeBtn);
+            card.appendChild(actionsRow);
+        }
+
+        itemDiv.appendChild(card);
+
+        // Events
+        itemDiv.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            showWireListContextMenu(e, item.id);
+        });
+
+        itemDiv.addEventListener('dragstart', () => {
+            itemDiv.classList.add('dragging');
+            draggedItemId = item.id;
+        });
+
+        itemDiv.addEventListener('dragend', () => {
+            itemDiv.classList.remove('dragging');
+        });
+
+        container.appendChild(itemDiv);
+    });
+}
+
+function showWireListItemModal(id = null) {
+    const modal = document.getElementById('wireListItemModal');
+    const modalContent = document.getElementById('wireModalContent');
+    const title = document.getElementById('wireModalTitle');
+
+    wireListEditingId = id;
+
+    if (id) {
+        title.textContent = 'Edit Wire Cut List Item';
+        const item = wireCutList.find(i => i.id === id);
+        if (item) {
+            document.getElementById('wireListOrder').value = item.orderNumber || '';
+            document.getElementById('wireListLine').value = item.lineNumber || '';
+            document.getElementById('wireListCustomer').value = item.customerName || '';
+            document.getElementById('wireListWireType').value = item.wireType || '';
+            document.getElementById('wireListLength').value = item.lengthZ || '';
+            document.getElementById('wireListUrgency').value = item.urgency || 'normal';
+            document.getElementById('wireListStatus').value = item.status || 'active';
+            document.getElementById('wireListDescription').value = item.description || '';
+            document.getElementById('wireListOrderComments').value = item.orderComments || '';
+            document.getElementById('wireListShipperComments').value = item.shipperComments || '';
+        }
+    } else {
+        title.textContent = 'Add Wire Cut List Item';
+        document.getElementById('wireListOrder').value = '';
+        document.getElementById('wireListLine').value = '1';
+        document.getElementById('wireListCustomer').value = '';
+        document.getElementById('wireListWireType').value = '';
+        document.getElementById('wireListLength').value = '';
+        document.getElementById('wireListUrgency').value = 'normal';
+        document.getElementById('wireListStatus').value = 'active';
+        document.getElementById('wireListDescription').value = '';
+        document.getElementById('wireListOrderComments').value = '';
+        document.getElementById('wireListShipperComments').value = '';
+    }
+
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function hideWireListItemModal() {
+    const modal = document.getElementById('wireListItemModal');
+    const modalContent = document.getElementById('wireModalContent');
+
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+async function saveWireListItem() {
+    const item = {
+        id: wireListEditingId || crypto.randomUUID(),
+        orderNumber: document.getElementById('wireListOrder').value.trim(),
+        lineNumber: document.getElementById('wireListLine').value.trim(),
+        customerName: document.getElementById('wireListCustomer').value.trim().toUpperCase(),
+        wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
+        lengthZ: document.getElementById('wireListLength').value.trim(),
+        urgency: document.getElementById('wireListUrgency').value,
+        status: document.getElementById('wireListStatus').value,
+        description: document.getElementById('wireListDescription').value.trim(),
+        orderComments: document.getElementById('wireListOrderComments').value.trim(),
+        shipperComments: document.getElementById('wireListShipperComments').value.trim(),
+        timestamp: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).timestamp : Date.now(),
+        position: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).position : wireCutList.length,
+        color: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).color : null
+    };
+
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.update('wireCutList', item);
+            await loadWireCutList();
+            hideWireListItemModal();
+        }
+    } catch (error) {
+        console.error("Error saving wire list item:", error);
+        showAlert("Failed to save item.", "Error");
+    }
+}
+
+async function deleteWireListItem(id) {
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.delete('wireCutList', id);
+            await loadWireCutList();
+        }
+    } catch (error) {
+        console.error("Error deleting wire list item:", error);
+    }
+}
+
+async function completeWireListItem(id) {
+    const item = wireCutList.find(i => i.id === id);
+    if (item) {
+        item.status = 'completed';
+        item.updatedAt = Date.now();
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                await showAlert('Item marked as completed!', 'Success');
+            }
+        } catch (error) {
+            console.error("Error completing item:", error);
+        }
+    }
+}
+
+function showRemovalReasonModal(id) {
+    currentContextMenuId = id; // Reuse this variable to track target ID
+    const modal = document.getElementById('removalReasonModal');
+    const modalContent = document.getElementById('removalModalContent');
+    const textarea = document.getElementById('removalReasonText');
+
+    textarea.value = '';
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+        textarea.focus();
+    }, 10);
+}
+
+function hideRemovalReasonModal() {
+    const modal = document.getElementById('removalReasonModal');
+    const modalContent = document.getElementById('removalModalContent');
+
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+async function saveRemovalWithReason() {
+    const reason = document.getElementById('removalReasonText').value.trim();
+    if (!reason) {
+        showAlert('Please provide a reason for removal.', 'Reason Required');
+        return;
+    }
+
+    const item = wireCutList.find(i => i.id === currentContextMenuId);
+    if (item) {
+        item.status = 'removed';
+        item.removalReason = reason;
+        item.updatedAt = Date.now();
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                hideRemovalReasonModal();
+                await showAlert('Item archived with reason.', 'Removed');
+            }
+        } catch (error) {
+            console.error("Error removing item:", error);
+        }
+    }
+}
+
+async function updateWireListItemColor(id, color) {
+    const item = wireCutList.find(i => i.id === id);
+    if (item) {
+        item.color = color;
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                renderWireCutList();
+            }
+        } catch (error) {
+            console.error("Error updating color:", error);
+        }
+    }
+}
+
+function showWireListContextMenu(e, id) {
+    const menu = document.getElementById('wireListContextMenu');
+    currentContextMenuId = id;
+
+    menu.style.top = `${e.pageY}px`;
+    menu.style.left = `${e.pageX}px`;
+    menu.classList.remove('hidden');
+
+    // Set color picker to current color
+    const item = wireCutList.find(i => i.id === id);
+    if (item && item.color) {
+        document.getElementById('ctxColorPicker').value = item.color;
+    } else {
+        document.getElementById('ctxColorPicker').value = '#fef08a';
+    }
+}
+
+function hideWireListContextMenu() {
+    const menu = document.getElementById('wireListContextMenu');
+    menu.classList.add('hidden');
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.wire-list-item:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+async function saveWireListOrder() {
+    const container = document.getElementById('wireCutListItems');
+    const items = [...container.querySelectorAll('.wire-list-item')];
+
+    for (let i = 0; i < items.length; i++) {
+        const id = items[i].dataset.id;
+        const item = wireCutList.find(item => item.id === id);
+        if (item) {
+            item.position = i;
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+            }
+        }
+    }
+    // Refresh local list
+    const records = await window.eecolDB.getAll('wireCutList');
+    wireCutList = records.sort((a, b) => (a.position || 0) - (b.position || 0));
 }
 
 // ====================================================================
