@@ -37,6 +37,8 @@ This file serves as a living document of my understanding, insights, and critica
 - **`updateStats`:** Optimized to a single-pass metric calculation.
 - **Persistence:** Records are sorted by `timestamp` (newest first).
 - **Batch Mode:** Allows multiple cut entries for a single order/customer.
+- **AutoFill Integration:** The 'Wire Cut List' supports a one-click 'AutoFill Cut' feature. This decision was made to minimize human error during data entry from the staging list. It uses native DOM events (`input`, `change`) to trigger existing validation logic and ensure UI consistency.
+- **Case Sensitivity:** Key identification fields (Order Number, Customer, Wire ID) are strictly enforced as UPPERCASE via real-time input listeners. This improves search reliability and data normalization in IndexedDB.
 
 ### Inventory Records
 - **Length Fallback:** Uses `item.length || item.actualLength || item.currentLength || 0`.
