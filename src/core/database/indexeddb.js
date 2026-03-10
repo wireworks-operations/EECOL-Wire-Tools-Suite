@@ -6,14 +6,14 @@
 class EECOLIndexedDB {
   static instance = null;
 
-  static getInstance(version = 3) {
+  static getInstance(version = 4) {
     if (!EECOLIndexedDB.instance) {
       EECOLIndexedDB.instance = new EECOLIndexedDB(version);
     }
     return EECOLIndexedDB.instance;
   }
 
-  constructor(version = 3) {
+  constructor(version = 4) {
     // Prevent direct instantiation - enforce singleton pattern
     if (EECOLIndexedDB.instance) {
       throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
@@ -77,6 +77,10 @@ class EECOLIndexedDB {
       calibrationMeasurements: {
         keyPath: 'id',
         indexes: ['machineName', 'timestamp']
+      },
+      wireCutList: {
+        keyPath: 'id',
+        indexes: ['timestamp', 'orderNumber', 'status', 'position']
       }
     };
   }

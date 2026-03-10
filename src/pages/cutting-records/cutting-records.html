@@ -97,6 +97,44 @@
                         </div>
                     </div>
 
+                    <!-- Wire Cut List (Collapsible) -->
+                    <div
+                        class="p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg shadow-md">
+                        <button id="toggleWireList"
+                            class="w-full text-left font-semibold text-yellow-800 flex justify-between items-center">
+                            <span>🗂️ Wire Cut List</span>
+                            <span id="wireListToggle">►</span>
+                        </button>
+                        <div id="wireListContent" class="mt-2 text-xs space-y-2 hidden">
+                            <div class="flex justify-between items-center flex-wrap gap-2">
+                                <div class="flex gap-2">
+                                    <button id="addWireListItemBtn"
+                                        class="px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition font-bold">
+                                        + Add Item
+                                    </button>
+                                    <button id="refreshWireListBtn"
+                                        class="px-2 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 transition font-bold">
+                                        🔄 Refresh
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <label for="wireListStatusFilter" class="font-medium">Filter:</label>
+                                    <select id="wireListStatusFilter"
+                                        class="p-1 border border-yellow-300 rounded bg-white text-xs">
+                                        <option value="active">Active</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="all">All</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="wireCutListItems" class="space-y-3 pt-2 min-h-[50px]">
+                                <!-- List items will be dynamically added here -->
+                                <p class="text-center text-gray-500 italic">No pending items in the list.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <h3 class="text-lg font-bold mb-3 text-center header-gradient">Record Wire Cut</h3>
 
                     <!--Search Bar-->
@@ -563,7 +601,7 @@
                         📈 Reports
                     </a>
                 </div>
-                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.3</p>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.4</p>
             </div>
             <p class="font-medium text-[#0058B3] text-center select-none mb-1">
                 Made With ❤️ By: Lucas and Cline 🤖
@@ -725,6 +763,97 @@
                     Close
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Wire Cut List Item Modal -->
+    <div id="wireListItemModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="wireModalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 border-2 border-yellow-500 transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="wireModalContent">
+            <h3 class="text-lg font-bold text-center mb-4 header-gradient" id="wireModalTitle">Add Wire Cut List Item
+            </h3>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Order #</label>
+                    <input id="wireListOrder" type="text" placeholder="1234567"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Line #</label>
+                    <input id="wireListLine" type="text" placeholder="1"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Customer</label>
+                    <input id="wireListCustomer" type="text" placeholder="Customer Name"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Wire Type</label>
+                    <input id="wireListWireType" type="text" placeholder="TK6/3CU"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Length (Z)</label>
+                    <input id="wireListLength" type="text" placeholder="44"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Status</label>
+                    <select id="wireListStatus" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-semibold mb-1">Description</label>
+                <input id="wireListDescription" type="text" placeholder="BLD ACWU90 500/4 AL..."
+                    class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+
+            <div class="mb-4 grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Order Comments</label>
+                    <textarea id="wireListOrderComments" placeholder="Order comments..."
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm h-20"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Shipper Comments</label>
+                    <textarea id="wireListShipperComments" placeholder="Shipper comments..."
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm h-20"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-center space-x-3">
+                <button id="cancelWireListItemBtn"
+                    class="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600 transition font-bold">
+                    Cancel
+                </button>
+                <button id="saveWireListItemBtn"
+                    class="px-4 py-2 bg-yellow-600 text-white rounded-lg shadow-lg hover:bg-yellow-700 transition font-bold">
+                    Save Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right-click Context Menu -->
+    <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-48">
+        <button id="ctxEdit" class="w-full text-left px-4 py-2 hover:bg-blue-100 text-sm flex items-center">
+            ✏️ Edit
+        </button>
+        <button id="ctxRemove" class="w-full text-left px-4 py-2 hover:bg-red-100 text-sm flex items-center">
+            🗑️ Remove
+        </button>
+        <button id="ctxChangeColor" class="w-full text-left px-4 py-2 hover:bg-green-100 text-sm flex items-center">
+            🎨 Change Color
+        </button>
+        <div class="px-4 py-2 border-t border-gray-100">
+            <input type="color" id="ctxColorPicker" class="w-full h-8 cursor-pointer border-none p-0">
         </div>
     </div>
 
