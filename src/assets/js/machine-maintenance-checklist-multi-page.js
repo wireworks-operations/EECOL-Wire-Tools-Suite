@@ -857,7 +857,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Initialize mobile menu
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.3',
+        version: 'v0.8.0.4',
         menuItems: [
             { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
@@ -866,7 +866,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '🖨️ Print Checklist', action: 'click', selector: '#printBtn', class: 'bg-blue-700 hover:bg-blue-800' },
             { text: '✅ Complete', action: 'click', selector: '#completeBtn', class: 'bg-green-600 hover:bg-green-700' }
         ],
-        version: 'v0.8.0.3',
+        version: 'v0.8.0.4',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Machine Maintenance Checklist (Multi-Page)'
     });

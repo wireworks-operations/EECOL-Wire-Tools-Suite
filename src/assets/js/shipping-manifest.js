@@ -378,7 +378,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '⚠️ Hazard Sheets', href: '../shipping-manifest/shipping-manifest.html#hazardSheetsBtn', class: 'bg-yellow-500 hover:bg-yellow-600' },
             { text: '🏷️ Reel Labels', href: '../reel-labels/reel-labels.html', class: 'bg-green-600 hover:bg-green-700' }
         ],
-        version: 'v0.8.0.3',
+        version: 'v0.8.0.4',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Shipping Manifest'
     });
