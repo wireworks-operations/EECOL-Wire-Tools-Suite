@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             case 'reelcapacityEstimator':
                 return `Flange: ${record.flangeDiameter.value} ${record.flangeDiameter.unit}, Core: ${record.coreDiameter.value} ${record.coreDiameter.unit}, Traverse: ${record.traverseWidth.value} ${record.traverseWidth.unit} (${timestamp})`;
             case 'wireCutList':
-                return `Order: ${record.orderNumber}, Cust: ${record.customerName}, Wire: ${record.wireType}, Status: ${record.status} (${timestamp})`;
+                const urgencyPrefix = record.urgency && record.urgency !== 'normal' ? `[${record.urgency.toUpperCase()}] ` : '';
+                return `${urgencyPrefix}Order: ${record.orderNumber}, Cust: ${record.customerName}, Wire: ${record.wireType}, Status: ${record.status} (${timestamp})`;
             default:
                 return JSON.stringify(record);
         }

@@ -2882,8 +2882,15 @@ function renderWireCutList() {
         detailsCol.className = 'w-1/3';
 
         const orderLine = document.createElement('div');
-        orderLine.className = 'font-bold text-sm';
+        orderLine.className = 'font-bold text-sm flex items-center gap-2';
         orderLine.textContent = `${item.orderNumber || 'N/A'} / ${item.lineNumber || '1'}`;
+
+        if (item.urgency && item.urgency !== 'normal') {
+            const urgencyBadge = document.createElement('span');
+            urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
+            urgencyBadge.textContent = item.urgency;
+            orderLine.appendChild(urgencyBadge);
+        }
 
         const meta = document.createElement('div');
         meta.className = 'text-[9px] font-bold';
@@ -2963,6 +2970,7 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListCustomer').value = item.customerName || '';
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
+            document.getElementById('wireListUrgency').value = item.urgency || 'normal';
             document.getElementById('wireListStatus').value = item.status || 'active';
             document.getElementById('wireListDescription').value = item.description || '';
             document.getElementById('wireListOrderComments').value = item.orderComments || '';
@@ -2975,6 +2983,7 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
+        document.getElementById('wireListUrgency').value = 'normal';
         document.getElementById('wireListStatus').value = 'active';
         document.getElementById('wireListDescription').value = '';
         document.getElementById('wireListOrderComments').value = '';
@@ -3008,6 +3017,7 @@ async function saveWireListItem() {
         customerName: document.getElementById('wireListCustomer').value.trim().toUpperCase(),
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
         lengthZ: document.getElementById('wireListLength').value.trim(),
+        urgency: document.getElementById('wireListUrgency').value,
         status: document.getElementById('wireListStatus').value,
         description: document.getElementById('wireListDescription').value.trim(),
         orderComments: document.getElementById('wireListOrderComments').value.trim(),

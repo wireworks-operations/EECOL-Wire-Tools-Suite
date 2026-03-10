@@ -778,6 +778,18 @@
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="wireModalBackdrop"></div>
         <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 border-2 border-yellow-500 transform scale-95 opacity-0 transition-all duration-200 ease-out"
             id="wireModalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="#0058B3" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="#0058B3" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="#0058B3" stroke-width="3.5" stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
             <h3 class="text-lg font-bold text-center mb-4 header-gradient" id="wireModalTitle">Add Wire Cut List Item
             </h3>
 
@@ -806,6 +818,14 @@
                     <label class="block text-xs font-semibold mb-1">Length (Z)</label>
                     <input id="wireListLength" type="text" placeholder="44"
                         class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Urgency</label>
+                    <select id="wireListUrgency" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="normal">Normal</option>
+                        <option value="rush">⚡ RUSH</option>
+                        <option value="critical">🚨 CRITICAL</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold mb-1">Status</label>
