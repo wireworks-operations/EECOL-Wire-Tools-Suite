@@ -21,6 +21,8 @@ const wireMarkCalculator = {
         resultText: null,
         resultTextPrimary: null,
         resultTextSecondary: null,
+        displayStartMark: null,
+        displayEndMark: null,
         errorBox: null,
         errorMessage: null,
         printResultsBtn: null,
@@ -41,6 +43,8 @@ const wireMarkCalculator = {
             resultText: document.getElementById('resultText'),
             resultTextPrimary: document.getElementById('resultTextPrimary'),
             resultTextSecondary: document.getElementById('resultTextSecondary'),
+            displayStartMark: document.getElementById('displayStartMark'),
+            displayEndMark: document.getElementById('displayEndMark'),
             errorBox: document.getElementById('errorBox'),
             errorMessage: document.getElementById('errorMessage'),
             printResultsBtn: document.getElementById('printResultsBtn'),
@@ -136,11 +140,11 @@ const wireMarkCalculator = {
         length = Math.abs(length);
 
         // Display results
-        this.displayResult(length, unit);
+        this.displayResult(length, unit, startMark, endMark);
     },
 
     // Display calculation results
-    displayResult(length, unit) {
+    displayResult(length, unit, startValue, endValue) {
         if (!this.elements.resultTextPrimary || !this.elements.resultText || !this.elements.resultTextSecondary) {
             console.warn('Result display elements not found');
             return;
@@ -149,6 +153,14 @@ const wireMarkCalculator = {
         // Primary result
         this.elements.resultTextPrimary.textContent = 'Length Between Marks';
         this.elements.resultText.textContent = `${length.toFixed(2)} ${unit}`;
+
+        // Update Start and End Mark display
+        if (this.elements.displayStartMark) {
+            this.elements.displayStartMark.textContent = `${startValue.toFixed(2)} ${unit}`;
+        }
+        if (this.elements.displayEndMark) {
+            this.elements.displayEndMark.textContent = `${endValue.toFixed(2)} ${unit}`;
+        }
 
         // Secondary result (unit conversion)
         let secondaryText = '';
