@@ -1,5 +1,5 @@
-<!--V0.8.0.3
-Complete Backend Overhaul - PWA - EECOL Wire Tools
+<!--V0.8.0.4
+Wire Cut List & AutoFill Integration - EECOL Wire Tools
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -85,6 +85,105 @@ Complete Backend Overhaul - PWA - EECOL Wire Tools
                                     implementation</div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Version 0.8.0.4 - Wire Cut List & AutoFill -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                        <div class="flex items-center mb-4">
+                            <div class="text-4xl mr-3">✂️</div>
+                            <h2 class="text-xl font-bold text-[#0058B3]">Version 0.8.0.4 - Wire Cut List & AutoFill Integration
+                            </h2>
+                        </div>
+
+                        <!-- WIRE CUT LIST CELEBRATION -->
+                        <div
+                            class="bg-gradient-to-r from-yellow-100 via-amber-100 to-orange-100 p-8 rounded-xl mb-6 border-4 border-yellow-400 shadow-2xl">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center">
+                                    <div class="text-6xl mr-6">📋</div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold text-yellow-900 mb-3">WIRE CUT LIST!
+                                        </h3>
+                                        <p class="text-xl font-medium text-yellow-800">Interactive Order Staging & AutoFill Integration</p>
+                                    </div>
+                                </div>
+                                <div class="text-6xl">⚡</div>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div class="bg-white/60 p-3 rounded-lg">
+                                    <div class="text-3xl mb-2">📑</div>
+                                    <div class="text-sm font-bold text-yellow-800">Collapsible List</div>
+                                    <div class="text-xs text-yellow-600">Unified UX Styling</div>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-lg">
+                                    <div class="text-3xl mb-2">🖱️</div>
+                                    <div class="text-sm font-bold text-yellow-800">Context Menu</div>
+                                    <div class="text-xs text-yellow-600">Right-Click Interactive</div>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-lg">
+                                    <div class="text-3xl mb-2">🪄</div>
+                                    <div class="text-sm font-bold text-yellow-800">AutoFill Cut</div>
+                                    <div class="text-xs text-yellow-600">One-Click Form Entry</div>
+                                </div>
+                                <div class="bg-white/60 p-3 rounded-lg">
+                                    <div class="text-3xl mb-2">🔠</div>
+                                    <div class="text-sm font-bold text-yellow-800">Normalization</div>
+                                    <div class="text-xs text-yellow-600">Strict Uppercase Enforced</div>
+                                </div>
+                            </div>
+                            <p class="text-center text-lg font-semibold text-yellow-800 mt-6">
+                                🚀 REVOLUTIONARY ORDER MANAGEMENT WITH SMART AUTOFILL & DATA PERSISTENCE! 🚀
+                            </p>
+                        </div>
+
+                        <div class="flex items-center mb-3">
+                            <h3 class="text-lg font-bold mr-3"><span style="color: #333333;">✂️</span> <span
+                                    class="header-gradient">Version 0.8.0.4</span></h3>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold mr-2">📋
+                                WIRE CUT LIST</span>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-bold mr-2">🪄
+                                AUTOFILL</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">🔠
+                                NORMALIZATION</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-3">Major workflow enhancement: Introduction of the interactive Wire Cut List in Cutting Records, featuring smart AutoFill capabilities and suite-wide data normalization. 📋🪄
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                            <div class="flex flex-wrap gap-1">
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">📑
+                                    Collapsible List</span>
+                                <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">🖱️
+                                    Context Menu</span>
+                                <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-bold">🖐️
+                                    Drag & Drop</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span
+                                    class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">🪄
+                                    Smart AutoFill</span>
+                                <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold">🔠
+                                    Strict Uppercase</span>
+                                <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">🗄️
+                                    IDB v4 Schema</span>
+                            </div>
+                        </div>
+
+                        <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
+                            <li><strong>📋 Interactive Wire Cut List:</strong> Added a yellow collapsible list section to Cutting Records for staging upcoming cuts, identical in design to the Quick Stats menu.</li>
+                            <li><strong>🪄 One-Click AutoFill:</strong> Implemented "AutoFill Cut" functionality that instantly populates the main cutting form with Order, Customer, Wire ID, and Length from the list.</li>
+                            <li><strong>🖱️ Rich Context Menu:</strong> Full right-click interactivity for list items: Edit, Remove, Change Color (with Color Picker), and Drag-and-Drop reordering.</li>
+                            <li><strong>🔠 Data Normalization Protocol:</strong> Enforced strict <strong>UPPERCASE</strong> normalization for Order #, Customer, and Wire ID fields to ensure database consistency.</li>
+                            <li><strong>🔢 Alphanumeric Order Numbers:</strong> Updated Order Number validation to support alphanumeric characters (IBTs), while maintaining length constraints.</li>
+                            <li><strong>🚨 Urgency Awareness:</strong> Pulsing visual badges for "Critical" and "Rush" items to highlight high-priority staging.</li>
+                            <li><strong>🗑️ Intelligent Removal Flow:</strong> Dedicated archival process for removing staging items with required removal reasons, separate from right-click deletion.</li>
+                            <li><strong>🗄️ IndexedDB Migration (v4):</strong> Upgraded database schema to include dedicated `wireCutList` storage with automatic migration and backup integration.</li>
+                            <li><strong>⚡ Secure Rendering:</strong> Implemented "Secure by Default" DOM patterns using `textContent` for all user-controllable data to prevent XSS vulnerabilities.</li>
+                            <li><strong>🔄 Suite-Wide Version Bump:</strong> Synchronized all application components and documentation to Version 0.8.0.4.</li>
+                        </ul>
+
+                        <p class="mt-4 text-sm text-gray-700">
+                            Revolutionary workflow update focusing on order management efficiency, data integrity through normalization, and enhanced interactivity within the Cutting Records suite.
+                        </p>
                     </div>
 
                     <!-- Version 0.8.0.3 - Dark Mode Feature -->
@@ -3254,7 +3353,7 @@ Complete Backend Overhaul - PWA - EECOL Wire Tools
                             Is This Tool Useful?
                         </a>
                     </div>
-                    <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.3</p>
+                    <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.4</p>
                 </div>
                 <p class="font-medium text-[#0058B3] text-center select-none mb-1">
                     Made With ❤️ By: Lucas and Cline 🤖
