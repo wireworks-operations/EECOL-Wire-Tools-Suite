@@ -1742,11 +1742,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // Input validation for order number (digits only, max 7)
+    // Input validation for order number (alphanumeric, max 7, auto uppercase)
     const orderNumberInput = document.getElementById('orderNumber');
     if (orderNumberInput) {
         orderNumberInput.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7);
+            e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 7).toUpperCase();
         });
     }
 
@@ -2751,6 +2751,16 @@ async function initWireCutList() {
     if (statusFilter) statusFilter.addEventListener('change', renderWireCutList);
     if (searchInput) searchInput.addEventListener('input', renderWireCutList);
 
+    // Modal input listeners for auto-capitalization
+    ['wireListOrder', 'wireListCustomer', 'wireListWireType'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', (e) => {
+                e.target.value = e.target.value.toUpperCase();
+            });
+        }
+    });
+
     // Modal events
     const cancelBtn = document.getElementById('cancelWireListItemBtn');
     const saveBtn = document.getElementById('saveWireListItemBtn');
@@ -2955,6 +2965,14 @@ function renderWireCutList() {
             const actionsRow = document.createElement('div');
             actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
 
+            const autoFillBtn = document.createElement('button');
+            autoFillBtn.className = 'px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold hover:bg-blue-700 transition';
+            autoFillBtn.textContent = '📥 AutoFill Cut';
+            autoFillBtn.onclick = (e) => {
+                e.stopPropagation();
+                autoFillCuttingForm(item.id);
+            };
+
             const completeBtn = document.createElement('button');
             completeBtn.className = 'px-2 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold hover:bg-green-700 transition';
             completeBtn.textContent = '✅ Complete';
@@ -2971,6 +2989,7 @@ function renderWireCutList() {
                 showRemovalReasonModal(item.id);
             };
 
+            actionsRow.appendChild(autoFillBtn);
             actionsRow.appendChild(completeBtn);
             actionsRow.appendChild(removeBtn);
             card.appendChild(actionsRow);
@@ -3055,7 +3074,7 @@ function hideWireListItemModal() {
 async function saveWireListItem() {
     const item = {
         id: wireListEditingId || crypto.randomUUID(),
-        orderNumber: document.getElementById('wireListOrder').value.trim(),
+        orderNumber: document.getElementById('wireListOrder').value.trim().toUpperCase(),
         lineNumber: document.getElementById('wireListLine').value.trim(),
         customerName: document.getElementById('wireListCustomer').value.trim().toUpperCase(),
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
@@ -3160,6 +3179,47 @@ async function saveRemovalWithReason() {
             console.error("Error removing item:", error);
         }
     }
+}
+
+async function autoFillCuttingForm(id) {
+    const item = wireCutList.find(i => i.id === id);
+    if (!item) return;
+
+    // Mapping wire list fields to cutting record fields
+    const fields = {
+        'orderNumber': item.orderNumber || '',
+        'customerName': item.customerName || '',
+        'wireId': item.wireType || '',
+        'cutLength': item.lengthZ || ''
+    };
+
+    // Populate the fields
+    for (const [id, value] of Object.entries(fields)) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = value;
+            // Force uppercase for relevant fields immediately
+            if (['orderNumber', 'customerName', 'wireId'].includes(id)) {
+                el.value = el.value.toUpperCase();
+            }
+            // Trigger input events for validation/dependent logic
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
+    // Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form
+    const batchMode = document.getElementById('batchEntryMode');
+    if (batchMode && batchMode.checked) {
+        batchMode.checked = false;
+        batchMode.dispatchEvent(new Event('change'));
+    }
+
+    // Visual feedback
+    await showAlert(`Autofilled cut details for Order #${item.orderNumber}`, 'AutoFill Success');
+
+    // Scroll to the form
+    document.getElementById('recordsPage').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function updateWireListItemColor(id, color) {
