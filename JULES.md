@@ -17,7 +17,7 @@ This file serves as a living document of my understanding, insights, and critica
 - **Stores:** `cuttingRecords`, `inventoryRecords`, `markConverter`, `stopmarkConverter`, `reelcapacityEstimator`, `settings`, etc.
 
 ### 🛡️ Security (Sentinel Protocol)
-- **XSS Prevention:** Strictly avoid `innerHTML`. Use `document.createElement()` and `.textContent` (or `.value` for inputs).
+- **Secure by Default Rendering:** Strictly avoid `innerHTML` for any user-controllable data (Wire IDs, Customer Names, Comments). Every list item in the 'Wire Cut List' is constructed using `document.createElement()` and `.textContent`. This provides native browser protection against XSS and is far more robust than manual string escaping.
 - **Utility Priority:** Use `window.escapeHTML` (from `src/utils/theme-loader.js` or `src/utils/sanitize.js`) for manual escaping if necessary.
 - **Alerts/Modals:** Custom `showAlert` and `showConfirm` in `src/utils/modals.js` use `.textContent`. Use `whitespace-pre-line` for formatting.
 
@@ -37,8 +37,10 @@ This file serves as a living document of my understanding, insights, and critica
 - **`updateStats`:** Optimized to a single-pass metric calculation.
 - **Persistence:** Records are sorted by `timestamp` (newest first).
 - **Batch Mode:** Allows multiple cut entries for a single order/customer.
-- **AutoFill Integration:** The 'Wire Cut List' supports a one-click 'AutoFill Cut' feature. This decision was made to minimize human error during data entry from the staging list. It uses native DOM events (`input`, `change`) to trigger existing validation logic and ensure UI consistency.
-- **Case Sensitivity:** Key identification fields (Order Number, Customer, Wire ID) are strictly enforced as UPPERCASE via real-time input listeners. This improves search reliability and data normalization in IndexedDB.
+- **AutoFill Integration:** The 'Wire Cut List' supports a one-click 'AutoFill Cut' feature. This feature uses an **event-driven architecture**; instead of just setting input values, it dispatches native `input` and `change` events. This ensures that any dependent UI logic (like character limits or formatting) is triggered immediately, maintaining perfect synchronization between the data layer and the DOM.
+- **Data Normalization:** Key identification fields (Order Number, Customer, Wire ID) are strictly enforced as **UPPERCASE**. This decision eliminates data fragmentation in IndexedDB (e.g., preventing "TK6" and "tk6" from being treated as different wire types) and drastically improves search/filter reliability.
+- **Alphanumeric Order Numbers:** The `orderNumber` field was upgraded from digit-only to alphanumeric. This change provides flexibility for Inter-Branch Transfers (IBTs) and custom project codes while maintaining the 7-character constraint for database performance.
+- **Archival Flow:** The list distinguishes between 'Hard Removal' (right-click for mistakes) and 'Archival' (Remove button). The Archival flow mandates a **Removal Reason**, ensuring that cancelled or modified orders are tracked with context rather than simply disappearing.
 
 ### Inventory Records
 - **Length Fallback:** Uses `item.length || item.actualLength || item.currentLength || 0`.
