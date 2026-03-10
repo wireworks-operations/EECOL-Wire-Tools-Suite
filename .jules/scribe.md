@@ -1,5 +1,10 @@
 # Scribe's Journal – Critical Learnings 📘
 
+## 2025-03-10 - Full Documentation Refresh
+**Observation:** The repository lacked a top-level "Getting Started" guide that accurately reflected the current state of tooling. Many `package.json` scripts were experimental or required missing configuration files.
+**Learning:** For a "Local-First" PWA, documentation must explicitly state the absence of backend dependencies to prevent users from searching for non-existent database or API setup steps.
+**Action:** Overhauled `README.md`, `QUICKSTART.md`, `BLUEPRINT.md`, and `SECURITY.md` to emphasize the IndexedDB-centric, serverless architecture and clarify the status of build/test tooling.
+
 ## 2025-03-09 - Project Architecture & Constraints
 **Observation:** The repository is a pure client-side Progressive Web Application (PWA). It uses IndexedDB for data persistence and has no backend server or API dependencies. Build and dev workflows are managed via `pnpm` and `webpack`.
 **Learning:** Documentation must emphasize that no backend setup is required and that data remains local to the browser. Standard server-side instructions (like database connections or API keys) should be omitted to avoid confusion.

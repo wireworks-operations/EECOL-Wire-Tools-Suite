@@ -1,11 +1,14 @@
-# EECOL Wire Tools Suite v0.8.0.4 📘 Industrial-grade PWA for wire processing
+# EECOL Wire Tools Suite <small>— Industrial-grade PWA for wire processing</small> 📘
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-green.svg)](https://nodejs.org/)
+[![PWA](https://img.shields.io/badge/PWA-Ready-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
 A comprehensive Progressive Web Application (PWA) for industrial wire processing
-operations. Provides tools for wire inventory management, cutting operations
-tracking, reporting/analytics, and various wire calculation utilities.
+operations. This "Local-First" suite provides tools for wire inventory
+management, cutting operations tracking, reporting/analytics, and various
+specialized wire calculation utilities, all persisting data directly in the
+browser's IndexedDB.
 
 ---
 
@@ -17,7 +20,7 @@ tracking, reporting/analytics, and various wire calculation utilities.
 ### Prerequisites
 
 - **Node.js**: >= 16.0.0
-- **Package Manager**: [pnpm](https://pnpm.io/) (preferred) or npm
+- **Package Manager**: [pnpm](https://pnpm.io/) (preferred)
 
 ### 1) Clone & Install
 
@@ -36,14 +39,16 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 3) Build & Test (Experimental)
+### 3) Build, Test & Lint (🚧 In-Progress)
 
-> **Note:** Build and test tools are currently under configuration.
+> **Warning:** Build and test infrastructure is currently under active
+> development. Some scripts may require additional configuration files (e.g.,
+> `webpack.config.js`, `jest.config.js`) to function correctly.
 
 ```bash
-pnpm build     # Build for production
-pnpm test      # Run unit tests
-pnpm lint      # Run ESLint
+pnpm build     # Build for production (Experimental)
+pnpm test      # Run unit tests (Experimental)
+pnpm lint      # Run ESLint (Experimental)
 ```
 
 ---
@@ -51,7 +56,7 @@ pnpm lint      # Run ESLint
 ## 🧭 Quickstart (90-second path)
 
 ```bash
-# 1. Clone & move
+# 1. Clone & enter
 git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
 cd eecol-wire-tools-suite-v2
 
@@ -73,11 +78,11 @@ interactions.
 <summary>Click to expand: Key Technologies</summary>
 
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3, [Tailwind CSS](https://tailwindcss.com/)
-- **Build**: [Webpack](https://webpack.js.org/) (under configuration)
 - **Storage**: [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (primary),
   localStorage (fallback)
 - **PWA**: Service Workers, Web App Manifest
 - **Charts**: [Chart.js](https://www.chartjs.org/) for data visualization
+- **Offline-First**: Zero backend dependencies; works entirely offline.
 
 </details>
 
@@ -107,15 +112,6 @@ interactions.
 
 </details>
 
-<details>
-<summary>Reports & Analytics</summary>
-
-- **Cutting Reports**: Analytics and reporting for cutting operations.
-- **Inventory Reports**: Inventory analytics and usage tracking.
-- **Live Statistics**: Real-time metrics and combined data views.
-
-</details>
-
 ---
 
 ## 🔧 Technical Details
@@ -124,13 +120,7 @@ interactions.
 <summary>Storage Layer (IndexedDB)</summary>
 
 The application uses a singleton `EECOLIndexedDB` class to manage 14 specialized
-stores, including:
-
-- `cuttingRecords`
-- `inventoryRecords`
-- `maintenanceLogs`
-- `settings`
-- Tool-specific stores (markConverter, stopmarkConverter, etc.)
+stores, ensuring reliable client-side persistence for industrial data.
 
 </details>
 
@@ -140,7 +130,6 @@ stores, including:
 - **Local-First**: All data is stored exclusively on the client-side. No server
   or cloud transmission.
 - **CSP**: Strict Content Security Policy enforced in `index.html`.
-- **Offline-First**: Fully functional without internet connectivity once cached.
 
 See **[SECURITY.md](SECURITY.md)** for more details.
 
@@ -150,9 +139,10 @@ See **[SECURITY.md](SECURITY.md)** for more details.
 
 ## 📊 Status & Roadmap
 
-- ✅ **Working**: All core calculators, records, reports, and PWA functionality.
+- ✅ **Working**: Core calculators, records, reports, and PWA functionality.
 - ❌ **Known Issues**: Multi-Cut Planner is currently a placeholder.
-- 🚧 **Upcoming**: Improved build/test configuration, multi-cut planner rebuild.
+- 🚧 **Upcoming**: Finalizing build/test configuration, multi-cut planner
+  rebuild, and Docker integration.
 
 ---
 

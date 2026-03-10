@@ -1,6 +1,6 @@
 # Quickstart ⚡
 
-This path gets you from **clone → running app** with minimal steps.
+This path gets you from **clone → running app** in under 90 seconds.
 
 ## Prerequisites
 
@@ -21,23 +21,23 @@ pnpm install
 pnpm dev
 ```
 
-## 3) Access URLs
+## 3) Access App
 
-- **App**: [http://localhost:3000](http://localhost:3000)
-- **Docs**: [README.md](README.md)
+- **URL**: [http://localhost:3000](http://localhost:3000)
 
-## 4) Verification
+## 4) Verify
 
-Open your browser and confirm the **EECOL Wire Tools Suite** landing page loads
-correctly.
-
-> **Note:** The application is local-first. All data you enter will be saved in
-> your browser's IndexedDB.
+Open your browser and confirm the **EECOL Wire Tools Suite** dashboard loads.
 
 ---
 
-### Need more detail?
+### 🛡️ Local-First Note
 
-- See **[README.md](README.md)** for detailed installation and usage.
-- See **[BLUEPRINT.md](BLUEPRINT.md)** for architecture overview.
-- See **[SECURITY.md](SECURITY.md)** for security policy and privacy info.
+The application is **entirely client-side**. No backend or database setup is
+required. All data you enter is stored securely in your browser's IndexedDB.
+
+### For deeper setup and architecture
+
+* [README.md](README.md) - Full installation guide
+* [BLUEPRINT.md](BLUEPRINT.md) - System architecture
+* [SECURITY.md](SECURITY.md) - Security policy
