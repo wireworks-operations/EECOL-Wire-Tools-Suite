@@ -2760,6 +2760,15 @@ async function initWireCutList() {
     if (saveBtn) saveBtn.addEventListener('click', saveWireListItem);
     if (backdrop) backdrop.addEventListener('click', hideWireListItemModal);
 
+    // Removal reason modal events
+    const cancelRemBtn = document.getElementById('cancelRemovalBtn');
+    const confirmRemBtn = document.getElementById('confirmRemovalBtn');
+    const remBackdrop = document.getElementById('removalModalBackdrop');
+
+    if (cancelRemBtn) cancelRemBtn.addEventListener('click', hideRemovalReasonModal);
+    if (confirmRemBtn) confirmRemBtn.addEventListener('click', saveRemovalWithReason);
+    if (remBackdrop) remBackdrop.addEventListener('click', hideRemovalReasonModal);
+
     // Context menu events
     document.addEventListener('click', hideWireListContextMenu);
     document.getElementById('ctxEdit').addEventListener('click', () => {
@@ -2933,6 +2942,40 @@ function renderWireCutList() {
         card.appendChild(headerRow);
         card.appendChild(bodyRow);
 
+        // Removal Reason (if exists)
+        if (item.status === 'removed' && item.removalReason) {
+            const reasonDiv = document.createElement('div');
+            reasonDiv.className = 'mt-1 p-1 bg-red-100/50 border border-red-200 rounded text-[9px] italic';
+            reasonDiv.textContent = `Removal Reason: ${item.removalReason}`;
+            card.appendChild(reasonDiv);
+        }
+
+        // Action Buttons (only for active items)
+        if (item.status === 'active') {
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+
+            const completeBtn = document.createElement('button');
+            completeBtn.className = 'px-2 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold hover:bg-green-700 transition';
+            completeBtn.textContent = '✅ Complete';
+            completeBtn.onclick = (e) => {
+                e.stopPropagation();
+                completeWireListItem(item.id);
+            };
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'px-2 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold hover:bg-red-700 transition';
+            removeBtn.textContent = '❌ Remove';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                showRemovalReasonModal(item.id);
+            };
+
+            actionsRow.appendChild(completeBtn);
+            actionsRow.appendChild(removeBtn);
+            card.appendChild(actionsRow);
+        }
+
         itemDiv.appendChild(card);
 
         // Events
@@ -3047,6 +3090,75 @@ async function deleteWireListItem(id) {
         }
     } catch (error) {
         console.error("Error deleting wire list item:", error);
+    }
+}
+
+async function completeWireListItem(id) {
+    const item = wireCutList.find(i => i.id === id);
+    if (item) {
+        item.status = 'completed';
+        item.updatedAt = Date.now();
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                await showAlert('Item marked as completed!', 'Success');
+            }
+        } catch (error) {
+            console.error("Error completing item:", error);
+        }
+    }
+}
+
+function showRemovalReasonModal(id) {
+    currentContextMenuId = id; // Reuse this variable to track target ID
+    const modal = document.getElementById('removalReasonModal');
+    const modalContent = document.getElementById('removalModalContent');
+    const textarea = document.getElementById('removalReasonText');
+
+    textarea.value = '';
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+        textarea.focus();
+    }, 10);
+}
+
+function hideRemovalReasonModal() {
+    const modal = document.getElementById('removalReasonModal');
+    const modalContent = document.getElementById('removalModalContent');
+
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+async function saveRemovalWithReason() {
+    const reason = document.getElementById('removalReasonText').value.trim();
+    if (!reason) {
+        showAlert('Please provide a reason for removal.', 'Reason Required');
+        return;
+    }
+
+    const item = wireCutList.find(i => i.id === currentContextMenuId);
+    if (item) {
+        item.status = 'removed';
+        item.removalReason = reason;
+        item.updatedAt = Date.now();
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                hideRemovalReasonModal();
+                await showAlert('Item archived with reason.', 'Removed');
+            }
+        } catch (error) {
+            console.error("Error removing item:", error);
+        }
     }
 }
 

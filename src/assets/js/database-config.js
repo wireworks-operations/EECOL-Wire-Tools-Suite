@@ -42,7 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return `Flange: ${record.flangeDiameter.value} ${record.flangeDiameter.unit}, Core: ${record.coreDiameter.value} ${record.coreDiameter.unit}, Traverse: ${record.traverseWidth.value} ${record.traverseWidth.unit} (${timestamp})`;
             case 'wireCutList':
                 const urgencyPrefix = record.urgency && record.urgency !== 'normal' ? `[${record.urgency.toUpperCase()}] ` : '';
-                return `${urgencyPrefix}Order: ${record.orderNumber}, Cust: ${record.customerName}, Wire: ${record.wireType}, Status: ${record.status} (${timestamp})`;
+                let wireSummary = `${urgencyPrefix}Order: ${record.orderNumber}, Cust: ${record.customerName}, Wire: ${record.wireType}, Status: ${record.status}`;
+                if (record.status === 'removed' && record.removalReason) {
+                    wireSummary += ` | Reason: ${record.removalReason}`;
+                }
+                return `${wireSummary} (${timestamp})`;
             default:
                 return JSON.stringify(record);
         }
@@ -271,11 +275,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await showAlert(`${selectedIds.length} records deleted successfully!`);
         }
     };
-
-    deleteSelectedMarkConverterBtn.addEventListener('click', () => handleDeleteSelected('markConverter', markConverterList));
-    deleteSelectedStopmarkConverterBtn.addEventListener('click', () => handleDeleteSelected('stopmarkConverter', stopmarkConverterList));
-    deleteSelectedWireCutListBtn.addEventListener('click', () => handleDeleteSelected('wireCutList', wireCutListList));
-    deleteSelectedReelcapacityEstimatorBtn.addEventListener('click', () => handleDeleteSelected('reelcapacityEstimator', reelcapacityEstimatorList));
 
     document.body.addEventListener('click', async (e) => {
         if (e.target.classList.contains('delete-record')) {
@@ -838,7 +837,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
         ],
-        version: 'v0.8.0.3',
+        version: 'v0.8.0.4',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Database Config'
     });

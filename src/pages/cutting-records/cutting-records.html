@@ -129,6 +129,7 @@
                                             class="p-1 border border-yellow-300 rounded bg-white text-xs">
                                             <option value="active">Active</option>
                                             <option value="completed">Completed</option>
+                                            <option value="removed">Removed</option>
                                             <option value="all">All</option>
                                         </select>
                                     </div>
@@ -774,6 +775,40 @@
     </div>
 
     <!-- Wire Cut List Item Modal -->
+    <!-- Wire Cut List Removal Reason Modal -->
+    <div id="removalReasonModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="removalModalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-red-500 transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="removalModalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="#0058B3" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="#0058B3" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="#0058B3" stroke-width="3.5" stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-center mb-4 header-gradient">Reason for Removal</h3>
+            <p class="text-xs text-gray-600 mb-2 text-center">Please provide a reason why this item is being removed from the active list.</p>
+            <textarea id="removalReasonText" placeholder="e.g., Customer cancelled, incorrect wire type specified..."
+                class="w-full p-2 border border-gray-300 rounded-lg text-sm h-32 mb-4"></textarea>
+            <div class="flex justify-center space-x-3">
+                <button id="cancelRemovalBtn"
+                    class="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600 transition font-bold">
+                    Cancel
+                </button>
+                <button id="confirmRemovalBtn"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition font-bold">
+                    Archive Item
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="wireListItemModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="wireModalBackdrop"></div>
         <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 border-2 border-yellow-500 transform scale-95 opacity-0 transition-all duration-200 ease-out"
