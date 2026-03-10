@@ -102,9 +102,30 @@ Wire Mark Calculator - EECOL Wire Tools Enterprise Edition
 
                     <!-- Primary Result: Length Between Marks -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-center">
-                        <p id="resultTextPrimary" class="text-sm font-bold text-gray-600 mb-1">Length Between Marks</p>
-                        <p id="resultText" class="text-3xl font-black text-eecol-blue">0.00 m</p>
-                        <p id="resultTextSecondary" class="text-sm font-medium text-gray-500 mt-1"></p>
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <!-- Start Mark -->
+                            <div class="flex-1 w-full bg-white/60 p-2 rounded-lg border border-blue-100 shadow-sm">
+                                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center justify-center">
+                                    <span class="mr-1">🏁</span> Start Mark
+                                </p>
+                                <p id="displayStartMark" class="text-base font-bold text-blue-600">0.00</p>
+                            </div>
+
+                            <!-- Main Result -->
+                            <div class="flex-[1.5] py-2">
+                                <p id="resultTextPrimary" class="text-xs font-bold text-gray-600 mb-1">Length Between Marks</p>
+                                <p id="resultText" class="text-3xl font-black text-eecol-blue leading-none">0.00 m</p>
+                                <p id="resultTextSecondary" class="text-sm font-medium text-gray-500 mt-1"></p>
+                            </div>
+
+                            <!-- End Mark -->
+                            <div class="flex-1 w-full bg-white/60 p-2 rounded-lg border border-blue-100 shadow-sm">
+                                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center justify-center">
+                                    <span class="mr-1">✅</span> End Mark
+                                </p>
+                                <p id="displayEndMark" class="text-base font-bold text-green-600">0.00</p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Mechanism Explanation -->
