@@ -119,7 +119,7 @@ interactions.
 <details>
 <summary>Storage Layer (IndexedDB)</summary>
 
-The application uses a singleton `EECOLIndexedDB` class to manage 14 specialized
+The application uses a singleton `EECOLIndexedDB` class to manage 15 specialized
 stores, ensuring reliable client-side persistence for industrial data.
 
 </details>

@@ -1495,10 +1495,12 @@ async function syncToCloudCSV() {
 async function exportJSONBackup() {
     const backup = {
         records: cutRecords,
+        wireCutList: wireCutList,
         timestamp: Date.now(),
         version: '0.7.9.7',
         exportDate: new Date().toISOString(),
-        totalRecords: cutRecords.length
+        totalRecords: cutRecords.length,
+        totalWireCutListItems: wireCutList.length
     };
 
     // Save export timestamp to IndexedDB
@@ -1539,23 +1541,27 @@ async function importJSONBackup(event) {
                 return;
             }
 
-            const importRecords = backupData.records;
+            const importRecords = backupData.records || [];
+            const importWireCutList = backupData.wireCutList || [];
             const backupVersion = backupData.version || 'unknown';
             const exportDate = backupData.exportDate ? new Date(backupData.exportDate).toLocaleDateString() : 'unknown';
 
             // Show import options
-            const merge = await showConfirm(`JSON Backup Import:\n\nBackup Details:\n- Version: ${backupVersion}\n- Export Date: ${exportDate}\n- Records: ${importRecords.length}\n- Current Records: ${cutRecords.length}\n\nChoose:\nOK = Merge with existing data\nCancel = Replace all existing data`, 'Import Options');
+            const merge = await showConfirm(`JSON Backup Import:\n\nBackup Details:\n- Version: ${backupVersion}\n- Export Date: ${exportDate}\n- Cut Records: ${importRecords.length}\n- Wire List Items: ${importWireCutList.length}\n\nChoose:\nOK = Merge with existing data\nCancel = Replace all existing data`, 'Import Options');
 
             cutRecords = merge ? [...cutRecords, ...importRecords] : importRecords;
+            wireCutList = merge ? [...wireCutList, ...importWireCutList] : importWireCutList;
 
             // Clean up records (ensure IDs, etc.)
             cutRecords.forEach(record => {
-                if (!record.id) {
-                    record.id = crypto.randomUUID();
-                }
+                if (!record.id) record.id = crypto.randomUUID();
+            });
+            wireCutList.forEach(item => {
+                if (!item.id) item.id = crypto.randomUUID();
             });
 
             cutRecords.sort((a, b) => b.timestamp - a.timestamp);
+            wireCutList.sort((a, b) => (a.position || 0) - (b.position || 0));
 
             // Save to database
             await clearAllCutRecordsFromDB();
@@ -1563,8 +1569,16 @@ async function importJSONBackup(event) {
                 await saveCutRecordToDB(record);
             }
 
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                if (!merge) await window.eecolDB.clear('wireCutList');
+                for (const item of wireCutList) {
+                    await window.eecolDB.update('wireCutList', item);
+                }
+            }
+
             displayedRecordsCount = 0;
             renderCutRecords();
+            renderWireCutList();
 
             await showAlert(`JSON import successful!\n${merge ? 'Merged' : 'Replaced'} with ${importRecords.length} records.\nTotal records: ${cutRecords.length}`, 'Import Successful');
 
@@ -2716,6 +2730,7 @@ async function initWireCutList() {
     const addBtn = document.getElementById('addWireListItemBtn');
     const refreshBtn = document.getElementById('refreshWireListBtn');
     const statusFilter = document.getElementById('wireListStatusFilter');
+    const searchInput = document.getElementById('wireListSearch');
 
     if (toggleBtn && content) {
         toggleBtn.addEventListener('click', () => {
@@ -2734,6 +2749,7 @@ async function initWireCutList() {
     if (addBtn) addBtn.addEventListener('click', () => showWireListItemModal());
     if (refreshBtn) refreshBtn.addEventListener('click', loadWireCutList);
     if (statusFilter) statusFilter.addEventListener('change', renderWireCutList);
+    if (searchInput) searchInput.addEventListener('input', renderWireCutList);
 
     // Modal events
     const cancelBtn = document.getElementById('cancelWireListItemBtn');
@@ -2800,20 +2816,37 @@ async function loadWireCutList() {
 function renderWireCutList() {
     const container = document.getElementById('wireCutListItems');
     const filter = document.getElementById('wireListStatusFilter').value;
+    const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
 
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
 
     const filtered = wireCutList.filter(item => {
-        if (filter === 'all') return true;
-        return item.status === filter;
+        // Status filter
+        if (filter !== 'all' && item.status !== filter) return false;
+
+        // Search filter
+        if (searchTerm) {
+            const searchFields = [
+                item.orderNumber,
+                item.customerName,
+                item.wireType,
+                item.description,
+                item.orderComments,
+                item.shipperComments
+            ].map(f => (f || '').toLowerCase());
+
+            if (!searchFields.some(f => f.includes(searchTerm))) return false;
+        }
+
+        return true;
     });
 
     if (filtered.length === 0) {
         const emptyMsg = document.createElement('p');
         emptyMsg.className = 'text-center text-gray-500 italic';
-        emptyMsg.textContent = filter === 'all' ? 'No items in the list.' : `No ${filter} items found.`;
+        emptyMsg.textContent = searchTerm ? 'No items match your search.' : (filter === 'all' ? 'No items in the list.' : `No ${filter} items found.`);
         container.appendChild(emptyMsg);
         return;
     }

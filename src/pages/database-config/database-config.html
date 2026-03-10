@@ -130,6 +130,10 @@
                                 <span class="text-sm text-gray-600">Inventory Records:</span>
                                 <span class="font-semibold text-[#0058B3]" id="inventoryRecords">0</span>
                             </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Wire Cut List:</span>
+                                <span class="font-semibold text-[#0058B3]" id="wireCutListRecords">0</span>
+                            </div>
                         </div>
                     </div>
 
@@ -295,6 +299,52 @@
                                     class="flex-1 px-3 py-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Delete
                                     Selected</button>
                                 <button id="exportSelectedStopmarkConverter"
+                                    class="flex-1 px-3 py-2 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Export
+                                    Selected</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wire Cut List Records -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#0058B3] mb-2">Wire Cut List Records</h3>
+
+                        <!-- Search and Filter Controls -->
+                        <div class="mb-3 p-3 bg-gray-50 rounded-lg border">
+                            <div class="flex flex-col space-y-2">
+                                <input type="text" id="wireCutSearchInput" placeholder="Search records..."
+                                    class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full">
+                                <div class="flex space-x-2">
+                                    <select id="wireCutSortSelect"
+                                        class="px-2 py-1 border border-gray-300 rounded text-sm">
+                                        <option value="newest">Newest First</option>
+                                        <option value="oldest">Oldest First</option>
+                                        <option value="orderAsc">Order # ↑</option>
+                                        <option value="orderDesc">Order # ↓</option>
+                                    </select>
+                                    <button id="wireCutClearSearch"
+                                        class="px-2 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="wireCutListList" class="h-64 overflow-y-auto border border-gray-300 rounded-lg p-2">
+                        </div>
+
+                        <!-- Bulk Operations Controls -->
+                        <div class="mt-3 flex flex-col space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="selectAllWireCutList"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                                <label for="selectAllWireCutList" class="text-sm font-medium text-gray-700">Select
+                                    All</label>
+                                <span id="selectedCountWireCutList" class="text-xs text-gray-500">(0 selected)</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="deleteSelectedWireCutList"
+                                    class="flex-1 px-3 py-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Delete
+                                    Selected</button>
+                                <button id="exportSelectedWireCutList"
                                     class="flex-1 px-3 py-2 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Export
                                     Selected</button>
                             </div>
