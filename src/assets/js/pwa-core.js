@@ -7,7 +7,13 @@
 function registerPWA() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('../../../src/assets/sw.js')
+            // Find root path for service worker
+            // GitHub Pages support: handles both domain root and subdirectory
+            const swPath = window.location.pathname.includes('/EECOL-Wire-Tools-Suite/')
+                ? '/EECOL-Wire-Tools-Suite/sw.js'
+                : '/sw.js';
+
+            navigator.serviceWorker.register(swPath)
                 .then(registration => {
                     console.log('✅ EECOL PWA: Service Worker registered successfully:', registration.scope);
 
