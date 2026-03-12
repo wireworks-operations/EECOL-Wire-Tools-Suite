@@ -15,6 +15,7 @@ This file serves as a living document of my understanding, insights, and critica
 - **Singleton Pattern:** Always use `EECOLIndexedDB.getInstance()` to avoid multiple connection issues.
 - **Reliability:** Implements `db.onversionchange = () => db.close()` and `request.onblocked` handlers to prevent upgrade deadlocks.
 - **Stores:** `cuttingRecords`, `inventoryRecords`, `markConverter`, `stopmarkConverter`, `reelcapacityEstimator`, `settings`, etc.
+- **Atomic Batch Updates:** Use `bulkPut(storeName, items, clearFirst)` for multi-record operations (Undo, Redo, Import). This pattern wraps all requests in a single transaction, ensuring atomicity and minimizing performance-degrading disk syncs.
 
 ### 🛡️ Security (Sentinel Protocol)
 - **Secure by Default Rendering:** Strictly avoid `innerHTML` for any user-controllable data (Wire IDs, Customer Names, Comments). Every list item in the 'Wire Cut List' is constructed using `document.createElement()` and `.textContent`. This provides native browser protection against XSS and is far more robust than manual string escaping.
@@ -24,6 +25,7 @@ This file serves as a living document of my understanding, insights, and critica
 ### ⚡ Performance (Bolt Optimization)
 - **Iteration Consolidation:** When processing dashboard metrics or large datasets, consolidate multiple `filter()` and `reduce()` calls into a single `for...of` loop.
 - **Data Integrity:** Handle `null` or `undefined` gracefully, especially in inventory/cutting records.
+- **Modular Print Utility:** Print features are organized into specific modules (`core.js`, `calculators.js`, `maintenance.js`) under `src/utils/print/`. The root `src/utils/print.js` acts as an ESM global shim for backward compatibility. HTML pages must load it with `type="module"`.
 
 ### 🎨 UI/UX (Palette Protocol)
 - **Theme:** EECOL Blue (`#0058B3`) and Indigo accents.
