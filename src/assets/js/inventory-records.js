@@ -166,12 +166,12 @@ async function loadInventoryItems() {
 async function saveInventoryStateToDB() {
     try {
         if (window.eecolDB && await window.eecolDB.isReady()) {
-            // Clear existing records
-            await window.eecolDB.clear('inventoryRecords');
-            // Add all current records
-            for (const item of inventoryItems) {
-                await window.eecolDB.add('inventoryRecords', item);
-            }
+            /**
+             * IDB SENTINEL: Atomic batch update
+             * Replaced non-atomic loop with single transaction bulkPut
+             * to prevent partial state in IndexedDB and reduce disk syncs.
+             */
+            await window.eecolDB.bulkPut('inventoryRecords', inventoryItems, true);
         } else {
             throw new Error("Database not available");
         }
@@ -1228,10 +1228,15 @@ async function importJSONBackup(event) {
 
             inventoryItems.sort((a, b) => b.timestamp - a.timestamp);
 
-            // Save to database
-            await clearAllInventoryItemsFromDB();
-            for (const record of inventoryItems) {
-                await saveInventoryItemToDB(record);
+            // Save to database using atomic bulk operation
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.bulkPut('inventoryRecords', inventoryItems, true);
+            } else {
+                // Fallback for older browsers or failed init
+                await clearAllInventoryItemsFromDB();
+                for (const record of inventoryItems) {
+                    await saveInventoryItemToDB(record);
+                }
             }
 
             displayedItemsCount = 0;
