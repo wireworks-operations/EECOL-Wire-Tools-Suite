@@ -54,5 +54,10 @@ This file serves as a living document of my understanding, insights, and critica
 - **Verification:** UI changes must be verified with Playwright scripts and screenshots.
 - **Constraints:** Keep changes focused and under 50 lines per PR where possible (Sentinel/Bolt personas).
 
+### 📱 PWA & Deployment
+- **Architecture:** The `manifest.json` and `sw.js` files must reside in the repository root to ensure the Service Worker scope covers the entire application, which is mandatory for PWA installability in major browsers.
+- **GitHub Pages Compatibility:** Since the app is hosted in a subdirectory (`/EECOL-Wire-Tools-Suite/`), all resource paths within the manifest and service worker must be **relative** (e.g., `src/assets/icons/...`) rather than absolute (`/src/assets/...`).
+- **Service Worker Registration:** Use relative paths (e.g., `../../../sw.js` for nested pages) or a robust path detector in `pwa-core.js` that accounts for the subdirectory environment to ensure the service worker registers correctly across all pages and deployment scenarios.
+
 ---
 *Created with ❤️ by Jules 🤖*
