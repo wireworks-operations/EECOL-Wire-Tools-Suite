@@ -22,7 +22,7 @@
             box-shadow: 0 8px 25px rgba(0, 88, 179, 0.3);
         }
     </style>
-    <link rel="manifest" href="src/assets/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0058B3">
     <meta name="mobile-web-app-capable" content="yes">
 
@@ -307,7 +307,7 @@
         // Only register if running on HTTP/HTTPS (not file:// protocol)
         if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('src/assets/sw.js')
+                navigator.serviceWorker.register('sw.js')
                     .then(registration => {
                         console.log('✅ Service Worker registered successfully:', registration.scope);
 

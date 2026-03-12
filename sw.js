@@ -7,18 +7,19 @@ const CACHE_NAME = 'eecol-tools-v0.8.0.4';
 const STATIC_CACHE = 'eecol-static-v0.8.0.4';
 const DYNAMIC_CACHE = 'eecol-dynamic-v0.8.0.4';
 
-// Files to cache immediately on install
+// Files to cache immediately on install - relative to sw.js (root)
 const STATIC_ASSETS = [
-  '/src/assets/css/eecol-theme.css',
-  '/src/assets/js/index.js',
-  '/src/core/database/indexeddb.js'
+  'src/assets/css/eecol-theme.css',
+  'src/assets/js/index.js',
+  'src/core/database/indexeddb.js'
 ];
 
 // Pages that should be cached for offline access
 const PAGE_CACHE = [
-  '/src/pages/index/',
-  '/src/pages/cutting-records/cutting-records.html',
-  '/inventory-records.html'
+  './index.html',
+  'src/pages/index/index.html',
+  'src/pages/cutting-records/cutting-records.html',
+  'src/pages/inventory-records/inventory-records.html'
 ];
 
 // Install event - cache core assets
@@ -28,7 +29,7 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then(cache => {
         console.log('📦 Caching static assets...');
-        return cache.addAll(STATIC_ASSETS);
+        return cache.addAll([...STATIC_ASSETS, ...PAGE_CACHE]);
       })
       .then(() => {
         console.log('✅ Service Worker installed successfully');
@@ -63,14 +64,8 @@ self.addEventListener('fetch', (event) => {
   // Handle different request types
   if (request.method !== 'GET') return;
 
-  // API calls - network first
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
   // Static assets - cache first
-  if (STATIC_ASSETS.includes(url.pathname) ||
+  if (STATIC_ASSETS.some(asset => url.pathname.endsWith(asset)) ||
       url.hostname.includes('cdn.') ||
       url.hostname.includes('fonts.googleapis.com')) {
     event.respondWith(cacheFirst(request));
@@ -181,8 +176,8 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     const options = {
       body: data.body || 'New notification from EECOL Tools',
-      icon: '/src/assets/icons/icon-192.png',
-      badge: '/src/assets/icons/icon-192.png',
+      icon: 'src/assets/icons/icon-192x192.png',
+      badge: 'src/assets/icons/icon-192x192.png',
       vibrate: [200, 100, 200],
       data: {
         dateOfArrival: Date.now(),
@@ -199,16 +194,6 @@ self.addEventListener('push', (event) => {
         data.title || 'EECOL Tools',
         options
       )
-    );
-  }
-});
-
-// Background sync for forming network connections
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(
-      // Trigger P2P connection attempts
-      Promise.resolve()
     );
   }
 });
