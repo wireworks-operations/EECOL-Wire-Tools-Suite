@@ -706,10 +706,15 @@ async function saveBatchRecords() {
         cutRecords.push(...newRecords);
         cutRecords.sort((a, b) => b.timestamp - a.timestamp);
 
-        // Save all new records to database
-        for (let i = 0; i < newRecords.length; i++) {
-            const record = newRecords[i];
-            await saveCutRecordToDB(record);
+        // Save all new records to database using atomic bulk operation
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.bulkPut('cuttingRecords', newRecords, false);
+        } else {
+            // Fallback
+            for (let i = 0; i < newRecords.length; i++) {
+                const record = newRecords[i];
+                await saveCutRecordToDB(record);
+            }
         }
 
         // Reset display counter and re-render
@@ -748,10 +753,15 @@ async function undo() {
 
     cutRecords = undoStack.pop();
 
-    // Update database with new state
-    await clearAllCutRecordsFromDB();
-    for (const record of cutRecords) {
-        await saveCutRecordToDB(record);
+    // Update database with new state using atomic bulk operation
+    if (window.eecolDB && await window.eecolDB.isReady()) {
+        await window.eecolDB.bulkPut('cuttingRecords', cutRecords, true);
+    } else {
+        // Fallback
+        await clearAllCutRecordsFromDB();
+        for (const record of cutRecords) {
+            await saveCutRecordToDB(record);
+        }
     }
 
     displayedRecordsCount = 0;
@@ -769,10 +779,15 @@ async function redo() {
 
     cutRecords = redoStack.pop();
 
-    // Update database with new state
-    await clearAllCutRecordsFromDB();
-    for (const record of cutRecords) {
-        await saveCutRecordToDB(record);
+    // Update database with new state using atomic bulk operation
+    if (window.eecolDB && await window.eecolDB.isReady()) {
+        await window.eecolDB.bulkPut('cuttingRecords', cutRecords, true);
+    } else {
+        // Fallback
+        await clearAllCutRecordsFromDB();
+        for (const record of cutRecords) {
+            await saveCutRecordToDB(record);
+        }
     }
 
     displayedRecordsCount = 0;
@@ -1563,16 +1578,15 @@ async function importJSONBackup(event) {
             cutRecords.sort((a, b) => b.timestamp - a.timestamp);
             wireCutList.sort((a, b) => (a.position || 0) - (b.position || 0));
 
-            // Save to database
-            await clearAllCutRecordsFromDB();
-            for (const record of cutRecords) {
-                await saveCutRecordToDB(record);
-            }
-
+            // Save to database using atomic bulk operations
             if (window.eecolDB && await window.eecolDB.isReady()) {
-                if (!merge) await window.eecolDB.clear('wireCutList');
-                for (const item of wireCutList) {
-                    await window.eecolDB.update('wireCutList', item);
+                await window.eecolDB.bulkPut('cuttingRecords', cutRecords, true);
+                await window.eecolDB.bulkPut('wireCutList', wireCutList, !merge);
+            } else {
+                // Fallback
+                await clearAllCutRecordsFromDB();
+                for (const record of cutRecords) {
+                    await saveCutRecordToDB(record);
                 }
             }
 

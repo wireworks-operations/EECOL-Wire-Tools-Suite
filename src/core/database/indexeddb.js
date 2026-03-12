@@ -123,6 +123,41 @@ class EECOLIndexedDB {
     });
   }
 
+  /**
+   * Performs an atomic bulk put operation.
+   * Efficiently handles multiple records in a single transaction.
+   * @param {string} storeName - Target object store
+   * @param {Array} items - Array of items to put
+   * @param {boolean} clearFirst - Whether to clear the store before adding items
+   */
+  async bulkPut(storeName, items, clearFirst = false) {
+    await this.isReady();
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => {
+        console.error(`❌ Bulk operation failed on ${storeName}:`, transaction.error);
+        reject(transaction.error);
+      };
+      transaction.onabort = () => {
+        console.warn(`⚠️ Bulk operation aborted on ${storeName}:`, transaction.error);
+        reject(transaction.error);
+      };
+
+      if (clearFirst) {
+        store.clear();
+      }
+
+      for (const item of items) {
+        store.put(item);
+      }
+    });
+  }
+
   createObjectStores(db) {
     // Create all object stores
     for (const [storeName, config] of Object.entries(this.stores)) {
