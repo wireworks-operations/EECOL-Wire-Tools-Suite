@@ -15,6 +15,7 @@ function showAlert(message, title = "Notification") {
 
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
+        const modalInput = document.getElementById('modalInput');
         const modalButtons = document.getElementById('modalButtons');
 
         if (!modalTitle || !modalMessage || !modalButtons) {
@@ -26,6 +27,7 @@ function showAlert(message, title = "Notification") {
         modalTitle.textContent = title;
         modalMessage.textContent = message;
         modalMessage.classList.add('whitespace-pre-line');
+        if (modalInput) modalInput.style.display = 'none';
         modalButtons.innerHTML = '<button id="modalOKBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">OK</button>';
 
         const okBtn = modalButtons.querySelector('#modalOKBtn');
@@ -51,11 +53,13 @@ function showConfirm(message, title = "Confirmation") {
         const modal = document.getElementById('customModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
+        const modalInput = document.getElementById('modalInput');
         const modalButtons = document.getElementById('modalButtons');
 
         modalTitle.textContent = title;
         modalMessage.textContent = message;
         modalMessage.classList.add('whitespace-pre-line');
+        if (modalInput) modalInput.style.display = 'none';
         modalButtons.innerHTML = `
             <button id="modalCancelBtn" class="px-4 py-2 bg-gray-500 text-white rounded-xl shadow-lg hover:bg-gray-600 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold mr-2">Cancel</button>
             <button id="modalOKBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">OK</button>
@@ -72,6 +76,56 @@ function showConfirm(message, title = "Confirmation") {
         cancelBtn.addEventListener('click', () => {
             hideModal();
             resolve(false);
+        });
+
+        // Show modal with animation
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            const modalContent = document.getElementById('modalContent');
+            if (modalContent) {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }
+        }, 10);
+    });
+}
+
+function showDateInputModal(title = "Select Date") {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalInput = document.getElementById('modalInput');
+        const modalButtons = document.getElementById('modalButtons');
+        const dateInput = document.getElementById('modalDateInput');
+
+        if (!modal || !modalTitle || !modalMessage || !modalInput || !modalButtons || !dateInput) {
+            console.warn('Modal elements not found for showDateInputModal');
+            resolve(null);
+            return;
+        }
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = 'Select the date of the maintenance record you want to view:';
+        modalInput.style.display = 'block';
+        dateInput.value = new Date().toISOString().split('T')[0];
+        modalButtons.innerHTML = `
+            <button id="modalLoadBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">Load Record</button>
+            <button id="modalCancelBtn" class="px-4 py-2 bg-gray-500 text-white rounded-xl shadow-lg hover:bg-gray-600 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold ml-3">Cancel</button>
+        `;
+
+        const loadBtn = modalButtons.querySelector('#modalLoadBtn');
+        const cancelBtn = modalButtons.querySelector('#modalCancelBtn');
+
+        loadBtn.addEventListener('click', () => {
+            const selectedDate = dateInput.value;
+            hideModal();
+            resolve(selectedDate);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            hideModal();
+            resolve(null);
         });
 
         // Show modal with animation
@@ -115,6 +169,7 @@ function initModalSystem() {
 if (typeof window !== 'undefined') {
     window.showAlert = showAlert;
     window.showConfirm = showConfirm;
+    window.showDateInputModal = showDateInputModal;
     window.hideModal = hideModal;
     window.initModalSystem = initModalSystem;
 }
