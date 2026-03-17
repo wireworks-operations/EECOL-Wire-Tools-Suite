@@ -22,49 +22,49 @@ vulnerability, please follow these steps:
 
 ## Security Posture
 
-This application is designed as a **local-first** Progressive Web App (PWA). All
-data is stored exclusively on the client-side using IndexedDB, with no
+This application is designed as a **local-first** Progressive Web App (PWA).
+All data is stored exclusively on the client-side using IndexedDB, with no
 server-side components or cloud services involved.
 
 ### Architecture Security
 
-* **Client-Side Only**: No backend server, API calls, or external data
+- **Client-Side Only**: No backend server, API calls, or external data
   transmission for user data.
-* **Offline-First Design**: All functionality works without internet
+- **Offline-First Design**: All functionality works without internet
   connectivity once the initial assets are cached.
-* **PWA Isolation**: Service workers manage caching of static assets only.
+- **PWA Isolation**: Service workers manage caching of static assets only.
 
 ### Data Storage Security
 
-* **No Cloud Storage**: All data remains on the user's device. No cloud storage
+- **No Cloud Storage**: All data remains on the user's device. No cloud storage
   or synchronization.
-* **No Encryption at Rest**: Data stored in IndexedDB is not encrypted by the
+- **No Encryption at Rest**: Data stored in IndexedDB is not encrypted by the
   application.
-* **Browser Protection**: Security depends on the user's operating system and
+- **Browser Protection**: Security depends on the user's operating system and
   browser's "Same-Origin Policy" (SOP).
 
 ### Hardening Checklist
 
-* [x] Content Security Policy (CSP) implemented in `index.html`.
-* [x] Output encoding using `window.escapeHTML` and native `textContent`.
-* [x] IndexedDB storage level constraints.
-* [ ] Subresource Integrity (SRI) for CDN dependencies (Planned).
-* [ ] Automated dependency scanning (Planned).
+- [x] Content Security Policy (CSP) implemented in `index.html`.
+- [x] Output encoding using `window.escapeHTML` and native `textContent`.
+- [x] IndexedDB storage level constraints.
+- [ ] Subresource Integrity (SRI) for CDN dependencies (Planned).
+- [ ] Automated dependency scanning (Planned).
 
 ### Attack Vector Analysis
 
 #### Mitigated Threats
 
-* **Server-Side Attacks**: Not applicable (no server).
-* **SQL Injection**: Not applicable (uses IndexedDB).
-* **Authentication Bypass**: Not applicable (no server-side authentication).
-* **CSRF**: Not applicable (no server-side state changes).
+- **Server-Side Attacks**: Not applicable (no server).
+- **SQL Injection**: Not applicable (uses IndexedDB).
+- **Authentication Bypass**: Not applicable (no server-side authentication).
+- **CSRF**: Not applicable (no server-side state changes).
 
 #### Potential Attack Vectors
 
-* **Cross-Site Scripting (XSS)**: Mitigated by a strict CSP and consistent use
+- **Cross-Site Scripting (XSS)**: Mitigated by a strict CSP and consistent use
   of sanitization utilities.
-* **Physical Access**: Anyone with physical access to the device can inspect
+- **Physical Access**: Anyone with physical access to the device can inspect
   IndexedDB contents via browser dev tools. Users are encouraged to secure
   their devices.
 
@@ -72,4 +72,4 @@ server-side components or cloud services involved.
 
 ### Contact & Keys
 
-* **Maintenance Lead**: EECOL Tools Team (@lucas.kara)
+- **Maintenance Lead**: EECOL Tools Team (@lucas.kara)

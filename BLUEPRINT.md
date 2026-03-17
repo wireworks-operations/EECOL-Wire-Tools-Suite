@@ -42,35 +42,38 @@
 
 ## Repos & Conventions
 
-* **Pages**: `/src/pages/<tool-name>/` (HTML/JS/CSS for specific tools)
-* **Database**: `/src/core/database/indexeddb.js` (Singleton implementation)
-* **Assets**: `/src/assets/` (Shared CSS, JS, and PWA assets)
-* **Utilities**: `/src/utils/` (Sanitization, modals, and helper functions)
+- **Pages**: `/src/pages/<tool-name>/` (HTML/JS/CSS for specific tools)
+- **Database**: `/src/core/database/indexeddb.js` (Singleton implementation)
+- **Assets**: `/src/assets/` (Shared CSS, JS, and PWA assets)
+- **Utilities**: `/src/utils/` (Sanitization, modals, and helper functions)
+- **Print Utility**: `/src/utils/print/` (Modular print logic for various
+  tools)
 
 ## Key Decisions
 
-* **Local-First**: Zero backend dependencies to ensure 100% uptime in
+- **Local-First**: Zero backend dependencies to ensure 100% uptime in
   industrial environments.
-* **Vanilla JS**: Chosen for longevity and to minimize framework-induced
+- **Vanilla JS**: Chosen for longevity and to minimize framework-induced
   maintenance debt.
-* **IndexedDB**: Used over LocalStorage for structured, high-capacity data
+- **IndexedDB**: Used over LocalStorage for structured, high-capacity data
   persistence.
-* **Tailwind CSS**: Utility-first styling for rapid development and consistent
-  EECOL branding.
+- **Tailwind CSS**: Utility-first styling for rapid development and consistent
+  branding.
+- **ESM Hybrid**: Migrating towards ES Modules while maintaining a stable
+  global API via shims.
 
 ## Risks & Trade-offs
 
-* **Device Binding**: Data is local to the device/browser. Backup/Restore is
+- **Device Binding**: Data is local to the device/browser. Backup/Restore is
   manual.
-* **Storage Quotas**: Reliant on browser-enforced storage limits
-  (~50MB-2GB).
-* **Syncing**: No native multi-device sync; requires manual export/import for
+- **Storage Quotas**: Reliant on browser-enforced storage limits (~50MB-2GB).
+- **Syncing**: No native multi-device sync; requires manual export/import for
   data transfer.
 
 ---
 
 ### Additional Docs
 
-* [README.md](README.md) - General info
-* [QUICKSTART.md](QUICKSTART.md) - Setup steps
-* [SECURITY.md](SECURITY.md) - Security details
+- [README.md](README.md) - General info
+- [QUICKSTART.md](QUICKSTART.md) - Setup steps
+- [SECURITY.md](SECURITY.md) - Security details
