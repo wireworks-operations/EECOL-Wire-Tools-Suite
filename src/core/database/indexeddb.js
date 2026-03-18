@@ -6,14 +6,14 @@
 class EECOLIndexedDB {
   static instance = null;
 
-  static getInstance(version = 5) {
+  static getInstance(version = 6) {
     if (!EECOLIndexedDB.instance) {
       EECOLIndexedDB.instance = new EECOLIndexedDB(version);
     }
     return EECOLIndexedDB.instance;
   }
 
-  constructor(version = 5) {
+  constructor(version = 6) {
     // Prevent direct instantiation - enforce singleton pattern
     if (EECOLIndexedDB.instance) {
       throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
@@ -62,7 +62,7 @@ class EECOLIndexedDB {
         keyPath: 'id',
         indexes: ['timestamp', 'tool']
       },
-      muticutPlanner: {
+      multicutPlanner: {
         keyPath: 'id',
         indexes: ['timestamp', 'payloadCableType', 'isComplete', 'totalPayloadLength']
       },
@@ -160,6 +160,37 @@ class EECOLIndexedDB {
   }
 
   createObjectStores(db, transaction) {
+    // Schema cleanup: migration from muticutPlanner to multicutPlanner (typo fix)
+    // Safe data migration within the upgrade transaction
+    if (db.objectStoreNames.contains('muticutPlanner')) {
+      console.log('📦 Migrating data from legacy muticutPlanner store...');
+      const oldStore = transaction.objectStore('muticutPlanner');
+      const config = this.stores.multicutPlanner;
+      const newStore = db.createObjectStore('multicutPlanner', {
+        keyPath: config.keyPath,
+        autoIncrement: config.keyPath === 'id'
+      });
+
+      // Recreate indexes for new store
+      if (config.indexes) {
+        for (const idx of config.indexes) {
+          newStore.createIndex(idx, idx, { unique: false });
+        }
+      }
+
+      // Copy records from old to new store
+      oldStore.openCursor().onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          newStore.put(cursor.value);
+          cursor.continue();
+        } else {
+          console.log('✅ Migration complete. Removing legacy store.');
+          db.deleteObjectStore('muticutPlanner');
+        }
+      };
+    }
+
     // Create or update all object stores
     for (const [storeName, config] of Object.entries(this.stores)) {
       let store;
@@ -601,5 +632,7 @@ if (typeof window !== 'undefined') {
 
 // Make promise available globally (needed for unit tests)
 if (typeof window !== 'undefined') {
-  window.eecolDBPromise = EECOLIndexedDB.prototype.dbInitialized;
+  // Fix: Access dbInitialized via singleton instance to ensure a valid promise
+  // EECOLIndexedDB.prototype.dbInitialized was incorrect as it is an instance property
+  window.eecolDBPromise = EECOLIndexedDB.getInstance().dbInitialized;
 }
