@@ -6,14 +6,14 @@
 class EECOLIndexedDB {
   static instance = null;
 
-  static getInstance(version = 4) {
+  static getInstance(version = 5) {
     if (!EECOLIndexedDB.instance) {
       EECOLIndexedDB.instance = new EECOLIndexedDB(version);
     }
     return EECOLIndexedDB.instance;
   }
 
-  constructor(version = 4) {
+  constructor(version = 5) {
     // Prevent direct instantiation - enforce singleton pattern
     if (EECOLIndexedDB.instance) {
       throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
@@ -27,11 +27,11 @@ class EECOLIndexedDB {
     this.stores = {
       cuttingRecords: {
         keyPath: 'id',
-        indexes: ['timestamp', 'operator', 'wireType', 'orderNumber', 'customerName']
+        indexes: ['timestamp', 'cutterName', 'wireId', 'orderNumber', 'customerName']
       },
       inventoryRecords: {
         keyPath: 'id',
-        indexes: ['wireType', 'location', 'supplier', 'minStock', 'currentStock', 'lastUpdated']
+        indexes: ['wireType', 'personName', 'productCode', 'lineCode', 'actualLength', 'updatedAt']
       },
       users: {
         keyPath: 'id',
@@ -118,7 +118,8 @@ class EECOLIndexedDB {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        this.createObjectStores(db);
+        const transaction = event.target.transaction;
+        this.createObjectStores(db, transaction);
       };
     });
   }
@@ -158,19 +159,35 @@ class EECOLIndexedDB {
     });
   }
 
-  createObjectStores(db) {
-    // Create all object stores
+  createObjectStores(db, transaction) {
+    // Create or update all object stores
     for (const [storeName, config] of Object.entries(this.stores)) {
+      let store;
       if (!db.objectStoreNames.contains(storeName)) {
-        const store = db.createObjectStore(storeName, {
+        store = db.createObjectStore(storeName, {
           keyPath: config.keyPath,
-          autoIncrement: config.keyPath === 'id' && storeName !== 'settings' ? true : false
+          autoIncrement: config.keyPath === 'id' && storeName !== 'settings'
         });
+      } else {
+        store = transaction.objectStore(storeName);
+      }
 
-        // Create indexes
-        if (config.indexes) {
-          for (const index of config.indexes) {
-            store.createIndex(index, index, { unique: false });
+      // Idempotent index management
+      if (config.indexes) {
+        // Remove obsolete indexes
+        const currentIndices = Array.from(store.indexNames);
+        for (const indexName of currentIndices) {
+          if (!config.indexes.includes(indexName)) {
+            console.log(`🗑️ Removing obsolete index ${indexName} from ${storeName}`);
+            store.deleteIndex(indexName);
+          }
+        }
+
+        // Add missing indexes
+        for (const indexName of config.indexes) {
+          if (!store.indexNames.contains(indexName)) {
+            console.log(`✨ Creating index ${indexName} for ${storeName}`);
+            store.createIndex(indexName, indexName, { unique: false });
           }
         }
       }
