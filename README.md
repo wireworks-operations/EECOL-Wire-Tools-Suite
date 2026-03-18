@@ -1,26 +1,25 @@
 # EECOL Wire Tools Suite <small>— Industrial-grade PWA for wire processing</small> 📘
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-green.svg)](https://nodejs.org/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
-A comprehensive Progressive Web Application (PWA) for industrial wire processing
-operations. This "Local-First" suite provides tools for wire inventory
-management, cutting operations tracking, reporting/analytics, and various
-specialized wire calculation utilities, all persisting data directly in the
-browser's IndexedDB.
+An enterprise-grade, "Local-First" Progressive Web Application (PWA) designed
+for industrial wire processing. This suite provides specialized calculators,
+inventory management, and operational tracking tools that persist data directly
+in the browser's IndexedDB, ensuring 100% uptime without backend dependencies.
 
 ---
 
 ## 🚀 Getting Started
 
-> The commands below are verified for this repo. If your platform differs, see
-> **Troubleshooting**.
+> The commands below are verified for this repository. If your platform
+> differs, see **Troubleshooting**.
 
 ### Prerequisites
 
 - **Node.js**: >= 16.0.0
-- **Package Manager**: [pnpm](https://pnpm.io/) (preferred)
+- **pnpm**: `npm install -g pnpm` (recommended)
 
 ### 1) Clone & Install
 
@@ -30,59 +29,58 @@ cd eecol-wire-tools-suite-v2
 pnpm install
 ```
 
-### 2) Run (Local)
+### 2) Run (Local Development)
 
 ```bash
-# Start development server
+# Start the development server (serves the PWA at http://localhost:3000)
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 3) Tooling Status
 
-### 3) Build, Test & Lint (🚧 In-Progress)
-
-> **Warning:** Build and test infrastructure is currently under active
-> development. Some scripts may require additional configuration files (e.g.,
-> `webpack.config.js`, `jest.config.js`) to function correctly.
-
-```bash
-pnpm build     # Build for production (Experimental)
-pnpm test      # Run unit tests (Experimental)
-pnpm lint      # Run ESLint (Experimental)
-```
+| Command | Status | Description |
+| :--- | :--- | :--- |
+| `pnpm dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
+| `pnpm build` | 🚧 **In-Progress** | Production build (Needs `webpack.config.js`). |
+| `pnpm test` | 🚧 **In-Progress** | Unit testing via Jest (Needs `jest.config.js`). |
+| `pnpm lint` | 🚧 **In-Progress** | ESLint validation (Needs `eslint.config.js`). |
+| `pnpm docker:*` | 🚧 **Planned** | Containerized deployment (Needs `Dockerfile`). |
 
 ---
 
 ## 🧭 Quickstart (90-second path)
 
 ```bash
-# 1. Clone & enter
+# Clone the repository
 git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
 cd eecol-wire-tools-suite-v2
 
-# 2. Start server
-pnpm dev
-
-# 3. Open app
-http://localhost:3000
+# Install dependencies and start the app
+pnpm install && pnpm dev
 ```
+
+The app will be available at **[http://localhost:3000](http://localhost:3000)**.
 
 ---
 
 ## 🏗️ Architecture
 
-See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII blueprint and component
+The EECOL Wire Tools Suite is built on a **Local-First** architecture, meaning
+it operates entirely on the client-side with zero external API or database
+dependencies.
+
+See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component
 interactions.
 
 <details>
-<summary>Click to expand: Key Technologies</summary>
+<summary>⚙️ Core Technology Stack</summary>
 
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3, [Tailwind CSS](https://tailwindcss.com/)
-- **Storage**: [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (primary),
-  localStorage (fallback)
-- **PWA**: Service Workers, Web App Manifest
-- **Charts**: [Chart.js](https://www.chartjs.org/) for data visualization
-- **Offline-First**: Zero backend dependencies; works entirely offline.
+- **Frontend**: Vanilla JavaScript (ESM Hybrid), HTML5, Tailwind CSS.
+- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton.
+- **PWA**: Service Worker (`sw.js`) and Web App Manifest for offline
+  capability.
+- **Visualization**: Chart.js for operational reporting and analytics.
+- **Utility**: Custom modular print system and sanitization layer.
 
 </details>
 
@@ -91,24 +89,27 @@ interactions.
 ## 📋 Available Tools
 
 <details>
-<summary>Core Operations & Records</summary>
+<summary>📦 Operations & Records</summary>
 
-- **Cutting Records**: Log, track, and analyze wire cuts efficiently.
-- **Inventory Records**: Material inventory management and tracking.
-- **Machine Maintenance**: Daily equipment inspection checklists.
-- **Shipping Manifest**: Generate shipping documentation and labels.
+- **Wire Cut Records**: Log and analyze wire cuts with single-pass metric
+  optimization.
+- **Inventory Records**: Manage materials with automatic timestamping and
+  length fallbacks.
+- **Machine Maintenance**: Daily equipment inspection checklists with
+  multi-page support.
+- **Shipping Manifest**: Generate reel labels and shipping documentation.
 
 </details>
 
 <details>
-<summary>Calculators & Estimators</summary>
+<summary>🧮 Calculators & Estimators</summary>
 
-- **Mark Calculator**: Calculate length between wire marks.
-- **Stop Mark Calculator**: Determine exact stopping points for machine cuts.
-- **Reel Capacity Estimator**: Calculate maximum wire capacity for specific
-  reels.
-- **Reel Size Estimator**: Recommend optimal reel sizes based on length.
-- **Weight Calculator**: Estimate wire weight by dimensions and length.
+- **Mark Calculator**: Precise length calculation between wire marks.
+- **Stop Mark Calculator**: Determine exact machine stop points for targeted
+  cuts.
+- **Reel Capacity Estimator**: Calculate maximum wire capacity for various reel
+  sizes.
+- **Weight Calculator**: Estimate wire weight based on dimensions and length.
 
 </details>
 
@@ -117,32 +118,31 @@ interactions.
 ## 🔧 Technical Details
 
 <details>
-<summary>Storage Layer (IndexedDB)</summary>
+<summary>🗄️ Storage Layer (IndexedDB)</summary>
 
-The application uses a singleton `EECOLIndexedDB` class to manage 15 specialized
-stores, ensuring reliable client-side persistence for industrial data.
+The application uses a singleton `EECOLIndexedDB` class (version 5) to manage
+15 specialized stores. It features:
+
+- **Atomic Bulk Updates**: `bulkPut` for reliable data import/undo.
+- **Idempotent Schema Upgrades**: Handles index lifecycle automatically.
+- **Data Normalization**: Strict uppercase enforcement for Wire IDs and Order
+  Numbers.
 
 </details>
 
 <details>
-<summary>Security & Privacy</summary>
+<summary>🔒 Security & Privacy</summary>
 
-- **Local-First**: All data is stored exclusively on the client-side. No server
-  or cloud transmission.
-- **CSP**: Strict Content Security Policy enforced in `index.html`.
+- **Zero Data Transmission**: All data remains in the browser's IndexedDB. No
+  cloud sync.
+- **XSS Mitigation**: Strict use of `.textContent` and a robust Content
+  Security Policy (CSP).
+- **Offline Reliability**: Service workers ensure the app loads even without an
+  internet connection.
 
-See **[SECURITY.md](SECURITY.md)** for more details.
+See **[SECURITY.md](SECURITY.md)** for our full security policy.
 
 </details>
-
----
-
-## 📊 Status & Roadmap
-
-- ✅ **Working**: Core calculators, records, reports, and PWA functionality.
-- ❌ **Known Issues**: Multi-Cut Planner is currently a placeholder.
-- 🚧 **Upcoming**: Finalizing build/test configuration, multi-cut planner
-  rebuild, and Docker integration.
 
 ---
 
