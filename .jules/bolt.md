@@ -11,3 +11,7 @@
 ## 2025-06-12 - Single-pass Cutting Records Statistics
 **Learning:** `updateStats` in `cutting-records.js` was performing six separate O(N) passes (filter, reduce, forEach) to update basic dashboard metrics. Consolidating these into a single iteration ensures the record-keeping interface remains responsive as the user's local history grows.
 **Action:** Consolidate 6 O(N) passes into a single `for...of` loop in `updateStats`.
+
+## 2025-05-14 - Single-pass Inventory Reports Charts
+**Learning:** The `updateCharts` function in `inventory-reports.js` was triggering four separate chart creation functions, performing approximately 9 redundant O(N) passes (multiple `filter()`, `forEach()`, and `groupRecordsByPeriod()` calls) over the inventory dataset.
+**Action:** Consolidated all chart data collection into a single `for...of` loop in `updateCharts`, reducing complexity from ~9 O(N) to 1 O(N) and minimizing temporary memory allocations.

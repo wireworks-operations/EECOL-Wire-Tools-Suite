@@ -395,10 +395,63 @@ function updateCharts() {
         console.log('📊 Updating inventory charts...');
         destroyExistingCharts();
 
-        chartInstances.usageTrendsChart = createUsageTrendsChart();
-        chartInstances.approvalStatusChart = createApprovalStatusChart();
-        chartInstances.productCodeChart = createProductCodeChart();
-        chartInstances.damageChart = createDamageChart();
+        /**
+         * BOLT OPTIMIZATION: Single-pass metrics calculation for charts
+         * Consolidates approximately 9 separate O(N) passes (filters and reduces) into a single loop
+         * to avoid redundant passes over the inventoryItems dataset.
+         */
+        const startDateVal = document.getElementById('startDate').value;
+        const endDateVal = document.getElementById('endDate').value;
+        const startDate = startDateVal ? new Date(startDateVal).getTime() : null;
+        const endDate = endDateVal ? new Date(endDateVal).getTime() + 86399999 : null;
+
+        const chartData = {
+            approval: { approved: 0, rejected: 0, pending: 0 },
+            productCounts: {},
+            damage: { normal: 0, damaged: 0, tailends: 0 },
+            trends: {}
+        };
+
+        for (const item of inventoryItems) {
+            // Approval status
+            if (item.approved === true) chartData.approval.approved++;
+            else if (item.approved === false) chartData.approval.rejected++;
+            else chartData.approval.pending++;
+
+            // Product code
+            const code = item.productCode || 'Unknown';
+            chartData.productCounts[code] = (chartData.productCounts[code] || 0) + 1;
+
+            // Damage status
+            const reason = (item.reason || '').toLowerCase();
+            if (reason.includes('damaged')) {
+                chartData.damage.damaged++;
+            } else if (reason.includes('tail end') || reason.includes('tailend')) {
+                chartData.damage.tailends++;
+            } else {
+                chartData.damage.normal++;
+            }
+
+            // Trends (if within date range)
+            const ts = item.timestamp;
+            if ((!startDate || ts >= startDate) && (!endDate || ts <= endDate)) {
+                const date = new Date(ts);
+                const key = getPeriodKey(date, reportPeriod);
+                if (!chartData.trends[key]) {
+                    chartData.trends[key] = { itemsCount: 0, totalValue: 0, periodStart: new Date(date) };
+                }
+                chartData.trends[key].itemsCount++;
+                chartData.trends[key].totalValue += (item.totalValue || 0);
+                if (date < chartData.trends[key].periodStart) {
+                    chartData.trends[key].periodStart = new Date(date);
+                }
+            }
+        }
+
+        chartInstances.usageTrendsChart = createUsageTrendsChart(chartData.trends);
+        chartInstances.approvalStatusChart = createApprovalStatusChart(chartData.approval);
+        chartInstances.productCodeChart = createProductCodeChart(chartData.productCounts);
+        chartInstances.damageChart = createDamageChart(chartData.damage);
 
         console.log('✅ Charts updated successfully');
     } catch (error) {
@@ -418,20 +471,10 @@ function destroyExistingCharts() {
 }
 
 // Chart creation functions
-function createUsageTrendsChart() {
+function createUsageTrendsChart(trendsData) {
     const ctx = document.getElementById('usageTrendsChart').getContext('2d');
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
 
-    // Filter records by date range
-    const filteredRecords = inventoryItems.filter(record => {
-        const recordDate = new Date(record.timestamp);
-        return (!startDate || recordDate >= new Date(startDate)) &&
-               (!endDate || recordDate <= new Date(endDate));
-    });
-
-    const groups = groupRecordsByPeriod(filteredRecords, reportPeriod);
-    const sortedKeys = getSortedPeriodKeys(groups);
+    const sortedKeys = getSortedPeriodKeys(trendsData);
 
     const data = {
         labels: [],
@@ -453,9 +496,9 @@ function createUsageTrendsChart() {
     const periodsToShow = Math.min(8, sortedKeys.length);
     for (let i = periodsToShow - 1; i >= 0; i--) {
         const periodKey = sortedKeys[i];
-        const periodRecords = groups[periodKey].records;
+        const periodData = trendsData[periodKey];
 
-        const periodDate = new Date(groups[periodKey].periodStart);
+        const periodDate = new Date(periodData.periodStart);
         let label;
         if (reportPeriod === 'weekly') {
             label = 'Week of ' + periodDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -464,12 +507,8 @@ function createUsageTrendsChart() {
         }
 
         data.labels.push(label);
-
-        const itemsCount = periodRecords.length;
-        const totalValue = periodRecords.reduce((sum, record) => sum + (record.totalValue || 0), 0);
-
-        data.datasets[0].data.push(itemsCount);
-        data.datasets[1].data.push(totalValue);
+        data.datasets[0].data.push(periodData.itemsCount);
+        data.datasets[1].data.push(periodData.totalValue);
     }
 
     if (data.labels.length === 0) {
@@ -495,19 +534,15 @@ function createUsageTrendsChart() {
     });
 }
 
-function createApprovalStatusChart() {
+function createApprovalStatusChart(approvalData) {
     const ctx = document.getElementById('approvalStatusChart').getContext('2d');
-
-    const approved = inventoryItems.filter(item => item.approved === true).length;
-    const rejected = inventoryItems.filter(item => item.approved === false).length;
-    const pending = inventoryItems.filter(item => item.approved === null || item.approved === undefined).length;
 
     return new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Approved', 'Rejected', 'Pending'],
             datasets: [{
-                data: [approved, rejected, pending],
+                data: [approvalData.approved, approvalData.rejected, approvalData.pending],
                 backgroundColor: [
                     'rgba(34, 197, 94, 0.85)',
                     'rgba(239, 68, 68, 0.85)',
@@ -529,16 +564,10 @@ function createApprovalStatusChart() {
     });
 }
 
-function createProductCodeChart() {
+function createProductCodeChart(productCounts) {
     const ctx = document.getElementById('productCodeChart').getContext('2d');
 
-    const productCount = {};
-    inventoryItems.forEach(item => {
-        const code = item.productCode || 'Unknown';
-        productCount[code] = (productCount[code] || 0) + 1;
-    });
-
-    const sortedProducts = Object.entries(productCount)
+    const sortedProducts = Object.entries(productCounts)
         .sort(([,a], [,b]) => b - a)
         .slice(0, 10);
 
@@ -576,24 +605,15 @@ function createProductCodeChart() {
     });
 }
 
-function createDamageChart() {
+function createDamageChart(damageData) {
     const ctx = document.getElementById('damageChart').getContext('2d');
-
-    const normal = inventoryItems.filter(item =>
-        !item.reason || (!item.reason.toLowerCase().includes('damaged') &&
-        !item.reason.toLowerCase().includes('tail end') &&
-        !item.reason.toLowerCase().includes('tailend'))).length;
-    const damaged = inventoryItems.filter(item =>
-        item.reason && item.reason.toLowerCase().includes('damaged')).length;
-    const tailends = inventoryItems.filter(item =>
-        item.reason && (item.reason.toLowerCase().includes('tail end') || item.reason.toLowerCase().includes('tailend'))).length;
 
     return new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Normal Items', 'Damaged Items', 'Tailend Items'],
             datasets: [{
-                data: [normal, damaged, tailends],
+                data: [damageData.normal, damageData.damaged, damageData.tailends],
                 backgroundColor: [
                     'rgba(34, 197, 94, 0.85)',
                     'rgba(239, 68, 68, 0.85)',
