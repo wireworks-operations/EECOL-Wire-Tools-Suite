@@ -52,89 +52,6 @@ function loadSharedChecklistData() {
     });
 }
 
-// Custom Modal Functions
-async function showAlert(message, title = "Notification") {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('customModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalInput = document.getElementById('modalInput');
-        const modalButtons = document.getElementById('modalButtons');
-
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-        modalInput.style.display = 'none';
-        modalButtons.innerHTML = '<button id="modalOKBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">OK</button>';
-
-        const okBtn = modalButtons.querySelector('#modalOKBtn');
-        okBtn.addEventListener('click', () => {
-            hideModal();
-            resolve();
-        });
-
-        // Show modal with animation
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
-            document.getElementById('modalContent').classList.add('scale-100', 'opacity-100');
-        }, 10);
-    });
-}
-
-function hideModal() {
-    const modal = document.getElementById('customModal');
-    const modalContent = document.getElementById('modalContent');
-
-    modalContent.classList.remove('scale-100', 'opacity-100');
-    modalContent.classList.add('scale-95', 'opacity-0');
-
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 200);
-}
-
-async function showDateInputModal(title = "Select Date") {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('customModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalInput = document.getElementById('modalInput');
-        const modalButtons = document.getElementById('modalButtons');
-        const dateInput = document.getElementById('modalDateInput');
-
-        modalTitle.textContent = title;
-        modalMessage.textContent = 'Select the date of the maintenance record you want to view:';
-        modalInput.style.display = 'block';
-        dateInput.value = new Date().toISOString().split('T')[0];
-        modalButtons.innerHTML = '<button id="modalLoadBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">Load Record</button><button id="modalCancelBtn" class="px-4 py-2 bg-gray-500 text-white rounded-xl shadow-lg hover:bg-gray-600 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold ml-3">Cancel</button>';
-
-        const loadBtn = modalButtons.querySelector('#modalLoadBtn');
-        const cancelBtn = modalButtons.querySelector('#modalCancelBtn');
-
-        loadBtn.addEventListener('click', () => {
-            const selectedDate = dateInput.value;
-            hideModal();
-            resolve(selectedDate);
-        });
-
-        cancelBtn.addEventListener('click', () => {
-            hideModal();
-            resolve(null);
-        });
-
-        // Show modal with animation
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
-            document.getElementById('modalContent').classList.add('scale-100', 'opacity-100');
-        }, 10);
-    });
-}
-
-// Initialize modal close on backdrop click
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('modalBackdrop')?.addEventListener('click', hideModal);
-});
 
 // Maintenance checklist data
 const machines = [
@@ -827,6 +744,9 @@ function setupAutoSave() {
 
 // Initialize everything
 document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize modal system
+    if (window.initModalSystem) window.initModalSystem();
+
     // Initialize database if not already done (important for maintenance checklist pages)
     if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
         try {

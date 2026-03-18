@@ -1,83 +1,3 @@
-// Custom Modal Functions for EECOL Themed Alerts/Confirmations
-function showAlert(message, title = "Notification") {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('customModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalButtons = document.getElementById('modalButtons');
-
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-        modalButtons.innerHTML = '<button id="modalOKBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">OK</button>';
-
-        const okBtn = modalButtons.querySelector('#modalOKBtn');
-        okBtn.addEventListener('click', () => {
-            hideModal();
-            resolve();
-        });
-
-        // Show modal with animation
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
-            document.getElementById('modalContent').classList.add('scale-100', 'opacity-100');
-        }, 10);
-    });
-}
-
-function showConfirm(message, title = "Confirmation") {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('customModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalButtons = document.getElementById('modalButtons');
-
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-        modalButtons.innerHTML = `
-                        <button id="modalCancelBtn" class="px-4 py-2 bg-gray-500 text-white rounded-xl shadow-lg hover:bg-gray-600 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold mr-2">Cancel</button>
-                        <button id="modalOKBtn" class="px-4 py-2 bg-blue-700 text-white rounded-xl shadow-lg hover:bg-blue-800 transform hover:scale-[1.02] active:scale-[0.98] transition duration-200 ease-in-out text-sm font-semibold">OK</button>
-                    `;
-
-        const okBtn = modalButtons.querySelector('#modalOKBtn');
-        const cancelBtn = modalButtons.querySelector('#modalCancelBtn');
-
-        okBtn.addEventListener('click', () => {
-            hideModal();
-            resolve(true);
-        });
-
-        cancelBtn.addEventListener('click', () => {
-            hideModal();
-            resolve(false);
-        });
-
-        // Show modal with animation
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
-            document.getElementById('modalContent').classList.add('scale-100', 'opacity-100');
-        }, 10);
-    });
-}
-
-function hideModal() {
-    const modal = document.getElementById('customModal');
-    const modalContent = document.getElementById('modalContent');
-
-    modalContent.classList.remove('scale-100', 'opacity-100');
-    modalContent.classList.add('scale-95', 'opacity-0');
-
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 200);
-}
-
-// Initialize modal close on backdrop click
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('modalBackdrop').addEventListener('click', hideModal);
-});
-
 // Constants & Utility Functions
 const METERS_TO_FEET = 3.280839895;
 const FEET_TO_METERS = 0.3048;
@@ -370,6 +290,9 @@ if (typeof initMobileMenu === 'function') {
         title: 'EECOL Wire Stop Mark'
     });
 }
+
+// Initialize modal system
+if (window.initModalSystem) window.initModalSystem();
 
 // Initialize on page load
 hideAllMessages();

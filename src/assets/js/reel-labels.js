@@ -122,6 +122,9 @@ lineCodeInput.addEventListener('input', function(e) {
     e.target.value = value;
 });
 
+// Initialize modal system
+if (window.initModalSystem) window.initModalSystem();
+
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
