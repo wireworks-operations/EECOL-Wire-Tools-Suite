@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderMachines();
     } catch (error) {
         console.error("Failed to initialize database:", error);
-        showModal('Error', 'Failed to connect to the database. Please try refreshing the page.');
+        showAlert('Failed to connect to the database. Please try refreshing the page.', 'Error');
     }
 });
 
@@ -174,7 +174,7 @@ async function saveMeasurement(machineName, machineId) {
     const value = parseFloat(inputEl.value);
 
     if (isNaN(value) || value <= 0) {
-        showModal('Invalid Input', 'Please enter a valid positive number for the measurement.');
+        showAlert('Please enter a valid positive number for the measurement.', 'Invalid Input');
         return;
     }
 
@@ -191,18 +191,18 @@ async function saveMeasurement(machineName, machineId) {
         inputEl.value = '';
 
         // Show success and re-render to show updated list
-        showModal('Success', `Measurement saved successfully for ${machineName}.`);
+        showAlert(`Measurement saved successfully for ${machineName}.`, 'Success');
         await renderMachines();
 
     } catch (error) {
         console.error("Failed to save measurement:", error);
-        showModal('Error', 'Failed to save measurement to the database.');
+        showAlert('Failed to save measurement to the database.', 'Error');
     }
 }
 
 async function printMeasurement(machineName) {
     if (!dbReady) {
-        showModal('Error', 'Database not ready. Please try again.');
+        showAlert('Database not ready. Please try again.', 'Error');
         return;
     }
 
@@ -215,48 +215,10 @@ async function printMeasurement(machineName) {
             window.printMachineCalibrationMeasurement(machineName, recentMeasurements);
         } else {
             console.error("Print function printMachineCalibrationMeasurement not found in global scope.");
-            showModal('Error', 'Print module is not loaded correctly.');
+            showAlert('Print module is not loaded correctly.', 'Error');
         }
     } catch (error) {
         console.error("Failed to print measurements:", error);
-        showModal('Error', 'Failed to gather measurements for printing.');
-    }
-}
-
-// Global modal helpers if not present
-function showModal(title, message) {
-    if (typeof window.showModal === 'function' && window.showModal !== showModal) {
-        window.showModal(title, message);
-        return;
-    }
-
-    const modal = document.getElementById('customModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalMessage = document.getElementById('modalMessage');
-    const modalButtons = document.getElementById('modalButtons');
-
-    if (modal && modalTitle && modalMessage && modalButtons) {
-        modalTitle.textContent = title;
-        modalMessage.textContent = message;
-
-        modalButtons.innerHTML = '';
-        const okBtn = document.createElement('button');
-        okBtn.className = 'px-6 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500';
-        okBtn.textContent = 'OK';
-        okBtn.onclick = () => {
-            modal.classList.add('hidden');
-            modal.querySelector('#modalContent').classList.remove('scale-100', 'opacity-100');
-            modal.querySelector('#modalContent').classList.add('scale-95', 'opacity-0');
-        };
-        modalButtons.appendChild(okBtn);
-
-        modal.classList.remove('hidden');
-        // Small delay for transition
-        setTimeout(() => {
-            modal.querySelector('#modalContent').classList.remove('scale-95', 'opacity-0');
-            modal.querySelector('#modalContent').classList.add('scale-100', 'opacity-100');
-        }, 10);
-    } else {
-        alert(`${title}\n\n${message}`);
+        showAlert('Failed to gather measurements for printing.', 'Error');
     }
 }
