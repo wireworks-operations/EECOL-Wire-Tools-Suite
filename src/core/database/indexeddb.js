@@ -6,14 +6,14 @@
 class EECOLIndexedDB {
   static instance = null;
 
-  static getInstance(version = 6) {
+  static getInstance(version = 7) {
     if (!EECOLIndexedDB.instance) {
       EECOLIndexedDB.instance = new EECOLIndexedDB(version);
     }
     return EECOLIndexedDB.instance;
   }
 
-  constructor(version = 6) {
+  constructor(version = 7) {
     // Prevent direct instantiation - enforce singleton pattern
     if (EECOLIndexedDB.instance) {
       throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
@@ -31,7 +31,7 @@ class EECOLIndexedDB {
       },
       inventoryRecords: {
         keyPath: 'id',
-        indexes: ['wireType', 'personName', 'productCode', 'lineCode', 'actualLength', 'updatedAt']
+        indexes: ['wireType', 'personName', 'productCode', 'lineCode', 'actualLength', 'updatedAt', 'timestamp']
       },
       users: {
         keyPath: 'id',
@@ -109,6 +109,7 @@ class EECOLIndexedDB {
         // Close connection if another tab requests an upgrade
         this.db.onversionchange = () => {
           this.db.close();
+          this.db = null; // Ensure instance state reflects closed connection
           console.log('🔄 Database closed due to version change request from another tab');
           // Optionally notify user or reload
         };
@@ -136,7 +137,8 @@ class EECOLIndexedDB {
     if (!this.db) throw new Error('Database not initialized');
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([storeName], 'readwrite');
+      // Use relaxed durability for better performance in local-only scenarios
+      const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
       const store = transaction.objectStore(storeName);
 
       transaction.oncomplete = () => resolve();
@@ -233,10 +235,14 @@ class EECOLIndexedDB {
     await this.dbInitialized;
     if (!this.db) throw new Error('Database not initialized');
 
-    const transaction = this.db.transaction([storeName], 'readwrite');
+    // Use relaxed durability and add transaction-level handlers
+    const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const request = store.add(data);
 
       request.onsuccess = () => {
@@ -303,10 +309,14 @@ class EECOLIndexedDB {
     await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
-    const transaction = this.db.transaction([storeName], 'readwrite');
+    // Use relaxed durability and add transaction-level handlers
+    const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const request = store.put(data);
 
       request.onsuccess = () => {
@@ -324,10 +334,14 @@ class EECOLIndexedDB {
     await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
-    const transaction = this.db.transaction([storeName], 'readwrite');
+    // Use relaxed durability and add transaction-level handlers
+    const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const request = store.delete(key);
 
       request.onsuccess = () => {
@@ -345,10 +359,14 @@ class EECOLIndexedDB {
     await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
-    const transaction = this.db.transaction([storeName], 'readwrite');
+    // Use relaxed durability and add transaction-level handlers
+    const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const request = store.clear();
 
       request.onsuccess = () => {

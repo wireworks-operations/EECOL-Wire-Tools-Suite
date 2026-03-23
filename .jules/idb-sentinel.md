@@ -14,3 +14,13 @@
 2. Updated `cuttingRecords` and `inventoryRecords` schema definitions to use correct property names (`cutterName`, `wireId`, `personName`, etc.).
 3. Refactored `createObjectStores` to be fully idempotent: it now scans existing indexes, deletes ones not in the schema, and creates missing ones using the active upgrade transaction.
 **Validation:** Verified version bump, index creation/deletion, and CRUD stability via Playwright automation.
+
+## 2026-03-23 - Schema Upgrade & Performance Tuning
+**Observation:** Found that the `inventoryRecords` store lacked a `timestamp` index despite being used for sorting in application code. Linear scans were occurring for all inventory data loads.
+**Learning:** Moving to `{ durability: 'relaxed' }` for write transactions in local-first apps significantly improves responsiveness by reducing synchronous disk flushes without sacrificing integrity for this single-user application.
+**Action:**
+1. Bumped DB version to 7.
+2. Added `timestamp` index to `inventoryRecords`.
+3. Implemented `relaxed` durability for all readwrite transactions.
+4. Hardened lifecycle by setting `this.db = null` on version change.
+**Validation:** Verified version 7 upgrade, index existence, and CRUD operations via Playwright automation.
