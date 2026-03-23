@@ -10,10 +10,23 @@
  */
 export function _esc(v) {
     if (v === null || v === undefined) return '';
-    if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
-        return window.escapeHtml(v);
+    if (typeof window !== 'undefined') {
+        // Prefer the standardized window.escapeHTML defined in theme-loader.js
+        if (typeof window.escapeHTML === 'function') {
+            return window.escapeHTML(v);
+        }
+        // Fallback to the lowercase variant if available (via sanitize.js shim)
+        if (typeof window.escapeHtml === 'function') {
+            return window.escapeHtml(v);
+        }
     }
-    return String(v);
+    // Defense-in-depth: Basic local fallback if no global sanitizer is available
+    return String(v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 /**
