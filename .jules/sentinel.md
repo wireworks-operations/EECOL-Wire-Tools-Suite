@@ -9,3 +9,8 @@
 **Vulnerability:** Redundant, local implementations of `showAlert` and `showConfirm` across multiple page-specific JS files (e.g., `reel-labels.js`, `stop-mark-converter.js`).
 **Learning:** Local copies bypass central security hardening applied to `src/utils/modals.js` and often use insecure `innerHTML` patterns. Consolidation is necessary to maintain a "Single Source of Truth" for secure UI interactions.
 **Prevention:** Strictly forbid local re-implementations of shared UI utilities. All modal alerts must use the central, hardened `modals.js` utility which enforces `.textContent` for dynamic parameters.
+
+## 2026-03-10 - Silent XSS Exposure in Print Utilities
+**Vulnerability:** The shared print utility `_esc` in `src/utils/print/core.js` only checked for the lowercase `window.escapeHtml` (from a non-standard shim), failing to use the project's primary `window.escapeHTML` standard. This resulted in zero sanitization for printouts on most pages.
+**Learning:** Inconsistent naming conventions for critical security utilities (escapeHtml vs escapeHTML) led to silent failure of sanitization logic. Relying solely on global functions without a local fallback creates a fragile security posture.
+**Prevention:** Always implement a multi-layered sanitization pattern ("Defense-in-Depth"). Security-critical utilities should prioritize project standards but must always include a local regex-based fallback to ensure protection if global dependencies fail to load or are renamed.
