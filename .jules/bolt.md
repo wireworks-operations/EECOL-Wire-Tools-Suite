@@ -15,3 +15,7 @@
 ## 2025-05-14 - Single-pass Inventory Reports Charts
 **Learning:** The `updateCharts` function in `inventory-reports.js` was triggering four separate chart creation functions, performing approximately 9 redundant O(N) passes (multiple `filter()`, `forEach()`, and `groupRecordsByPeriod()` calls) over the inventory dataset.
 **Action:** Consolidated all chart data collection into a single `for...of` loop in `updateCharts`, reducing complexity from ~9 O(N) to 1 O(N) and minimizing temporary memory allocations.
+
+## 2025-07-22 - Single-pass Cutting Reports Data Aggregation
+**Learning:** `updateCharts` and `updateReportsTable` in `cutting-reports.js` were performing approximately 10+ redundant O(N) passes over the `cutRecords` dataset, including expensive `groupRecordsByPeriod` calls that created nested array structures. This caused measurable UI lag when switching chart types or date ranges with large datasets.
+**Action:** Consolidated all chart data aggregation and period comparison metrics into a single `for...of` loop in `updateCharts`, reducing complexity from ~10 O(N) to 1 O(N).

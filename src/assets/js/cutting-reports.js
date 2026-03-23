@@ -153,7 +153,6 @@ async function loadCuttingData() {
                 // Update dashboard and charts
                 updateDashboard();
                 updateCharts();
-                updateReportsTable();
 
                 console.log('✅ Cutting data loaded successfully from IndexedDB');
             } else {
@@ -161,7 +160,6 @@ async function loadCuttingData() {
                 cutRecords = [];
                 updateDashboard();
                 updateCharts();
-                updateReportsTable();
             }
         } else {
             console.warn('⚠️ IndexedDB not available, falling back to localStorage for compatibility');
@@ -188,20 +186,17 @@ function loadFromLocalStorage() {
 
             updateDashboard();
             updateCharts();
-            updateReportsTable();
         } else {
             console.log('📭 No data in localStorage either');
             cutRecords = [];
             updateDashboard();
             updateCharts();
-            updateReportsTable();
         }
     } catch (error) {
         console.error('❌ Error loading from localStorage:', error);
         cutRecords = [];
         updateDashboard();
         updateCharts();
-        updateReportsTable();
     }
 }
 
@@ -286,24 +281,6 @@ function getPeriodKey(date, period) {
     }
 }
 
-function groupRecordsByPeriod(records, period) {
-    const groups = {};
-    records.forEach(record => {
-        const date = parseDate(record.timestamp);
-        if (date) {
-            const key = getPeriodKey(date, period);
-            if (!groups[key]) {
-                groups[key] = { records: [], periodStart: new Date(date) };
-            }
-            groups[key].records.push(record);
-            // Update period start to earliest date
-            if (date < groups[key].periodStart) {
-                groups[key].periodStart = new Date(date);
-            }
-        }
-    });
-    return groups;
-}
 
 function getSortedPeriodKeys(groups) {
     return Object.keys(groups).sort((a, b) => {
@@ -461,14 +438,89 @@ function updateCharts() {
 
         const chartType = document.getElementById('chartType').value;
         const period = document.getElementById('reportPeriod').value;
+        // BOLT FIX: Synchronize global currentPeriod with selected period
+        currentPeriod = period;
 
-        // Create charts
-        chartInstances.cutTrendsChart = createCutTrendsChart(chartType);
-        chartInstances.cutterPerformanceChart = createCutterPerformanceChart(chartType);
-        chartInstances.wireTypeChart = createWireTypeChart(chartType);
-        chartInstances.customerDistributionChart = createCustomerDistributionChart(chartType);
+        const startDateVal = document.getElementById('startDate').value;
+        const endDateVal = document.getElementById('endDate').value;
+        const startDate = startDateVal ? new Date(startDateVal).getTime() : null;
+        const endDate = endDateVal ? new Date(endDateVal).getTime() + 86399999 : null;
 
-        console.log('✅ Charts updated successfully');
+        /**
+         * BOLT OPTIMIZATION: Single-pass metrics calculation for charts and reports
+         * Consolidates approximately 10+ separate O(N) passes (filters, reduces, and groupings)
+         * into a single loop to avoid redundant passes over the cutRecords dataset.
+         */
+        const metrics = {
+            trends: {},
+            cutterCounts: {},
+            wireTypeCounts: {},
+            customerCounts: {},
+            // We'll also collect period metrics for ALL available data to restore the "two most recent" logic
+            allPeriodMetrics: {}
+        };
+
+        for (const record of cutRecords) {
+            // BOLT FIX: Robust timestamp parsing
+            const date = parseDate(record.timestamp);
+            if (!date) continue;
+            const ts = date.getTime();
+
+            const periodKey = getPeriodKey(date, period);
+
+            // 1. Aggregated metrics for ALL data (for Detailed Reports comparison)
+            if (!metrics.allPeriodMetrics[periodKey]) {
+                metrics.allPeriodMetrics[periodKey] = {
+                    cuts: 0, length: 0, fullPicks: 0, systemCuts: 0,
+                    periodStart: new Date(date)
+                };
+            }
+            const pMetric = metrics.allPeriodMetrics[periodKey];
+            pMetric.cuts++;
+            pMetric.length += (record.cutLength || 0);
+            if (record.isFullPick) pMetric.fullPicks++;
+            if (record.isSystemCut) pMetric.systemCuts++;
+            if (date < pMetric.periodStart) pMetric.periodStart = new Date(date);
+
+            // 2. Filtered metrics for charts (only within selected date range)
+            if ((!startDate || ts >= startDate) && (!endDate || ts <= endDate)) {
+                // Trends data (same as filtered metrics)
+                if (!metrics.trends[periodKey]) {
+                    metrics.trends[periodKey] = { cutsCount: 0, totalLength: 0, periodStart: new Date(date) };
+                }
+                metrics.trends[periodKey].cutsCount++;
+                metrics.trends[periodKey].totalLength += (record.cutLength || 0);
+
+                if (date < metrics.trends[periodKey].periodStart) {
+                    metrics.trends[periodKey].periodStart = new Date(date);
+                }
+
+                // Cutter counts
+                if (record.cutterName) {
+                    metrics.cutterCounts[record.cutterName] = (metrics.cutterCounts[record.cutterName] || 0) + 1;
+                }
+
+                // Wire type counts
+                const wireType = record.wireId || 'Unknown';
+                metrics.wireTypeCounts[wireType] = (metrics.wireTypeCounts[wireType] || 0) + 1;
+
+                // Customer counts
+                if (record.customerName) {
+                    metrics.customerCounts[record.customerName] = (metrics.customerCounts[record.customerName] || 0) + 1;
+                }
+            }
+        }
+
+        // Create charts with pre-aggregated data
+        chartInstances.cutTrendsChart = createCutTrendsChart(chartType, metrics.trends);
+        chartInstances.cutterPerformanceChart = createCutterPerformanceChart(chartType, metrics.cutterCounts);
+        chartInstances.wireTypeChart = createWireTypeChart(chartType, metrics.wireTypeCounts);
+        chartInstances.customerDistributionChart = createCustomerDistributionChart(chartType, metrics.customerCounts);
+
+        // Update detailed reports table with pre-calculated metrics
+        updateReportsTable(metrics);
+
+        console.log('✅ Charts and Reports updated successfully');
     } catch (error) {
         console.error('❌ Error updating charts:', error);
         const errorDiv = document.getElementById('chartError');
@@ -486,20 +538,9 @@ function destroyExistingCharts() {
 }
 
 // Chart creation functions
-function createCutTrendsChart(chartType) {
+function createCutTrendsChart(chartType, trendsData) {
     const ctx = document.getElementById('cutTrendsChart').getContext('2d');
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-
-    // Filter records by date range
-    const filteredRecords = cutRecords.filter(record => {
-        const recordDate = new Date(record.timestamp);
-        return (!startDate || recordDate >= new Date(startDate)) &&
-               (!endDate || recordDate <= new Date(endDate));
-    });
-
-    const groups = groupRecordsByPeriod(filteredRecords, currentPeriod);
-    const sortedKeys = getSortedPeriodKeys(groups);
+    const sortedKeys = getSortedPeriodKeys(trendsData);
 
     const data = {
         labels: [],
@@ -521,9 +562,9 @@ function createCutTrendsChart(chartType) {
     const periodsToShow = Math.min(8, sortedKeys.length);
     for (let i = periodsToShow - 1; i >= 0; i--) {
         const periodKey = sortedKeys[i];
-        const periodRecords = groups[periodKey].records;
+        const periodData = trendsData[periodKey];
 
-        const periodDate = new Date(groups[periodKey].periodStart);
+        const periodDate = new Date(periodData.periodStart);
         let label;
         if (currentPeriod === 'weekly') {
             label = 'Week of ' + periodDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -533,11 +574,8 @@ function createCutTrendsChart(chartType) {
 
         data.labels.push(label);
 
-        const cutsCount = periodRecords.length;
-        const totalLength = periodRecords.reduce((sum, record) => sum + (record.cutLength || 0), 0);
-
-        data.datasets[0].data.push(cutsCount);
-        data.datasets[1].data.push(totalLength);
+        data.datasets[0].data.push(periodData.cutsCount);
+        data.datasets[1].data.push(periodData.totalLength);
     }
 
     if (data.labels.length === 0) {
@@ -563,15 +601,8 @@ function createCutTrendsChart(chartType) {
     });
 }
 
-function createCutterPerformanceChart(chartType) {
+function createCutterPerformanceChart(chartType, cutterCounts) {
     const ctx = document.getElementById('cutterPerformanceChart').getContext('2d');
-
-    const cutterCounts = {};
-    cutRecords.forEach(record => {
-        if (record.cutterName) {
-            cutterCounts[record.cutterName] = (cutterCounts[record.cutterName] || 0) + 1;
-        }
-    });
 
     const sortedCutters = Object.entries(cutterCounts)
         .sort(([,a], [,b]) => b - a)
@@ -611,14 +642,8 @@ function createCutterPerformanceChart(chartType) {
     });
 }
 
-function createWireTypeChart(chartType) {
+function createWireTypeChart(chartType, wireTypeCounts) {
     const ctx = document.getElementById('wireTypeChart').getContext('2d');
-
-    const wireTypeCounts = {};
-    cutRecords.forEach(record => {
-        const wireType = record.wireId || 'Unknown';
-        wireTypeCounts[wireType] = (wireTypeCounts[wireType] || 0) + 1;
-    });
 
     const sortedWireTypes = Object.entries(wireTypeCounts)
         .sort(([,a], [,b]) => b - a)
@@ -658,15 +683,8 @@ function createWireTypeChart(chartType) {
     });
 }
 
-function createCustomerDistributionChart(chartType) {
+function createCustomerDistributionChart(chartType, customerCounts) {
     const ctx = document.getElementById('customerDistributionChart').getContext('2d');
-
-    const customerCounts = {};
-    cutRecords.forEach(record => {
-        if (record.customerName) {
-            customerCounts[record.customerName] = (customerCounts[record.customerName] || 0) + 1;
-        }
-    });
 
     const sortedCustomers = Object.entries(customerCounts)
         .sort(([,a], [,b]) => b - a)
@@ -707,12 +725,12 @@ function createCustomerDistributionChart(chartType) {
 }
 
 // Reports table update
-function updateReportsTable() {
+function updateReportsTable(metrics) {
     const tableBody = document.getElementById('reportsTable');
     tableBody.innerHTML = '';
 
     if (cutRecords.length === 0) {
-        const metrics = [
+        const rowMetrics = [
             { name: 'Total Cuts', current: 0, previous: 0, change: '+0%' },
             { name: 'Total Length Cut', current: '0m', previous: '0m', change: '+0%' },
             { name: 'Average Cut Length', current: '0m', previous: '0m', change: '+0%' },
@@ -720,7 +738,7 @@ function updateReportsTable() {
             { name: 'System Cuts', current: 0, previous: 0, change: '+0%' }
         ];
 
-        metrics.forEach(metric => {
+        rowMetrics.forEach(metric => {
             const row = document.createElement('tr');
             row.className = 'border-t';
 
@@ -749,25 +767,25 @@ function updateReportsTable() {
         return;
     }
 
-    const groups = groupRecordsByPeriod(cutRecords, currentPeriod);
-    const sortedKeys = getSortedPeriodKeys(groups);
+    // BOLT FIX: Restore comparison of two most recent available periods
+    const sortedKeys = getSortedPeriodKeys(metrics.allPeriodMetrics);
     const currentPeriodKey = sortedKeys[sortedKeys.length - 1];
     const previousPeriodKey = sortedKeys[sortedKeys.length - 2];
 
-    const currentRecords = currentPeriodKey ? groups[currentPeriodKey].records : [];
-    const previousRecords = previousPeriodKey ? groups[previousPeriodKey].records : [];
+    const currentRecords = currentPeriodKey ? metrics.allPeriodMetrics[currentPeriodKey] : null;
+    const previousRecords = previousPeriodKey ? metrics.allPeriodMetrics[previousPeriodKey] : null;
 
-    const currentCuts = currentRecords.length;
-    const currentLength = currentRecords.reduce((sum, record) => sum + (record.cutLength || 0), 0);
+    const currentCuts = currentRecords ? currentRecords.cuts : 0;
+    const currentLength = currentRecords ? currentRecords.length : 0;
     const currentAvgLength = currentCuts > 0 ? (currentLength / currentCuts).toFixed(2) : '0';
-    const currentFullPicks = currentRecords.filter(record => record.isFullPick === true).length;
-    const currentSystemCuts = currentRecords.filter(record => record.isSystemCut === true).length;
+    const currentFullPicks = currentRecords ? currentRecords.fullPicks : 0;
+    const currentSystemCuts = currentRecords ? currentRecords.systemCuts : 0;
 
-    const previousCuts = previousRecords.length;
-    const previousLength = previousRecords.reduce((sum, record) => sum + (record.cutLength || 0), 0);
+    const previousCuts = previousRecords ? previousRecords.cuts : 0;
+    const previousLength = previousRecords ? previousRecords.length : 0;
     const previousAvgLength = previousCuts > 0 ? (previousLength / previousCuts).toFixed(2) : '0';
-    const previousFullPicks = previousRecords.filter(record => record.isFullPick === true).length;
-    const previousSystemCuts = previousRecords.filter(record => record.isSystemCut === true).length;
+    const previousFullPicks = previousRecords ? previousRecords.fullPicks : 0;
+    const previousSystemCuts = previousRecords ? previousRecords.systemCuts : 0;
 
     const cutsChange = calculateChange(currentCuts, previousCuts);
     const lengthChange = calculateChange(currentLength, previousLength);
@@ -775,7 +793,7 @@ function updateReportsTable() {
     const fullPicksChange = calculateChange(currentFullPicks, previousFullPicks);
     const systemCutsChange = calculateChange(currentSystemCuts, previousSystemCuts);
 
-    const metrics = [
+    const rowMetrics = [
         { name: 'Total Cuts', current: currentCuts, previous: previousCuts, change: cutsChange },
         { name: 'Total Length Cut', current: currentLength.toFixed(2) + 'm', previous: previousLength.toFixed(2) + 'm', change: lengthChange },
         { name: 'Average Cut Length', current: currentAvgLength + 'm', previous: previousAvgLength + 'm', change: avgLengthChange },
@@ -783,7 +801,7 @@ function updateReportsTable() {
         { name: 'System Cuts', current: currentSystemCuts, previous: previousSystemCuts, change: systemCutsChange }
     ];
 
-    metrics.forEach(metric => {
+    rowMetrics.forEach(metric => {
         const row = document.createElement('tr');
         row.className = 'border-t';
 
