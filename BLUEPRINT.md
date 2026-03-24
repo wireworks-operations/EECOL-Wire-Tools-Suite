@@ -56,7 +56,7 @@
 - **Vanilla JS**: Chosen for longevity and to minimize framework-induced
   maintenance debt.
 - **IndexedDB**: Used over LocalStorage for structured, high-capacity data
-  persistence.
+  persistence. Target version is **7**.
 - **Tailwind CSS**: Utility-first styling for rapid development and consistent
   branding.
 - **ESM Hybrid**: Migrating towards ES Modules while maintaining a stable

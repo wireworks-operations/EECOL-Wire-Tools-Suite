@@ -1,5 +1,10 @@
 # Scribe's Journal – Critical Learnings 📘
 
+## 2026-03-24 - Full Documentation Refresh (Getting Started, Quickstart, Blueprint, Security)
+**Observation:** The repository lacked a top-level "Getting Started" guide that accurately reflected the current state of tooling. Many `package.json` scripts (build, test, lint, docker) were experimental or required missing configuration files. Verified that `pnpm dev` and the Python IDB verification script are the only truly operational paths at this stage.
+**Learning:** For a "Local-First" PWA, documentation must explicitly state the absence of backend dependencies to prevent users from searching for non-existent database or API setup steps.
+**Action:** Overhauled `README.md`, `QUICKSTART.md`, `BLUEPRINT.md`, and `SECURITY.md` to emphasize the IndexedDB-centric, serverless architecture and clarify the status of build/test tooling.
+
 ## 2025-03-10 - Full Documentation Refresh (Getting Started, Quickstart, Blueprint, Security)
 **Observation:** The repository lacked a top-level "Getting Started" guide that accurately reflected the current state of tooling. Many `package.json` scripts (build, test, lint, docker) were experimental or required missing configuration files.
 **Learning:** For a "Local-First" PWA, documentation must explicitly state the absence of backend dependencies to prevent users from searching for non-existent database or API setup steps. Verified that `pnpm dev` is the only truly operational path at this stage.

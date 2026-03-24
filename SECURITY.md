@@ -46,7 +46,9 @@ server-side components or cloud services involved.
 ### Hardening Checklist
 
 - [x] Content Security Policy (CSP) implemented in `index.html`.
-- [x] Output encoding using `window.escapeHTML` and native `textContent`.
+- [x] **Secure by Default** Rendering: Strict use of `.textContent` over
+  `innerHTML` for user-controllable data.
+- [x] Manual escaping using `window.escapeHTML` where necessary.
 - [x] IndexedDB storage level constraints.
 - [ ] Subresource Integrity (SRI) for CDN dependencies (Planned).
 - [ ] Automated dependency scanning (Planned).
@@ -63,7 +65,7 @@ server-side components or cloud services involved.
 #### Potential Attack Vectors
 
 - **Cross-Site Scripting (XSS)**: Mitigated by a strict CSP and consistent use
-  of sanitization utilities.
+  of sanitization utilities and native browser protections (`textContent`).
 - **Physical Access**: Anyone with physical access to the device can inspect
   IndexedDB contents via browser dev tools. Users are encouraged to secure
   their devices.
