@@ -4,7 +4,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-green.svg)](https://nodejs.org/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
-An enterprise-grade, "Local-First" Progressive Web Application (PWA) designed
+An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designed
 for industrial wire processing. This suite provides specialized calculators,
 inventory management, and operational tracking tools that persist data directly
 in the browser's IndexedDB, ensuring 100% uptime without backend dependencies.
@@ -20,6 +20,7 @@ in the browser's IndexedDB, ensuring 100% uptime without backend dependencies.
 
 - **Node.js**: >= 16.0.0
 - **pnpm**: `npm install -g pnpm` (recommended)
+- **Python**: 3.x (Optional, for database verification)
 
 ### 1) Clone & Install
 
@@ -41,10 +42,11 @@ pnpm dev
 | Command | Status | Description |
 | :--- | :--- | :--- |
 | `pnpm dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
-| `pnpm build` | 🚧 **In-Progress** | Production build (Needs `webpack.config.js`). |
-| `pnpm test` | 🚧 **In-Progress** | Unit testing via Jest (Needs `jest.config.js`). |
-| `pnpm lint` | 🚧 **In-Progress** | ESLint validation (Needs `eslint.config.js`). |
-| `pnpm docker:*` | 🚧 **Planned** | Containerized deployment (Needs `Dockerfile`). |
+| `python3 verification/verify_idb.py` | ✅ **Operational** | IDB verification via Playwright. |
+| `pnpm build` | 🚧 **In-Progress** | Production build (Missing config). |
+| `pnpm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
+| `pnpm lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
+| `pnpm docker:*` | 🚧 **Planned** | Containerized deployment (Missing Dockerfile). |
 
 ---
 
@@ -120,13 +122,14 @@ interactions.
 <details>
 <summary>🗄️ Storage Layer (IndexedDB)</summary>
 
-The application uses a singleton `EECOLIndexedDB` class (version 5) to manage
-15 specialized stores. It features:
+The application uses a singleton `EECOLIndexedDB` class (version 7) to manage
+specialized stores. It features:
 
 - **Atomic Bulk Updates**: `bulkPut` for reliable data import/undo.
 - **Idempotent Schema Upgrades**: Handles index lifecycle automatically.
 - **Data Normalization**: Strict uppercase enforcement for Wire IDs and Order
   Numbers.
+- **Performance**: Uses `durability: 'relaxed'` for faster UI response.
 
 </details>
 
@@ -135,14 +138,23 @@ The application uses a singleton `EECOLIndexedDB` class (version 5) to manage
 
 - **Zero Data Transmission**: All data remains in the browser's IndexedDB. No
   cloud sync.
-- **XSS Mitigation**: Strict use of `.textContent` and a robust Content
-  Security Policy (CSP).
+- **XSS Mitigation**: Strict use of `.textContent` ("Secure by Default") and a
+  robust Content Security Policy (CSP).
 - **Offline Reliability**: Service workers ensure the app loads even without an
   internet connection.
 
 See **[SECURITY.md](SECURITY.md)** for our full security policy.
 
 </details>
+
+---
+
+## 🆘 Troubleshooting
+
+- **Service Worker not registering**: Ensure you are serving via `http` or
+  `https`. The `file://` protocol is not supported for PWAs.
+- **IndexedDB not updating**: Use the "Refresh" button in the browser's
+  DevTools Application panel (IndexedDB view) to see live changes.
 
 ---
 
