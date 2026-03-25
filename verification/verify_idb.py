@@ -29,7 +29,7 @@ def run_verification():
                     try {
                         // 1. Check version and index via standard IDB open
                         const db = await new Promise((resolve, reject) => {
-                            const req = indexedDB.open('EECOLTools_v2');
+                            const req = indexedDB.open('EECOLTools_v2', 7);
                             req.onsuccess = () => resolve(req.result);
                             req.onerror = () => reject(req.error);
                         });

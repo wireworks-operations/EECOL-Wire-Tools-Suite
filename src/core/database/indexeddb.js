@@ -417,22 +417,12 @@ class EECOLIndexedDB {
   // Save mark converter data (wire mark calculator)
   async saveMarkConverter(data) {
     try {
-      const result = await this.add('markConverter', {
-        id: Date.now().toString(),
+      return await this.add('markConverter', {
+        id: crypto.randomUUID(),
         tool: 'markConverter',
         timestamp: Date.now(),
         ...data
       });
-
-      // Verify the save worked
-      const verification = await this.get('markConverter', result);
-      if (verification) {
-        // Save verification successful
-      } else {
-        console.error('❌ Save verification failed for markConverter');
-      }
-
-      return result;
     } catch (error) {
       console.error('❌ Failed to save mark converter data:', error);
       throw error;
@@ -442,22 +432,12 @@ class EECOLIndexedDB {
   // Save stopmark converter data (stop mark calculator)
   async saveStopMarkConverter(data) {
     try {
-      const result = await this.add('stopmarkConverter', {
-        id: Date.now().toString(),
+      return await this.add('stopmarkConverter', {
+        id: crypto.randomUUID(),
         tool: 'stopmarkConverter',
         timestamp: Date.now(),
         ...data
       });
-
-      // Verify the save worked
-      const verification = await this.get('stopmarkConverter', result);
-      if (verification) {
-        // Save verification successful
-      } else {
-        console.error('❌ Save verification failed for stopmarkConverter');
-      }
-
-      return result;
     } catch (error) {
       console.error('❌ Failed to save stopmark converter data:', error);
       throw error;
@@ -467,22 +447,12 @@ class EECOLIndexedDB {
   // Save reel capacity estimator data (reel capacity calculator)
   async saveReelCapacityEstimator(data) {
     try {
-      const result = await this.add('reelcapacityEstimator', {
-        id: Date.now().toString(),
+      return await this.add('reelcapacityEstimator', {
+        id: crypto.randomUUID(),
         tool: 'reelcapacityEstimator',
         timestamp: Date.now(),
         ...data
       });
-
-      // Verify the save worked
-      const verification = await this.get('reelcapacityEstimator', result);
-      if (verification) {
-        // Save verification successful
-      } else {
-        console.error('❌ Save verification failed for reelcapacityEstimator');
-      }
-
-      return result;
     } catch (error) {
       console.error('❌ Failed to save reel capacity estimator data:', error);
       throw error;
@@ -492,7 +462,7 @@ class EECOLIndexedDB {
   // Save reel size estimator data (future reel size calculator)
   async saveReelSizeEstimator(data) {
     return await this.add('reelsizeEstimator', {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       tool: 'reelsizeEstimator',
       timestamp: Date.now(),
       ...data
