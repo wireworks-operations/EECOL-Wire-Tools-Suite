@@ -24,3 +24,11 @@
 3. Implemented `relaxed` durability for all readwrite transactions.
 4. Hardened lifecycle by setting `this.db = null` on version change.
 **Validation:** Verified version 7 upgrade, index existence, and CRUD operations via Playwright automation.
+
+## 2026-03-25 - Hardened ID Generation & Redundant Verification Removal
+**Observation:** Tool-specific save methods used `Date.now().toString()` for IDs, creating a collision risk during rapid operations. Also performed redundant read-after-write verification.
+**Learning:** `crypto.randomUUID()` is the modern standard for unique IDs in IndexedDB. Redundant `get` calls after `add` increase transaction overhead without providing additional safety beyond the IDB 'onsuccess' guarantee.
+**Action:**
+1. Updated `saveMarkConverter`, `saveStopMarkConverter`, `saveReelCapacityEstimator`, and `saveReelSizeEstimator` to use `crypto.randomUUID()`.
+2. Removed redundant `this.get()` verification logic in these methods.
+**Validation:** Verified UUID generation and CRUD success via Playwright (`verification/verify_uuids.py`).
