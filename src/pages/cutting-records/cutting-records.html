@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" id="csp-meta"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self'">
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'">
     <title>EECOL Wire Cut Record Tool</title>
     <script src="../../utils/theme-loader.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -541,7 +541,7 @@
                                 </span>
                                 <span
                                     class="absolute -top-1 -right-1 bg-gray-700 text-white text-xs px-1 rounded-full disabled:hidden"
-                                    id="undoAvailableBadge">0</span>
+                                    id="globalUndoBadge">0</span>
                             </button>
                             <button id="recordBtn"
                                 class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-700 focus:ring-opacity-50 text-sm">

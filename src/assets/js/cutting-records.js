@@ -2082,13 +2082,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (exportJSONBtn) exportJSONBtn.addEventListener('click', exportJSONBackup);
     const importJSONBtn = document.getElementById('importJSONBtn');
     if (importJSONBtn) {
+        const jsonFileInput = document.getElementById('jsonFileInput');
+
         importJSONBtn.addEventListener('click', () => {
-            jsonFileInput = document.getElementById('jsonFileInput');
             if (jsonFileInput) jsonFileInput.click();
         });
 
         // Add the missing change event listener
-        jsonFileInput = document.getElementById('jsonFileInput');
         if (jsonFileInput) jsonFileInput.addEventListener('change', importJSONBackup);
     }
 

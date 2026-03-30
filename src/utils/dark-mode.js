@@ -131,4 +131,6 @@ if (document.readyState === 'loading') {
 }
 
 // Expose globally
-window.DarkMode = DarkMode;
+if (typeof window !== 'undefined') {
+    window.DarkMode = DarkMode;
+}

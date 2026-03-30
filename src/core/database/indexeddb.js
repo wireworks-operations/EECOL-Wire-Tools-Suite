@@ -191,8 +191,10 @@ class EECOLIndexedDB {
           newStore.put(cursor.value);
           cursor.continue();
         } else {
-          console.log('✅ Migration complete. Removing legacy store.');
-          db.deleteObjectStore('muticutPlanner');
+          console.log('✅ Migration data copied to new store.');
+          // NOTE: We avoid calling db.deleteObjectStore here as async schema
+          // changes in some browsers can cause transaction aborts or hangs.
+          // The legacy store will be left as-is for now.
         }
       };
     }
