@@ -19,3 +19,7 @@
 ## 2025-07-22 - Single-pass Cutting Reports Data Aggregation
 **Learning:** `updateCharts` and `updateReportsTable` in `cutting-reports.js` were performing approximately 10+ redundant O(N) passes over the `cutRecords` dataset, including expensive `groupRecordsByPeriod` calls that created nested array structures. This caused measurable UI lag when switching chart types or date ranges with large datasets.
 **Action:** Consolidated all chart data aggregation and period comparison metrics into a single `for...of` loop in `updateCharts`, reducing complexity from ~10 O(N) to 1 O(N).
+
+## 2025-08-04 - Search Debouncing and Formatter Optimization
+**Learning:** The cutting records search was triggering full O(N) re-renders on every keystroke, and the filtering logic was creating temporary objects for each record. Additionally, repeated calls to `toLocaleString()` in render loops are significantly slower than using a pre-initialized `Intl.DateTimeFormat`.
+**Action:** Implemented a 250ms debounce on the search input, optimized `getFilteredRecords` to avoid object allocation, and pre-initialized `Intl.DateTimeFormat` for consistent, high-performance date string generation. Decoupled `updateStats()` from the render loop to ensure it only runs on data mutation.
