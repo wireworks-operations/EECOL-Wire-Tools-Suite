@@ -36,6 +36,8 @@ function loadPDFLibraries() {
         // Load jsPDF
         const jsPDFScript = document.createElement('script');
         jsPDFScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        jsPDFScript.integrity = 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk';
+        jsPDFScript.crossOrigin = 'anonymous';
         jsPDFScript.onload = () => {
             jsPDFLoaded = true;
             console.log('jsPDF loaded successfully');
@@ -46,6 +48,8 @@ function loadPDFLibraries() {
             // Try alternative CDN
             const fallbackJSPDF = document.createElement('script');
             fallbackJSPDF.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+            fallbackJSPDF.integrity = 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk';
+            fallbackJSPDF.crossOrigin = 'anonymous';
             fallbackJSPDF.onload = () => {
                 jsPDFLoaded = true;
                 console.log('jsPDF loaded successfully from fallback CDN');
@@ -62,6 +66,8 @@ function loadPDFLibraries() {
         // Load html2canvas
         const html2canvasScript = document.createElement('script');
         html2canvasScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        html2canvasScript.integrity = 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H';
+        html2canvasScript.crossOrigin = 'anonymous';
         html2canvasScript.onload = () => {
             html2canvasLoaded = true;
             console.log('html2canvas loaded successfully');
@@ -72,6 +78,8 @@ function loadPDFLibraries() {
             // Try alternative CDN
             const fallbackHtml2canvas = document.createElement('script');
             fallbackHtml2canvas.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+            fallbackHtml2canvas.integrity = 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H';
+            fallbackHtml2canvas.crossOrigin = 'anonymous';
             fallbackHtml2canvas.onload = () => {
                 html2canvasLoaded = true;
                 console.log('html2canvas loaded successfully from fallback CDN');

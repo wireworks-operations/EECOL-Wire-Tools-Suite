@@ -222,6 +222,7 @@ const wireMarkCalculator = {
     // Fallback print function
     fallbackPrint(resultText) {
         const printWindow = window.open('', '_blank');
+        const safeResult = window.escapeHTML(resultText);
         printWindow.document.write(`
             <html>
             <head>
@@ -240,7 +241,7 @@ const wireMarkCalculator = {
                 <h2>EECOL Wire Mark Calculator Results</h2>
                 <div class="result">
                     <p class="label">Length Between Marks:</p>
-                    <p class="value">${resultText}</p>
+                    <p class="value">${safeResult}</p>
                 </div>
                 <button onclick="window.print()">Print</button>
             </body>
