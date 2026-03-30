@@ -5,6 +5,43 @@
 
 // Global variables
 let cutRecords = [];
+
+/**
+ * BOLT OPTIMIZATION: High-performance date formatters
+ * Pre-initializing Intl.DateTimeFormat instances at module scope is significantly faster
+ * than calling toLocaleString() inside render loops, as it avoids repeated parsing of
+ * locale strings and options.
+ */
+const shortDateTimeFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+});
+
+const fullDateTimeFormat = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+});
+
+/**
+ * BOLT OPTIMIZATION: Debounce utility
+ * Limits the rate at which a function can fire. Essential for search inputs to prevent
+ * expensive O(N) filtering and re-rendering on every single keystroke.
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 let editingId = null;
 let displayedRecordsCount = 0;
 let recordsPerPage = 25;
@@ -117,6 +154,7 @@ async function loadCutRecords() {
                 cutRecords = records.sort((a, b) => b.timestamp - a.timestamp);
                 displayedRecordsCount = 0;
                 renderCutRecords();
+                updateStats(); // Initial stats calculation
                 updateExportStatus();
                 return;
             }
@@ -126,6 +164,7 @@ async function loadCutRecords() {
         cutRecords = [];
         displayedRecordsCount = 0;
         renderCutRecords();
+        updateStats();
         updateExportStatus();
 
     } catch (error) {
@@ -592,6 +631,8 @@ async function saveSingleRecord() {
             await saveCutRecordToDB(record);
         }
 
+        updateStats(); // Update stats after data mutation
+
         cutRecords.sort((a, b) => {
             const timeDiff = b.timestamp - a.timestamp;
             if (timeDiff !== 0) return timeDiff;
@@ -720,6 +761,7 @@ async function saveBatchRecords() {
         // Reset display counter and re-render
         displayedRecordsCount = 0;
         renderCutRecords();
+        updateStats(); // Batch update stats
         clearForm();
         updateButtonStates();
 
@@ -766,6 +808,7 @@ async function undo() {
 
     displayedRecordsCount = 0;
     renderCutRecords();
+    updateStats();
     updateButtonStates();
 
     showAlert('Last action undone.', 'Undo');
@@ -792,6 +835,7 @@ async function redo() {
 
     displayedRecordsCount = 0;
     renderCutRecords();
+    updateStats();
     updateButtonStates();
 
     showAlert('Last undone action restored.', 'Redo');
@@ -959,6 +1003,7 @@ async function deleteRecord(id) {
     // Reset display counter and re-render
     displayedRecordsCount = 0;
     renderCutRecords();
+    updateStats();
 }
 
 function editRecord(id) {
@@ -1013,6 +1058,11 @@ function getFilteredRecords() {
     const dateFrom = dateFromValue ? new Date(dateFromValue).getTime() : null;
     const dateTo = dateToValue ? new Date(dateToValue).getTime() + 86399999 : null; // Include entire day
 
+    /**
+     * BOLT OPTIMIZATION: High-performance filtering
+     * Avoids creating a 'fieldsToSearch' object for every single record in the loop.
+     * Uses direct property access and short-circuiting for O(N) efficiency without object overhead.
+     */
     return cutRecords.filter(record => {
         // Date filtering
         if (dateFrom && record.timestamp < dateFrom) return false;
@@ -1020,19 +1070,17 @@ function getFilteredRecords() {
 
         if (!searchTerm) return true;
 
-        // Search filtering by field
-        const fieldsToSearch = {
-            wireId: record.wireId.toLowerCase(),
-            orderNumber: record.orderNumber.toLowerCase(),
-            cutterName: record.cutterName.toLowerCase(),
-            customerName: record.customerName.toLowerCase(),
-        };
-
-        if (filterField === 'all') {
-            return Object.values(fieldsToSearch).some(value => value.includes(searchTerm));
-        } else {
-            return fieldsToSearch[filterField]?.includes(searchTerm);
+        // Search filtering by specific field
+        if (filterField !== 'all') {
+            const val = record[filterField];
+            return val && val.toLowerCase().includes(searchTerm);
         }
+
+        // Search filtering across 'all' fields - optimized short-circuiting
+        return (record.wireId && record.wireId.toLowerCase().includes(searchTerm)) ||
+               (record.orderNumber && record.orderNumber.toLowerCase().includes(searchTerm)) ||
+               (record.cutterName && record.cutterName.toLowerCase().includes(searchTerm)) ||
+               (record.customerName && record.customerName.toLowerCase().includes(searchTerm));
     });
 }
 
@@ -1062,11 +1110,7 @@ async function toggleCutInSystem(id) {
         renderCutRecords();
 
         // Optional: visual feedback
-        await showAlert(`Cut record marked as "Cut In System" at ${new Date(now).toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        })}`, 'System Status Updated');
+        await showAlert(`Cut record marked as "Cut In System" at ${shortDateTimeFormat.format(now)}`, 'System Status Updated');
 
     } catch (error) {
         console.error('Error toggling Cut In System status:', error);
@@ -1099,7 +1143,7 @@ function renderCutRecords() {
         emptyMsg.textContent = 'No cut records found yet.';
         cutHistoryList.appendChild(emptyMsg);
         displayedRecordsElement.textContent = '0';
-        updateStats();
+        // BOLT: Removed redundant updateStats() call from render loop
         return;
     }
 
@@ -1192,16 +1236,19 @@ function renderCutRecords() {
         commentsP.textContent = `Comments: ${record.orderComments || 'N/A'}`;
         recordDiv.appendChild(commentsP);
 
-        const date = new Date(record.timestamp).toLocaleString('en-US', {
-            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
+        /**
+         * BOLT OPTIMIZATION: High-performance date formatting
+         * Uses pre-initialized Intl.DateTimeFormat instead of .toLocaleString()
+         * which is significantly faster within high-frequency render loops.
+         */
+        const date = fullDateTimeFormat.format(record.timestamp);
         const metaP = document.createElement('p');
         metaP.className = 'text-xs text-gray-500';
         metaP.textContent = `@ ${date} by Local`;
         recordDiv.appendChild(metaP);
 
-        const createdDate = new Date(record.createdAt || record.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-        const updatedDate = record.updatedAt && record.updatedAt !== record.createdAt ? ` | Updated: ${new Date(record.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : '';
+        const createdDate = fullDateTimeFormat.format(record.createdAt || record.timestamp);
+        const updatedDate = record.updatedAt && record.updatedAt !== record.createdAt ? ` | Updated: ${fullDateTimeFormat.format(record.updatedAt)}` : '';
         const createdP = document.createElement('p');
         createdP.className = 'text-xs text-gray-400';
         createdP.textContent = `Created: ${createdDate}${updatedDate}`;
@@ -1260,7 +1307,8 @@ function renderCutRecords() {
         cutHistoryList.appendChild(moreDiv);
     }
 
-    updateStats();
+    // BOLT: Removed redundant updateStats() call from render loop.
+    // Statistics are now only recalculated upon data mutation.
 }
 
 function loadMoreRecords() {
@@ -1450,6 +1498,7 @@ async function clearAllRecords() {
         displayedRecordsCount = 0;
         await clearAllCutRecordsFromDB();
         renderCutRecords();
+        updateStats(); // Update stats after clearing
         await showAlert('All cut records have been cleared.', 'Records Cleared');
     }
 }
@@ -1566,6 +1615,8 @@ async function importJSONBackup(event) {
 
             cutRecords = merge ? [...cutRecords, ...importRecords] : importRecords;
             wireCutList = merge ? [...wireCutList, ...importWireCutList] : importWireCutList;
+
+            updateStats(); // Update stats after import
 
             // Clean up records (ensure IDs, etc.)
             cutRecords.forEach(record => {
@@ -1872,10 +1923,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Search and filter event listeners
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('input', () => {
+        /**
+         * BOLT OPTIMIZATION: Search Debouncing
+         * Applies a 250ms debounce to the search input to prevent expensive O(N)
+         * re-renders and filtering on every single keystroke.
+         */
+        searchInput.addEventListener('input', debounce(() => {
             displayedRecordsCount = 0;
             renderCutRecords();
-        });
+        }, 250));
     }
     const filterByField = document.getElementById('filterByField');
     if (filterByField) {
