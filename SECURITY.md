@@ -50,7 +50,8 @@ server-side components or cloud services involved.
   `innerHTML` for user-controllable data.
 - [x] Manual escaping using `window.escapeHTML` where necessary.
 - [x] IndexedDB storage level constraints.
-- [ ] Subresource Integrity (SRI) for CDN dependencies (Planned).
+- [x] **Subresource Integrity (SRI)**: Integrity hashes used for all CDN
+  dependencies (Chart.js, jsPDF).
 - [ ] Automated dependency scanning (Planned).
 
 ### Attack Vector Analysis

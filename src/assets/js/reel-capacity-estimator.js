@@ -1560,7 +1560,7 @@ function printReelCapacityResults(data) {
         <html lang="en">
         <head>
             <meta charset="UTF-8">
-            <title>${formattedTitle}</title>
+            <title>${window.escapeHTML(formattedTitle)}</title>
             <style>
                 body {
                     font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
@@ -1639,22 +1639,22 @@ function printReelCapacityResults(data) {
         </head>
         <body>
             <div class="header">
-                <div class="title">${formattedTitle}</div>
+                <div class="title">${window.escapeHTML(formattedTitle)}</div>
             </div>
 
             <div class="section">
                 <div class="section-title">📐 Reel Specifications</div>
                 <div class="spec-row">
                     <span class="spec-label">Flange Diameter:</span>
-                    <span class="spec-value">${specs.flangeDiameter}</span>
+                    <span class="spec-value">${window.escapeHTML(specs.flangeDiameter)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Core Diameter:</span>
-                    <span class="spec-value">${specs.coreDiameter}</span>
+                    <span class="spec-value">${window.escapeHTML(specs.coreDiameter)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Traverse Width:</span>
-                    <span class="spec-value">${specs.traverseWidth}</span>
+                    <span class="spec-value">${window.escapeHTML(specs.traverseWidth)}</span>
                 </div>
             </div>
 
@@ -1662,23 +1662,23 @@ function printReelCapacityResults(data) {
                 <div class="section-title">📊 Calculation Results</div>
                 <div class="spec-row">
                     <span class="spec-label">Total Capacity:</span>
-                    <span class="spec-value">${results.totalCapacity}</span>
+                    <span class="spec-value">${window.escapeHTML(results.totalCapacity)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Working Capacity:</span>
-                    <span class="spec-value">${results.workingCapacity}</span>
+                    <span class="spec-value">${window.escapeHTML(results.workingCapacity)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Absolute Capacity:</span>
-                    <span class="spec-value">${results.absoluteCapacity}</span>
+                    <span class="spec-value">${window.escapeHTML(results.absoluteCapacity)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Core-to-Cable Ratio:</span>
-                    <span class="spec-value">${results.coreToCableRatio}</span>
+                    <span class="spec-value">${window.escapeHTML(results.coreToCableRatio)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Target Achievement:</span>
-                    <span class="spec-value">${results.targetAchievement}</span>
+                    <span class="spec-value">${window.escapeHTML(results.targetAchievement)}</span>
                 </div>
             </div>
 
@@ -1686,19 +1686,19 @@ function printReelCapacityResults(data) {
                 <div class="section-title">📋 Provided Specifications</div>
                 <div class="spec-row">
                     <span class="spec-label">Core Diameter:</span>
-                    <span class="spec-value">${provided.core}</span>
+                    <span class="spec-value">${window.escapeHTML(provided.core)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Flange Diameter:</span>
-                    <span class="spec-value">${provided.flange}</span>
+                    <span class="spec-value">${window.escapeHTML(provided.flange)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Traverse Width:</span>
-                    <span class="spec-value">${provided.traverse}</span>
+                    <span class="spec-value">${window.escapeHTML(provided.traverse)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Target Length:</span>
-                    <span class="spec-value">${provided.target}</span>
+                    <span class="spec-value">${window.escapeHTML(provided.target)}</span>
                 </div>
             </div>
 
@@ -1706,14 +1706,14 @@ function printReelCapacityResults(data) {
             <div class="section">
                 <div class="section-title">🔍 Layer Breakdown</div>
                 <div class="layer-info">
-                    ${layers.replace(/\n/g, '<br>')}
+                    ${window.escapeHTML(layers).replace(/\n/g, '<br>')}
                 </div>
             </div>
             ` : ''}
 
             <div class="branding">
                 EECOL Wire Tools Suite 2025 - Enterprise Edition<br>
-                Generated: ${data.timestamp}
+                Generated: ${window.escapeHTML(data.timestamp)}
             </div>
 
             <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 8px 16px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer;">Print</button>

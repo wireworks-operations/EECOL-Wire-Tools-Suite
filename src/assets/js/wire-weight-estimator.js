@@ -761,11 +761,11 @@ function printWeightResults() {
                     <div class="result">
                         <div class="result">
                             <p class="label">Total Shipment Weight (Wire + Reel + Skid):</p>
-                            <p class="value shipment-weight">${totalShipmentWeight}</p>
+                            <p class="value shipment-weight">${window.escapeHTML(totalShipmentWeight)}</p>
                         </div>
                         <div class="result">
                             <p class="label">Wire Weight Only:</p>
-                            <p class="value wire-weight">${totalWireWeight}</p>
+                            <p class="value wire-weight">${window.escapeHTML(totalWireWeight)}</p>
                         </div>
                         <div class="result">
                             <p class="label">Unit Weight:</p>

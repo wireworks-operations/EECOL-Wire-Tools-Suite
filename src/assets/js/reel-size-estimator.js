@@ -566,19 +566,19 @@ function printReelSizeResults() {
                     <div class="specs-grid">
                         <div class="spec-item">
                             <div class="label">Flange Diameter:</div>
-                            <div class="value">${theoreticalData.flangeDiameter}</div>
+                            <div class="value">${window.escapeHTML(theoreticalData.flangeDiameter)}</div>
                         </div>
                         <div class="spec-item">
                             <div class="label">Core Diameter:</div>
-                            <div class="value">${theoreticalData.coreDiameter}</div>
+                            <div class="value">${window.escapeHTML(theoreticalData.coreDiameter)}</div>
                         </div>
                         <div class="spec-item">
                             <div class="label">Traverse Width:</div>
-                            <div class="value">${theoreticalData.traverseWidth}</div>
+                            <div class="value">${window.escapeHTML(theoreticalData.traverseWidth)}</div>
                         </div>
                     </div>
-                    <p><strong>Layers Needed:</strong> ${theoreticalData.layers}</p>
-                    <p><strong>Total Capacity:</strong> ${theoreticalData.capacity}</p>
+                    <p><strong>Layers Needed:</strong> ${window.escapeHTML(theoreticalData.layers)}</p>
+                    <p><strong>Total Capacity:</strong> ${window.escapeHTML(theoreticalData.capacity)}</p>
                     <p><em>Note: These are mathematically ideal dimensions and may not correspond to industry standard reel sizes.</em></p>
                 </div>
             </div>
@@ -589,8 +589,8 @@ function printReelSizeResults() {
                 <h2>Recommended Industry Standard Reels</h2>
                 ${recommendedData.map(reel => `
                     <div class="result">
-                        <h3>${reel.title}</h3>
-                        <p>${reel.utilization}</p>
+                        <h3>${window.escapeHTML(reel.title)}</h3>
+                        <p>${window.escapeHTML(reel.utilization)}</p>
                     </div>
                 `).join('')}
             </div>

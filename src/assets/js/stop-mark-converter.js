@@ -230,11 +230,11 @@ function printWireCutResults() {
                                 <h2>EECOL Wire Cut Stop Mark Results</h2>
                                 <div class="result">
                                     <p class="label">Stopping Mark:</p>
-                                    <p class="value">${stoppingMark}</p>
+                                    <p class="value">${window.escapeHTML(stoppingMark)}</p>
                                 </div>
                                 <div class="result">
                                     <p class="label">Visual Reference Mark (at Reel):</p>
-                                    <p class="value">${visualMark}</p>
+                                    <p class="value">${window.escapeHTML(visualMark)}</p>
                                 </div>
                                 <button onclick="window.print()">Print</button>
                             </body>
@@ -263,11 +263,11 @@ function printWireCutResults() {
                             <h2>EECOL Wire Cut Stop Mark Results</h2>
                             <div class="result">
                                 <p class="label">Stopping Mark:</p>
-                                <p class="value">${stoppingMark}</p>
+                                <p class="value">${window.escapeHTML(stoppingMark)}</p>
                             </div>
                             <div class="result">
                                 <p class="label">Visual Reference Mark (at Reel):</p>
-                                <p class="value">${visualMark}</p>
+                                <p class="value">${window.escapeHTML(visualMark)}</p>
                             </div>
                             <button onclick="window.print()">Print</button>
                         </body>

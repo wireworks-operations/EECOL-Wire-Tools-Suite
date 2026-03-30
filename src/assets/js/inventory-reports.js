@@ -21,9 +21,11 @@ function loadChartJS() {
         };
         localScript.onerror = () => {
             console.warn('Local Chart.js failed, trying CDN...');
-            // Fallback to CDN
+            // Fallback to CDN (Pinned to 4.4.1 for SRI)
             const cdnScript = document.createElement('script');
-            cdnScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            cdnScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1';
+            cdnScript.integrity = 'sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4';
+            cdnScript.crossOrigin = 'anonymous';
             cdnScript.onload = () => {
                 console.log('Chart.js loaded from CDN');
                 resolve('cdn');
