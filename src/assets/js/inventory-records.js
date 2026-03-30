@@ -1262,15 +1262,23 @@ async function importJSONBackup(event) {
 // Event listeners and initialization
 document.addEventListener('DOMContentLoaded', async function() {
     // Initialize database if not already done (important for pages that don't load index.js)
-    if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
-        try {
+    try {
+        if (typeof EECOLIndexedDB !== 'undefined') {
             window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
-        } catch (error) {
-            console.error('Failed to initialize database:', error);
-            await showAlert("Failed to initialize database. Please refresh the page.", "Database Error");
+        } else {
+            console.error('❌ EECOLIndexedDB class not found');
+            if (typeof showAlert === 'function') {
+                await showAlert("Database system not found. Please refresh the page.", "Initialization Error");
+            }
             return;
         }
+    } catch (error) {
+        console.error('❌ Failed to initialize database:', error);
+        if (typeof showAlert === 'function') {
+            await showAlert("Failed to initialize database. Please refresh the page.", "Database Error");
+        }
+        return;
     }
 
     // Toggle stats visibility

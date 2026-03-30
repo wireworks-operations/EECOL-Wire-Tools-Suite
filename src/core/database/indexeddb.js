@@ -10,6 +10,10 @@ class EECOLIndexedDB {
     if (!EECOLIndexedDB.instance) {
       EECOLIndexedDB.instance = new EECOLIndexedDB(version);
     }
+    // Ensure window.eecolDB is always set when getInstance is called
+    if (typeof window !== 'undefined') {
+      window.eecolDB = EECOLIndexedDB.instance;
+    }
     return EECOLIndexedDB.instance;
   }
 
@@ -103,12 +107,14 @@ class EECOLIndexedDB {
         reject(request.error);
       };
 
-      request.onblocked = () => {
-        console.warn('⚠️ IndexedDB upgrade blocked by another connection');
+      request.onblocked = (event) => {
+        console.warn('⚠️ IndexedDB upgrade blocked by another connection', event);
+        // This usually happens if multiple tabs are open
       };
 
       request.onsuccess = (event) => {
         this.db = event.target.result;
+        console.log(`✅ IndexedDB '${this.dbName}' connected (v${this.db.version})`);
 
         // Close connection if another tab requests an upgrade
         this.db.onversionchange = () => {

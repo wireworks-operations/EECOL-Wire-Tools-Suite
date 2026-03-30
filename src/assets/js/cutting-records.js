@@ -1774,15 +1774,23 @@ function printRecords(filtered = false) {
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async function() {
     // Initialize database if not already done (important for pages that don't load index.js)
-    if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
-        try {
+    try {
+        if (typeof EECOLIndexedDB !== 'undefined') {
             window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
-        } catch (error) {
-            console.error('Failed to initialize database:', error);
-            await showAlert("Failed to initialize database. Please refresh the page.", "Database Error");
+        } else {
+            console.error('❌ EECOLIndexedDB class not found');
+            if (typeof showAlert === 'function') {
+                await showAlert("Database system not found. Please refresh the page.", "Initialization Error");
+            }
             return;
         }
+    } catch (error) {
+        console.error('❌ Failed to initialize database:', error);
+        if (typeof showAlert === 'function') {
+            await showAlert("Failed to initialize database. Please refresh the page.", "Database Error");
+        }
+        return;
     }
 
     // Initialize modal system
@@ -2137,15 +2145,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const exportJSONBtn = document.getElementById('exportJSONBtn');
     if (exportJSONBtn) exportJSONBtn.addEventListener('click', exportJSONBackup);
     const importJSONBtn = document.getElementById('importJSONBtn');
-    if (importJSONBtn) {
+    const jsonFileInput = document.getElementById('jsonFileInput');
+    if (importJSONBtn && jsonFileInput) {
         importJSONBtn.addEventListener('click', () => {
-            jsonFileInput = document.getElementById('jsonFileInput');
-            if (jsonFileInput) jsonFileInput.click();
+            jsonFileInput.click();
         });
 
         // Add the missing change event listener
-        jsonFileInput = document.getElementById('jsonFileInput');
-        if (jsonFileInput) jsonFileInput.addEventListener('change', importJSONBackup);
+        jsonFileInput.addEventListener('change', importJSONBackup);
     }
 
     // P2P Sync button event listeners
