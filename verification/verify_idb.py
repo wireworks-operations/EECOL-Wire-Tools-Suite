@@ -29,7 +29,7 @@ def run_verification():
                     try {
                         // 1. Check version and index via standard IDB open
                         const db = await new Promise((resolve, reject) => {
-                            const req = indexedDB.open('EECOLTools_v2', 7);
+                            const req = indexedDB.open('EECOLTools_v2', 8);
                             req.onsuccess = () => resolve(req.result);
                             req.onerror = () => reject(req.error);
                         });
@@ -45,7 +45,7 @@ def run_verification():
                         const eecolDB = EECOLIndexedDB.getInstance();
                         await eecolDB.isReady();
 
-                        const testId = 'test-v7-' + Date.now();
+                        const testId = 'test-v8-' + Date.now();
                         const testData = { id: testId, wireType: 'VERIFY', timestamp: Date.now() };
 
                         // Test add
@@ -73,7 +73,7 @@ def run_verification():
             # Take a screenshot of the page for visual confirmation that it loaded
             page.screenshot(path="verification/verification_index.png")
 
-            if verification_result['version'] == 7 and verification_result['timestampIndexExists'] and verification_result['addWorks'] and verification_result['updateWorks']:
+            if verification_result['version'] == 8 and verification_result['timestampIndexExists'] and verification_result['addWorks'] and verification_result['updateWorks']:
                 print("✅ ALL TESTS PASSED")
             else:
                 print("❌ TESTS FAILED")
