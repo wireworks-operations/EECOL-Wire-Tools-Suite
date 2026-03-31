@@ -2473,12 +2473,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         menuItems: [
-            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: '🏠 Home', href: '../../../index.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
             { text: '📈 Reports', href: '../cutting-reports/cutting-reports.html', class: 'bg-purple-600 hover:bg-purple-700' }
         ],
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Wire Cut Records'
     });

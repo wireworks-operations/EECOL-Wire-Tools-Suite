@@ -129,11 +129,11 @@ if (window.initModalSystem) window.initModalSystem();
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         menuItems: [
-            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: '🏠 Home', href: '../../../index.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '📱 Shipping Manifest', href: '../shipping-manifest/shipping-manifest.html', class: 'bg-green-600 hover:bg-green-700' }
         ],
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Reel Labels'
     });

@@ -9,7 +9,7 @@ critical patterns for the EECOL Wire Tools Suite.
 - **Domain:** Industrial wire processing and inventory management.
 - **Persistence:** Local-first using **IndexedDB** (`EECOLIndexedDB`).
 - **Styling:** Tailwind CSS + Custom CSS (`eecol-theme.css`).
-- **Version:** v0.8.0.4 (Synchronized across `package.json`, `README.md`, and
+- **Version:** v0.8.0.5 (Synchronized across `package.json`, `README.md`, and
   `index.html`).
 
 ## 🛠️ Architecture & Core Patterns

@@ -809,13 +809,13 @@ function generatePDF() {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         menuItems: [
             { text: '📦 Inventory Records', href: '../inventory-records/inventory-records.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '📊 Live Statistics', href: '../live-statistics/live-statistics.html', class: 'bg-teal-600 hover:bg-teal-700' }
         ],
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Inventory Reports'
     });
