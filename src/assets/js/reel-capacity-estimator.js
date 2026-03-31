@@ -1731,13 +1731,13 @@ function printReelCapacityResults(data) {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: '🏠 Home', href: '../../../index.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '📐 Size Estimator', href: '../reel-size-estimator/reel-size-estimator.html', class: 'bg-amber-600 hover:bg-amber-700' }
         ],
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Reel Capacity Estimator'
     });

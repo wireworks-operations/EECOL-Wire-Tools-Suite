@@ -45,7 +45,7 @@ def run_verification():
                         const eecolDB = EECOLIndexedDB.getInstance();
                         await eecolDB.isReady();
 
-                        const testId = 'test-v7-' + Date.now();
+                        const testId = 'test-v8-' + Date.now();
                         const testData = { id: testId, wireType: 'VERIFY', timestamp: Date.now() };
 
                         // Test add

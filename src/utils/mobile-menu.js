@@ -17,7 +17,7 @@ let mobileMenuOpen = false;
 function initMobileMenu(options = {}) {
     const {
         menuItems = [],
-        version = 'v0.8.0.4',
+        version = 'v0.8.0.5',
         credits = 'Made With ❤️ By: Lucas and Cline 🤖',
         title = 'EECOL Wire Tools'
     } = options;

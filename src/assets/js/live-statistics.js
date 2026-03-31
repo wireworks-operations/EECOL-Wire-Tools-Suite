@@ -970,15 +970,15 @@ if (typeof window !== 'undefined') {
 // Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: '🏠 Home', href: '../../../index.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '✂️ Cutting Records', href: '../cutting-records/cutting-records.html', class: 'bg-orange-600 hover:bg-orange-700' },
             { text: '📦 Inventory Records', href: '../inventory-records/inventory-records.html', class: 'bg-purple-600 hover:bg-purple-700' }
 
         ],
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Live Statistics'
     });

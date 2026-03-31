@@ -5,21 +5,22 @@
 
 class EECOLIndexedDB {
   static instance = null;
+  static DATABASE_VERSION = 8;
 
-  static getInstance(version = 8) {
+  static getInstance() {
     if (!EECOLIndexedDB.instance) {
-      EECOLIndexedDB.instance = new EECOLIndexedDB(version);
+      EECOLIndexedDB.instance = new EECOLIndexedDB();
     }
     return EECOLIndexedDB.instance;
   }
 
-  constructor(version = 8) {
+  constructor() {
     // Prevent direct instantiation - enforce singleton pattern
     if (EECOLIndexedDB.instance) {
       throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
     }
 
-    this.dbVersion = version;
+    this.dbVersion = EECOLIndexedDB.DATABASE_VERSION;
     this.dbName = 'EECOLTools_v2';
     this.dbInitialized = this.initialize();
     this.db = null;
