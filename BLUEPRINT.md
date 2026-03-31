@@ -1,9 +1,8 @@
 # Blueprint 🧱
 
-> **Goal:** Provide a fast mental model—components, boundaries, and critical
-> flows.
+> **Goal:** Provide a fast mental model—components, boundaries, and critical flows.
 
-## System Overview
+## 🏛️ System Overview
 
 ```text
                     +-------------------------+
@@ -16,7 +15,7 @@
                                   v
                     +-------------+-------------+
                     |          IndexedDB        |
-                    |  15 Specialized Stores    |
+                    |  14 Specialized Stores    |
                     |  EECOLIndexedDB Singleton |
                     +-------------+-------------+
                                   |
@@ -30,45 +29,44 @@
   +---------------------+                   +---------------------+
 ```
 
-## Data Flow (Happy Path)
+## 🔄 Data Flow (Happy Path)
 
 1. **User Action**: User enters data into a tool (e.g., Cutting Records).
-2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton.
-3. **Local Storage**: Data is written directly to a specialized IndexedDB store.
-4. **Offline Access**: Service worker serves cached HTML/JS/CSS assets even
-   without connectivity.
-5. **Retrieval**: Analytics tools query IndexedDB to render real-time charts via
-   Chart.js.
+2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton via `window.eecolDB`.
+3. **Local Storage**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`).
+4. **Offline Access**: Service worker (`sw.js`) serves cached HTML/JS/CSS assets even without connectivity.
+5. **Retrieval**: Analytics tools query IndexedDB to render real-time charts via Chart.js.
 
-## Repos & Conventions
+## 🗄️ Database Architecture (v7)
 
-- **Pages**: `/src/pages/<tool-name>/` (HTML/JS/CSS for specific tools)
-- **Database**: `/src/core/database/indexeddb.js` (Singleton implementation)
-- **Assets**: `/src/assets/` (Shared CSS, JS, and PWA assets)
-- **Utilities**: `/src/utils/` (Sanitization, modals, and helper functions)
-- **Print Utility**: `/src/utils/print/` (Modular print logic for various
-  tools)
+The application uses **14 specialized stores** within the `EECOLTools_v2` database:
 
-## Key Decisions
+- **Record-Keeping**: `cuttingRecords`, `inventoryRecords`, `maintenanceLogs`.
+- **Calculators**: `markConverter`, `stopmarkConverter`, `reelcapacityEstimator`, `reelsizeEstimator`.
+- **Engineering**: `calibrationMeasurements`, `wireCutList`.
+- **Core**: `settings`, `users`, `notifications`, `sessions`, `multicutPlanner`.
 
-- **Local-First**: Zero backend dependencies to ensure 100% uptime in
-  industrial environments.
-- **Vanilla JS**: Chosen for longevity and to minimize framework-induced
-  maintenance debt.
-- **IndexedDB**: Used over LocalStorage for structured, high-capacity data
-  persistence. Target version is **7**.
-- **Tailwind CSS**: Utility-first styling for rapid development and consistent
-  branding.
-- **ESM Hybrid**: Migrating towards ES Modules while maintaining a stable
-  global API via shims.
+## 📁 Repos & Conventions
 
-## Risks & Trade-offs
+- **Pages**: `/src/pages/<tool-name>/` (HTML/JS/CSS for specific tools).
+- **Database**: `/src/core/database/indexeddb.js` (Singleton implementation).
+- **Assets**: `/src/assets/` (Shared CSS, JS, and PWA assets).
+- **Utilities**: `/src/utils/` (Sanitization, modals, and helper functions).
+- **Print Utility**: `/src/utils/print/` (Modular print logic organized by domain).
 
-- **Device Binding**: Data is local to the device/browser. Backup/Restore is
-  manual.
-- **Storage Quotas**: Reliant on browser-enforced storage limits (~50MB-2GB).
-- **Syncing**: No native multi-device sync; requires manual export/import for
-  data transfer.
+## 💡 Key Decisions
+
+- **Local-First**: Zero backend dependencies to ensure 100% uptime in industrial environments.
+- **Vanilla JS**: Chosen for longevity and to minimize framework-induced maintenance debt.
+- **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **7**.
+- **ESM Hybrid**: Transitioning towards ES Modules (`type="module"`) while maintaining global shims for backward compatibility.
+- **Relaxed Durability**: Uses `durability: 'relaxed'` in IDB transactions for optimal UI responsiveness.
+
+## ⚠️ Risks & Trade-offs
+
+- **Device Binding**: Data is local to the device/browser. Backup/Restore is a manual JSON-based process.
+- **Storage Quotas**: Reliant on browser-enforced storage limits.
+- **Syncing**: No multi-device sync; requires manual export/import for data transfer.
 
 ---
 
