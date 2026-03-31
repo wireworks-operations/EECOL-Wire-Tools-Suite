@@ -1,26 +1,25 @@
-# Scribe's Journal – Critical Learnings 📘
+# Scribe's Journal 📘
 
-## 2026-03-24 - Full Documentation Refresh (Getting Started, Quickstart, Blueprint, Security)
-**Observation:** The repository lacked a top-level "Getting Started" guide that accurately reflected the current state of tooling. Many `package.json` scripts (build, test, lint, docker) were experimental or required missing configuration files. Verified that `pnpm dev` and the Python IDB verification script are the only truly operational paths at this stage.
-**Learning:** For a "Local-First" PWA, documentation must explicitly state the absence of backend dependencies to prevent users from searching for non-existent database or API setup steps.
-**Action:** Overhauled `README.md`, `QUICKSTART.md`, `BLUEPRINT.md`, and `SECURITY.md` to emphasize the IndexedDB-centric, serverless architecture and clarify the status of build/test tooling.
+Critical learnings and repository architectural insights.
 
-## 2025-03-10 - Full Documentation Refresh (Getting Started, Quickstart, Blueprint, Security)
-**Observation:** The repository lacked a top-level "Getting Started" guide that accurately reflected the current state of tooling. Many `package.json` scripts (build, test, lint, docker) were experimental or required missing configuration files.
-**Learning:** For a "Local-First" PWA, documentation must explicitly state the absence of backend dependencies to prevent users from searching for non-existent database or API setup steps. Verified that `pnpm dev` is the only truly operational path at this stage.
-**Action:** Overhauled `README.md`, `QUICKSTART.md`, `BLUEPRINT.md`, and `SECURITY.md` to emphasize the IndexedDB-centric, serverless architecture and clarify the status of build/test tooling.
+## 2026-03-31 - [Full Documentation Refresh v0.8.0.4]
 
-## 2025-03-09 - Project Architecture & Constraints
-**Observation:** The repository is a pure client-side Progressive Web Application (PWA). It uses IndexedDB for data persistence and has no backend server or API dependencies. Build and dev workflows are managed via `pnpm` and `webpack`.
-**Learning:** Documentation must emphasize that no backend setup is required and that data remains local to the browser. Standard server-side instructions (like database connections or API keys) should be omitted to avoid confusion.
-**Action:** Tailored `README.md` and `BLUEPRINT.md` to highlight the "Local-First" architecture.
+**Observation:**
+The repository references several advanced tools in `package.json` (Webpack, Jest, ESLint, Cypress) and provides Docker scripts, but the actual configuration files (`webpack.config.js`, `jest.config.js`, etc.) and the `Dockerfile` are missing from the root. This indicates the build/test system is currently in a transitional state or "In-Progress."
 
-## 2025-03-09 - Environment Nuances
-**Observation:** The project uses `http-server` for development and `webpack` for production builds. There is no `.github/workflows` or other CI infrastructure present in the current state of the repo.
-**Learning:** "Getting Started" should focus on local development commands and Docker as an alternative, while omitting CI/CD status badges to maintain accuracy.
-**Action:** Updated `README.md` with verified `pnpm` scripts and excluded CI badges.
+**Learning:**
+The project relies heavily on a "Local-First" architecture using IndexedDB (v7) and a singleton pattern (`EECOLIndexedDB`). Documentation must reflect that the core functionality is 100% client-side and does not require a backend, even if the `package.json` suggests otherwise.
 
-## 2025-03-09 - Command Verification Findings
-**Observation:** Several `pnpm` scripts (`lint`, `test`, `build`) fail due to missing configuration files (`.eslintrc`, `jest.config.js`, `webpack.config.js`) or missing source files. `pnpm dev` works correctly for serving the static PWA. `npm start` mentioned in README is missing from `package.json`. `Dockerfile` is also missing despite docker scripts being present.
-**Learning:** Current documentation refers to non-existent scripts and missing infrastructure. The primary working path is serving static files via `http-server`.
-**Action:** Documentation will prioritize `pnpm dev` and clearly state the current status of other tooling. Will fix the `npm start` vs `pnpm dev` discrepancy.
+**Action:**
+Updated all documentation (README, QUICKSTART, BLUEPRINT, SECURITY) to explicitly state the operational status of tools. Consolidated headings with emojis and ensured that `npm` (bundled with Node.js) is the documented package manager for maximum first-time success, while noting that `pnpm` is also supported.
+
+## 2026-03-31 - [IndexedDB Schema Enumeration]
+
+**Observation:**
+The `EECOLIndexedDB` class (version 7) manages 14 distinct object stores. Some stores are for calculators (e.g., `markConverter`), while others are for operational logs (e.g., `cuttingRecords`).
+
+**Learning:**
+Maintaining documentation that matches the schema version (currently v7) is critical for newcomers debugging the Application panel in DevTools.
+
+**Action:**
+Updated `BLUEPRINT.md` to enumerate all 14 stores and their purposes, providing a clear map for future data-driven feature development.

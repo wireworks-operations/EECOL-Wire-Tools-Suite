@@ -2,10 +2,10 @@
 
 This path gets you from **clone → running app** in under 90 seconds.
 
-## Prerequisites
+## 📋 Prerequisites
 
 - **Node.js**: >= 16.0.0
-- **pnpm**: `npm install -g pnpm`
+- **npm**: (Bundled with Node.js)
 
 ## 1) Clone & Enter
 
@@ -17,8 +17,11 @@ cd eecol-wire-tools-suite-v2
 ## 2) Install & Start
 
 ```bash
-pnpm install
-pnpm dev
+# Install dependencies
+npm install
+
+# Start the application locally
+npm run dev
 ```
 
 ## 3) Access App
@@ -29,8 +32,7 @@ pnpm dev
 
 ### 🛡️ Local-First Note
 
-The application is **entirely client-side**. No backend or database setup is
-required. All data you enter is stored securely in your browser's IndexedDB.
+The application is **entirely client-side**. No backend or database setup is required. All data you enter is stored securely in your browser's IndexedDB.
 
 ### For deeper setup and architecture
 
