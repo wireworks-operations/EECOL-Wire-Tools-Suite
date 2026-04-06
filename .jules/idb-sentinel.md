@@ -32,3 +32,14 @@
 1. Updated `saveMarkConverter`, `saveStopMarkConverter`, `saveReelCapacityEstimator`, and `saveReelSizeEstimator` to use `crypto.randomUUID()`.
 2. Removed redundant `this.get()` verification logic in these methods.
 **Validation:** Verified UUID generation and CRUD success via Playwright (`verification/verify_uuids.py`).
+
+## 2026-03-27 - Optimized Calibration & Version Standardization
+**Observation:** Found that the `calibrationMeasurements` store lacked a compound index for efficient retrieval, requiring full linear scans and in-memory sorting for recent data.
+**Learning:** Standardizing IndexedDB versioning (v8) via a static property and enforcing the singleton pattern without optional parameters prevents `VersionError` drift. Compound indexes (e.g., `['machineName', 'timestamp']`) combined with reverse cursors (`prev`) achieve O(log N) performance for time-series data.
+**Action:**
+1. Bumped DB version to 8 (Standardized via `static DATABASE_VERSION`).
+2. Added `machine_timestamp` compound index to `calibrationMeasurements`.
+3. Refactored `getRecentCalibrationMeasurements` to use an optimized range query with a reverse cursor.
+4. Hardened `createObjectStores` to support advanced (object-based) index configurations idempotently.
+5. Improved migration reliability by preventing store deletion within asynchronous cursor callbacks.
+**Validation:** Verified version 8 upgrade, compound index existence, and O(log N) query performance via Playwright automation (`verification/verify_idb_v8.py`).

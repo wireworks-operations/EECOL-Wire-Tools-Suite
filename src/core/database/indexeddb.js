@@ -5,24 +5,30 @@
 
 class EECOLIndexedDB {
   static instance = null;
+  static DATABASE_VERSION = 8;
 
-  static getInstance(version = 7) {
+  static getInstance() {
     if (!EECOLIndexedDB.instance) {
-      EECOLIndexedDB.instance = new EECOLIndexedDB(version);
+      EECOLIndexedDB.instance = new EECOLIndexedDB();
     }
     return EECOLIndexedDB.instance;
   }
 
-  constructor(version = 7) {
+  constructor() {
     // Prevent direct instantiation - enforce singleton pattern
     if (EECOLIndexedDB.instance) {
       throw new Error("Use EECOLIndexedDB.getInstance() instead of new EECOLIndexedDB()");
     }
 
-    this.dbVersion = version;
+    this.dbVersion = EECOLIndexedDB.DATABASE_VERSION;
     this.dbName = 'EECOLTools_v2';
     this.dbInitialized = this.initialize();
     this.db = null;
+
+    // Expose initialization promise globally
+    if (typeof window !== 'undefined') {
+      window.eecolDBPromise = this.dbInitialized;
+    }
 
     this.stores = {
       cuttingRecords: {
@@ -76,7 +82,9 @@ class EECOLIndexedDB {
       },
       calibrationMeasurements: {
         keyPath: 'id',
-        indexes: ['machineName', 'timestamp']
+        indexes: [
+          { name: 'machine_timestamp', keyPath: ['machineName', 'timestamp'] }
+        ]
       },
       wireCutList: {
         keyPath: 'id',
@@ -187,8 +195,8 @@ class EECOLIndexedDB {
           newStore.put(cursor.value);
           cursor.continue();
         } else {
-          console.log('✅ Migration complete. Removing legacy store.');
-          db.deleteObjectStore('muticutPlanner');
+          console.log('✅ Migration complete.');
+          // Note: We don't delete legacy stores in cursor callbacks to prevent TX hangs
         }
       };
     }
@@ -207,20 +215,25 @@ class EECOLIndexedDB {
 
       // Idempotent index management
       if (config.indexes) {
+        const indexConfigs = config.indexes.map(idx =>
+          typeof idx === 'string' ? { name: idx, keyPath: idx, options: { unique: false } } : idx
+        );
+        const indexNames = indexConfigs.map(c => c.name);
+
         // Remove obsolete indexes
         const currentIndices = Array.from(store.indexNames);
         for (const indexName of currentIndices) {
-          if (!config.indexes.includes(indexName)) {
+          if (!indexNames.includes(indexName)) {
             console.log(`🗑️ Removing obsolete index ${indexName} from ${storeName}`);
             store.deleteIndex(indexName);
           }
         }
 
         // Add missing indexes
-        for (const indexName of config.indexes) {
-          if (!store.indexNames.contains(indexName)) {
-            console.log(`✨ Creating index ${indexName} for ${storeName}`);
-            store.createIndex(indexName, indexName, { unique: false });
+        for (const idx of indexConfigs) {
+          if (!store.indexNames.contains(idx.name)) {
+            console.log(`✨ Creating index ${idx.name} for ${storeName}`);
+            store.createIndex(idx.name, idx.keyPath, idx.options || { unique: false });
           }
         }
       }
@@ -481,10 +494,35 @@ class EECOLIndexedDB {
 
   // Get recent calibration measurements for a specific machine
   async getRecentCalibrationMeasurements(machineName, limit = 3) {
-    const allMeasurements = await this.getAll('calibrationMeasurements', 'machineName', IDBKeyRange.only(machineName));
-    return allMeasurements
-      .sort((a, b) => b.timestamp - a.timestamp) // Sort descending
-      .slice(0, limit); // Take top N
+    await this.isReady();
+    if (!this.db) throw new Error('Database not initialized');
+
+    const transaction = this.db.transaction(['calibrationMeasurements'], 'readonly');
+    const store = transaction.objectStore('calibrationMeasurements');
+    const index = store.index('machine_timestamp');
+
+    return new Promise((resolve, reject) => {
+      const results = [];
+      // Use compound index machine_timestamp with range to fetch only records for machineName
+      // Use 'prev' cursor to get them in descending order (newest first)
+      const range = IDBKeyRange.bound([machineName, 0], [machineName, Infinity]);
+      const request = index.openCursor(range, 'prev');
+
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor && results.length < limit) {
+          results.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(results);
+        }
+      };
+
+      request.onerror = () => {
+        console.error('❌ Failed to fetch recent calibration measurements:', request.error);
+        reject(request.error);
+      };
+    });
   }
 
   /**
@@ -616,11 +654,4 @@ class EECOLIndexedDB {
 // Make it available globally
 if (typeof window !== 'undefined') {
   window.EECOLIndexedDB = EECOLIndexedDB;
-}
-
-// Make promise available globally (needed for unit tests)
-if (typeof window !== 'undefined') {
-  // Fix: Access dbInitialized via singleton instance to ensure a valid promise
-  // EECOLIndexedDB.prototype.dbInitialized was incorrect as it is an instance property
-  window.eecolDBPromise = EECOLIndexedDB.getInstance().dbInitialized;
 }
