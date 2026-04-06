@@ -87,6 +87,37 @@ if (typeof window !== 'undefined') {
 
 // Global variables
 let inventoryItems = [];
+
+/**
+ * BOLT OPTIMIZATION: High-performance date formatters
+ * Pre-initializing Intl.DateTimeFormat instances at module scope is significantly faster
+ * than calling toLocaleString() inside render loops, as it avoids repeated parsing of
+ * locale strings and options.
+ */
+const fullDateTimeFormat = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+});
+
+/**
+ * BOLT OPTIMIZATION: Debounce utility
+ * Limits the rate at which a function can fire. Essential for search inputs to prevent
+ * expensive O(N) filtering and re-rendering on every single keystroke.
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 let editingId = null;
 let currentView = 'inventory';
 let displayedItemsCount = 0;
@@ -394,6 +425,7 @@ async function undoLastOperation() {
 
     displayedItemsCount = 0;
     renderInventoryItems();
+    updateStats(); // Update stats after undo/redo
     updateUndoRedoButtons();
 
     isUndoRedoOperation = false;
@@ -440,6 +472,7 @@ async function redoLastOperation() {
 
     displayedItemsCount = 0;
     renderInventoryItems();
+    updateStats(); // Update stats after redo
     updateUndoRedoButtons();
 
     isUndoRedoOperation = false;
@@ -557,6 +590,7 @@ async function saveInventoryItem() {
 
         displayedItemsCount = 0;
         renderInventoryItems();
+        updateStats(); // Update stats after save
 
         // Scroll to edited item if we were editing
         if (wasEditingId) {
@@ -591,6 +625,7 @@ async function deleteInventoryItem(id) {
 
         displayedItemsCount = 0;
         renderInventoryItems();
+        updateStats(); // Update stats after delete
     } catch (error) {
         // Restore item on error
         if (deletedItem) inventoryItems.push(deletedItem);
@@ -685,27 +720,42 @@ function getFilteredInventoryItems() {
     const dateFrom = dateFromValue ? new Date(dateFromValue).getTime() : null;
     const dateTo = dateToValue ? new Date(dateToValue).getTime() + 86399999 : null; // Include entire day
 
+    /**
+     * BOLT OPTIMIZATION: High-performance filtering
+     * Avoids creating temporary search strings for every single record in the loop.
+     * Uses direct property access and short-circuiting for O(N) efficiency.
+     */
     let filtered = inventoryItems.filter(item => {
         // Date filtering
-        if (dateFrom && new Date(item.inventoryDate).getTime() < dateFrom) return false;
-        if (dateTo && new Date(item.inventoryDate).getTime() > dateTo) return false;
+        if (dateFrom || dateTo) {
+            const itemTime = new Date(item.inventoryDate).getTime();
+            if (dateFrom && itemTime < dateFrom) return false;
+            if (dateTo && itemTime > dateTo) return false;
+        }
 
-        // Text search filtering by field
+        // Text search filtering
         if (searchTerm) {
-            let searchValue = '';
-            if (filterField === 'all') {
-                searchValue = `${item.productCode || ''} ${item.personName || ''} ${item.inventoryComments || ''} ${item.lineCode || ''}`.toLowerCase();
+            if (filterField !== 'all') {
+                const val = item[filterField];
+                if (!val || !val.toLowerCase().includes(searchTerm)) return false;
             } else {
-                searchValue = item[filterField] ? item[filterField].toLowerCase() : '';
+                // Search 'all' fields with optimized short-circuiting
+                const match = (item.productCode && item.productCode.toLowerCase().includes(searchTerm)) ||
+                            (item.personName && item.personName.toLowerCase().includes(searchTerm)) ||
+                            (item.inventoryComments && item.inventoryComments.toLowerCase().includes(searchTerm)) ||
+                            (item.lineCode && item.lineCode.toLowerCase().includes(searchTerm));
+                if (!match) return false;
             }
-            if (!searchValue.includes(searchTerm)) return false;
         }
 
         // Damaged/Tailends filtering
-        if (filterValue === 'damaged') {
-            if (!item.reason.trim().toLowerCase().includes('damaged')) return false;
-        } else if (filterValue === 'tailends') {
-            if (!item.reason.trim().toLowerCase().includes('tail end') && !item.reason.trim().toLowerCase().includes('tailend')) return false;
+        if (filterValue !== 'all') {
+            const reason = (item.reason || '').toLowerCase();
+            if (filterValue === 'damaged') {
+                if (!reason.includes('damaged')) return false;
+            } else if (filterValue === 'tailends') {
+                if (!reason.includes('tail end') && !reason.includes('tailend')) return false;
+            }
         }
 
         return true;
@@ -784,7 +834,7 @@ function renderInventoryItems() {
         emptyMsg.textContent = 'No inventory items found yet.';
         inventoryList.appendChild(emptyMsg);
         displayedItemsElement.textContent = '0';
-        updateStats();
+        // BOLT: updateStats() is now only called upon data mutation
         return;
     }
 
@@ -834,16 +884,19 @@ function renderInventoryItems() {
 
         itemDiv.appendChild(gridDiv);
 
-        const date = new Date(item.timestamp).toLocaleString('en-US', {
-            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
+        /**
+         * BOLT OPTIMIZATION: High-performance date formatting
+         * Uses pre-initialized Intl.DateTimeFormat instead of .toLocaleString()
+         * which is significantly faster within high-frequency render loops.
+         */
+        const date = fullDateTimeFormat.format(item.timestamp);
         const metaP = document.createElement('p');
         metaP.className = 'text-xs text-gray-500 mt-2';
         metaP.textContent = `@ ${date} by Local`;
         itemDiv.appendChild(metaP);
 
-        const createdDate = new Date(item.createdAt || item.timestamp).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-        const updatedDate = item.updatedAt && item.updatedAt !== item.createdAt ? ` | Updated: ${new Date(item.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : '';
+        const createdDate = fullDateTimeFormat.format(item.createdAt || item.timestamp);
+        const updatedDate = item.updatedAt && item.updatedAt !== item.createdAt ? ` | Updated: ${fullDateTimeFormat.format(item.updatedAt)}` : '';
         const createdP = document.createElement('p');
         createdP.className = 'text-xs text-gray-400';
         createdP.textContent = `Created: ${createdDate}${updatedDate}`;
@@ -941,7 +994,8 @@ function renderInventoryItems() {
         inventoryList.appendChild(moreDiv);
     }
 
-    updateStats();
+    // BOLT: Removed redundant updateStats() call from render loop.
+    // Statistics are now only recalculated upon data mutation.
 }
 
 function loadMoreInventoryItems() {
@@ -995,7 +1049,7 @@ async function updateInventoryApprovalStatus(id, status) {
         displayedItemsCount = 0;
         renderInventoryItems();
 
-        updateStats();
+        updateStats(); // Update stats after approval change
     } catch (error) {
         console.error('Error updating approval status:', error);
         await showAlert('Failed to update approval status. Please try again.', 'Update Error');
@@ -1160,6 +1214,7 @@ async function clearAllItems() {
         displayedItemsCount = 0;
         await clearAllInventoryItemsFromDB();
         renderInventoryItems();
+        updateStats(); // Update stats after clearing
         await showAlert('All inventory items have been cleared.', 'Items Cleared');
     }
 }
@@ -1241,6 +1296,7 @@ async function importJSONBackup(event) {
 
             displayedItemsCount = 0;
             renderInventoryItems();
+            updateStats(); // Update stats after import
 
             await showAlert(`JSON import successful!\n${merge ? 'Merged' : 'Replaced'} with ${importRecords.length} inventory records.\nTotal records: ${inventoryItems.length}`, 'Import Successful');
 
@@ -1353,10 +1409,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Search and filter event listeners
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('input', () => {
+        /**
+         * BOLT OPTIMIZATION: Search Debouncing
+         * Applies a 250ms debounce to the search input to prevent expensive O(N)
+         * re-renders and filtering on every single keystroke.
+         */
+        searchInput.addEventListener('input', debounce(() => {
             displayedItemsCount = 0;
             renderInventoryItems();
-        });
+        }, 250));
     }
 
     const filterByField = document.getElementById('filterByField');
@@ -1459,7 +1520,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     // Load records on page load
-    loadInventoryItems().catch((error) => {
+    loadInventoryItems().then(() => {
+        updateStats(); // Initial stats calculation after load
+    }).catch((error) => {
         console.error('❌ loadInventoryItems() failed on page load:', error);
     });
 
@@ -1647,7 +1710,7 @@ async function toggleAdjust(id) {
         displayedItemsCount = 0;
         renderInventoryItems();
 
-        updateStats();
+        updateStats(); // Update stats after adjust change
     } catch (error) {
         console.error('Error updating adjust status:', error);
         await showAlert('Failed to update adjust status. Please try again.', 'Update Error');
@@ -1701,7 +1764,7 @@ async function markAsReviewed(id) {
             button.onclick = null; // Remove onclick handler
         }
 
-        updateStats();
+        updateStats(); // Update stats after review status change
 
         // Show success alert like Cut In System button
         await showAlert(`Inventory item marked as "Reviewed" at ${new Date(now).toLocaleString('en-US', {
