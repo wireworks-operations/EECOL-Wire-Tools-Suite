@@ -148,20 +148,34 @@ function calculateConversion(showErrors = false) {
 
     const referenceList = document.getElementById('referenceMarksList');
     if (referenceList) {
-        referenceList.innerHTML = `
-            <div class="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100">
-                <span class="text-xs font-bold text-gray-700 flex items-center"><span class="mr-1">🏁</span> Starting Mark</span>
-                <span class="text-sm font-bold text-blue-600">${startValue.toFixed(3)} ${stoppingMarkUnit}</span>
-            </div>
-            <div class="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100">
-                <span class="text-xs font-bold text-gray-700 flex items-center"><span class="mr-1">✅</span> Mark at Counter</span>
-                <span class="text-sm font-bold text-green-600">${markAtCounter.toFixed(3)} ${stoppingMarkUnit}</span>
-            </div>
-            <div class="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100">
-                <span class="text-xs font-bold text-gray-700 flex items-center"><span class="mr-1">📍</span> Mark 1 Unit Upstream</span>
-                <span class="text-sm font-bold text-blue-600">${markBehind.toFixed(3)} ${stoppingMarkUnit}</span>
-            </div>
-        `;
+        while (referenceList.firstChild) {
+            referenceList.removeChild(referenceList.firstChild);
+        }
+
+        const createReferenceRow = (icon, label, value, valueClass) => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100';
+
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'text-xs font-bold text-gray-700 flex items-center';
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'mr-1';
+            iconSpan.textContent = icon;
+            labelSpan.appendChild(iconSpan);
+            labelSpan.appendChild(document.createTextNode(label));
+
+            const valueSpan = document.createElement('span');
+            valueSpan.className = `text-sm font-bold ${valueClass}`;
+            valueSpan.textContent = value;
+
+            rowDiv.appendChild(labelSpan);
+            rowDiv.appendChild(valueSpan);
+            return rowDiv;
+        };
+
+        referenceList.appendChild(createReferenceRow('🏁', ' Starting Mark', `${startValue.toFixed(3)} ${stoppingMarkUnit}`, 'text-blue-600'));
+        referenceList.appendChild(createReferenceRow('✅', ' Mark at Counter', `${markAtCounter.toFixed(3)} ${stoppingMarkUnit}`, 'text-green-600'));
+        referenceList.appendChild(createReferenceRow('📍', ' Mark 1 Unit Upstream', `${markBehind.toFixed(3)} ${stoppingMarkUnit}`, 'text-blue-600'));
     }
 
     const explanation = document.getElementById('mechanismExplanation');
