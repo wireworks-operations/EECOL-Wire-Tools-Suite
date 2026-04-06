@@ -103,8 +103,15 @@ class EECOLIndexedDB {
       const request = indexedDB.open(this.dbName, this.dbVersion);
 
       request.onerror = () => {
-        console.error('❌ IndexedDB initialization failed:', request.error);
-        reject(request.error);
+        const error = request.error;
+        console.error('❌ IndexedDB initialization failed:', error);
+
+        // Handle VersionError - specifically when requested version is less than existing
+        if (error && error.name === 'VersionError') {
+          console.warn('🔄 Database version mismatch detected. This usually happens if a stale service worker requests an old version.');
+        }
+
+        reject(error);
       };
 
       request.onblocked = () => {

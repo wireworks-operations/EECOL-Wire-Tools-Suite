@@ -65,12 +65,17 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   // Static assets - cache first
-  if (STATIC_ASSETS.some(asset => url.pathname.endsWith(asset)) ||
+  // EXCEPT for core logic files that might change schema or critical versions
+  const isCoreLogic = url.pathname.endsWith('indexeddb.js') || url.pathname.endsWith('sw.js');
+
+  if (!isCoreLogic && (STATIC_ASSETS.some(asset => url.pathname.endsWith(asset)) ||
       url.hostname.includes('cdn.') ||
-      url.hostname.includes('fonts.googleapis.com')) {
+      url.hostname.includes('fonts.googleapis.com'))) {
     event.respondWith(cacheFirst(request));
     return;
   }
+
+  // Core logic and pages - network first
 
   // Pages - network first, fallback to cache
   event.respondWith(networkFirst(request));
