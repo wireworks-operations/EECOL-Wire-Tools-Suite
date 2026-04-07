@@ -37,7 +37,7 @@
 4. **Offline Access**: Service worker (`sw.js`) serves cached HTML/JS/CSS assets even without connectivity.
 5. **Retrieval**: Analytics tools query IndexedDB to render real-time charts via Chart.js.
 
-## 🗄️ Database Architecture (v7)
+## 🗄️ Database Architecture (v8)
 
 The application uses **14 specialized stores** within the `EECOLTools_v2` database:
 
@@ -58,7 +58,7 @@ The application uses **14 specialized stores** within the `EECOLTools_v2` databa
 
 - **Local-First**: Zero backend dependencies to ensure 100% uptime in industrial environments.
 - **Vanilla JS**: Chosen for longevity and to minimize framework-induced maintenance debt.
-- **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **7**.
+- **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **8**.
 - **ESM Hybrid**: Transitioning towards ES Modules (`type="module"`) while maintaining global shims for backward compatibility.
 - **Relaxed Durability**: Uses `durability: 'relaxed'` in IDB transactions for optimal UI responsiveness.
 

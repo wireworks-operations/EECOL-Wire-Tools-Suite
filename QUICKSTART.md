@@ -5,7 +5,7 @@ This path gets you from **clone → running app** in under 90 seconds.
 ## 📋 Prerequisites
 
 - **Node.js**: >= 16.0.0
-- **npm**: (Bundled with Node.js)
+- **npm**: (Bundled with Node.js) or **pnpm** / **yarn**
 
 ## 1) Clone & Enter
 
@@ -18,7 +18,7 @@ cd eecol-wire-tools-suite-v2
 
 ```bash
 # Install dependencies
-npm install
+npm install  # or pnpm install / yarn install
 
 # Start the application locally
 npm run dev
@@ -27,6 +27,13 @@ npm run dev
 ## 3) Access App
 
 - **URL**: [http://localhost:3000](http://localhost:3000)
+
+## 4) Verify
+
+```bash
+# Optional: Run IndexedDB functional verification (requires Playwright)
+python3 verification/verify_idb.py
+```
 
 ---
 

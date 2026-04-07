@@ -2,8 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-green.svg)](https://nodejs.org/)
+[![npm](https://img.shields.io/badge/npm-v8%2B-red.svg)](https://www.npmjs.com/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
-[![Version](https://img.shields.io/badge/Version-0.8.0.4-blue.svg)](#)
+[![Version](https://img.shields.io/badge/Version-0.8.0.4-blue.svg)](https://github.com/eecol/eecol-wire-tools-suite-v2/releases)
 
 An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designed for industrial wire processing. This suite provides specialized calculators, inventory management, and operational tracking tools that persist data directly in the browser's IndexedDB, ensuring 100% uptime without backend dependencies.
 
@@ -16,15 +17,15 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 ### Prerequisites
 
 - **Node.js**: >= 16.0.0
-- **npm**: (Bundled with Node.js)
-- **Python**: 3.x (Optional, for database verification)
+- **npm**: (Bundled with Node.js) or **pnpm** / **yarn**
+- **Python**: 3.x (Optional, for database verification scripts)
 
 ### 1) Clone & Install
 
 ```bash
 git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
 cd eecol-wire-tools-suite-v2
-npm install
+npm install  # or pnpm install / yarn install
 ```
 
 ### 2) Run (Local Development)
@@ -47,18 +48,19 @@ npm run dev
 
 ---
 
-## ⚡ Quickstart (90-second path)
+## 🧭 Quickstart (90-second path)
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
 cd eecol-wire-tools-suite-v2
 
-# Install dependencies and start the app
+# 2. Install dependencies and start the app
 npm install && npm run dev
-```
 
-The app will be available at **[http://localhost:3000](http://localhost:3000)**.
+# 3. Open app
+# http://localhost:3000
+```
 
 ---
 
@@ -72,7 +74,7 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 <summary>⚙️ Core Technology Stack</summary>
 
 - **Frontend**: Vanilla JavaScript (ESM Hybrid), HTML5, Tailwind CSS.
-- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton.
+- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton (v8).
 - **PWA**: Service Worker (`sw.js`) and Web App Manifest for offline capability.
 - **Visualization**: Chart.js for operational reporting and analytics.
 - **Utility**: Custom modular print system and sanitization layer.
@@ -108,22 +110,18 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 
 ---
 
-## 🔧 Technical Details
+## 🧪 Testing Matrix
 
-<details>
-<summary>🗄️ Storage Layer (IndexedDB)</summary>
+| Scope | Tool | Status |
+| :--- | :--- | :--- |
+| **Functional (IDB)** | Playwright (Python) | ✅ Operational |
+| **Unit** | Jest | 🚧 Pending Config |
+| **E2E** | Cypress | 🚧 Pending Config |
+| **Linting** | ESLint | 🚧 Pending Config |
 
-The application uses a singleton `EECOLIndexedDB` class (version 7) to manage specialized stores. It features:
+---
 
-- **Atomic Bulk Updates**: `bulkPut` for reliable data import/undo.
-- **Idempotent Schema Upgrades**: Handles index lifecycle automatically.
-- **Data Normalization**: Strict uppercase enforcement for Wire IDs and Order Numbers.
-- **Performance**: Uses `durability: 'relaxed'` for faster UI response.
-
-</details>
-
-<details>
-<summary>🔒 Security & Privacy</summary>
+## 🔒 Security & Privacy
 
 - **Zero Data Transmission**: All data remains in the browser's IndexedDB. No cloud sync.
 - **XSS Mitigation**: Strict use of `.textContent` ("Secure by Default") and a robust Content Security Policy (CSP).
@@ -131,15 +129,13 @@ The application uses a singleton `EECOLIndexedDB` class (version 7) to manage sp
 
 See **[SECURITY.md](SECURITY.md)** for our full security policy.
 
-</details>
-
 ---
 
 ## 🆘 Troubleshooting
 
 - **Service Worker not registering**: Ensure you are serving via `http` or `https`. The `file://` protocol is not supported for PWAs.
 - **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes.
-- **Commands failing**: Ensure you have Node.js >= 16.0.0 installed.
+- **Port Conflict**: If port 3000 is in use, run `PORT=3001 npm run dev`.
 
 ---
 
