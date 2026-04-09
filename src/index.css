@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --eecol-blue: #0058B3;
+  --eecol-light-blue: #F0F8FF;
+}
+
+body {
+  @apply bg-eecol-blue min-h-screen;
+}
+
+.header-gradient {
+  background: linear-gradient(135deg, #0058B3 0%, #00A3E0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

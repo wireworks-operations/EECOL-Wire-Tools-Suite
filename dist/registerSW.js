@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/EECOL-Wire-Tools-Suite/sw.js', { scope: '/EECOL-Wire-Tools-Suite/' })})}
