@@ -1,5 +1,6 @@
 {
   "name": "eecol-wire-tools-suite",
+  "description": "Industrial-grade PWA for wire processing refactored to React/Vite/TypeScript",
   "private": true,
   "version": "0.9.0",
   "type": "module",

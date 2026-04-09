@@ -6,6 +6,7 @@ import InventoryRecords from './pages/InventoryRecords';
 import MarkCalculator from './pages/MarkCalculator';
 import WeightCalculator from './pages/WeightCalculator';
 import Reports from './pages/Reports';
+import * as Placeholders from './pages/Placeholders';
 
 function App() {
   return (
@@ -18,6 +19,16 @@ function App() {
           <Route path="/mark-calculator" element={<MarkCalculator />} />
           <Route path="/weight" element={<WeightCalculator />} />
           <Route path="/reports" element={<Reports />} />
+
+          <Route path="/stop-mark" element={<Placeholders.StopMark />} />
+          <Route path="/reel-capacity" element={<Placeholders.ReelCapacity />} />
+          <Route path="/reel-size" element={<Placeholders.ReelSize />} />
+          <Route path="/shipping-manifest" element={<Placeholders.ShippingManifest />} />
+          <Route path="/reel-labels" element={<Placeholders.ReelLabels />} />
+          <Route path="/maintenance" element={<Placeholders.Maintenance />} />
+          <Route path="/advanced-math" element={<Placeholders.AdvancedMath />} />
+          <Route path="/education" element={<Placeholders.Education />} />
+          <Route path="/about" element={<Placeholders.About />} />
         </Routes>
       </Layout>
     </Router>
