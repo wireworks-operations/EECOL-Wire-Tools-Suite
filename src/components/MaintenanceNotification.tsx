@@ -14,7 +14,8 @@ const MaintenanceNotification: React.FC = () => {
   const checkStatus = async () => {
     try {
       const data = await db!.getAll<any>('maintenanceLogs');
-      const dailyCheck = data.find((log: any) => log.id === 'daily_check');
+      const today = new Date().toISOString().split('T')[0];
+      const dailyCheck = data.find((log: any) => log.id === today || log.id === 'daily_check');
 
       if (!dailyCheck || !dailyCheck.completedAt) {
         setStatus({ icon: '❌', bg: 'bg-red-100 border-red-500', text: 'Daily Machine Maintenance: Not Completed' });

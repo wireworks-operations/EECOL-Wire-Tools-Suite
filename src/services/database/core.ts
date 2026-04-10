@@ -89,6 +89,17 @@ export class EECOLIndexedDB {
     });
   }
 
+  async get<T>(storeName: string, key: string | number): Promise<T | undefined> {
+    await this.isReady();
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.get(key);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   async add<T>(storeName: string, data: T): Promise<string | number> {
     await this.isReady();
     return new Promise((resolve, reject) => {
@@ -111,12 +122,27 @@ export class EECOLIndexedDB {
     });
   }
 
+  async put<T>(storeName: string, data: T): Promise<string | number> {
+    return this.update(storeName, data);
+  }
+
   async delete(storeName: string, key: string | number): Promise<void> {
     await this.isReady();
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([storeName], 'readwrite', { durability: 'relaxed' });
       const store = transaction.objectStore(storeName);
       const request = store.delete(key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async clear(storeName: string): Promise<void> {
+    await this.isReady();
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([storeName], 'readwrite', { durability: 'relaxed' });
+      const store = transaction.objectStore(storeName);
+      const request = store.clear();
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
