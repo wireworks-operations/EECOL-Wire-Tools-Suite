@@ -7,7 +7,11 @@ const DatabaseConfig: React.FC = () => {
 
   useEffect(() => {
     if (isReady && db) {
-      const stores = ['cuttingRecords', 'inventoryRecords', 'maintenanceLogs', 'wireCutList'];
+      const stores = [
+        'cuttingRecords', 'inventoryRecords', 'maintenanceLogs',
+        'wireCutList', 'markConverter', 'stopmarkConverter',
+        'reelcapacityEstimator', 'reelsizeEstimator', 'multicutPlanner'
+      ];
       const counts: Record<string, number> = {};
       Promise.all(stores.map(s => db.getAll(s).then(r => counts[s] = r.length))).then(() => setStats({...counts}));
     }
@@ -15,8 +19,15 @@ const DatabaseConfig: React.FC = () => {
 
   const handleExport = async () => {
     if (!db) return;
-    const allData: any = {};
-    const stores = ['cuttingRecords', 'inventoryRecords', 'maintenanceLogs', 'wireCutList', 'settings'];
+    const allData: any = {
+      version: '0.9.0',
+      timestamp: Date.now()
+    };
+    const stores = [
+      'cuttingRecords', 'inventoryRecords', 'maintenanceLogs',
+      'wireCutList', 'settings', 'markConverter', 'stopmarkConverter',
+      'reelcapacityEstimator', 'reelsizeEstimator', 'multicutPlanner'
+    ];
     for (const s of stores) { allData[s] = await db.getAll(s); }
 
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
@@ -25,6 +36,31 @@ const DatabaseConfig: React.FC = () => {
     a.href = url;
     a.download = `eecol_db_backup_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !db) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (confirm('Import data? This will merge with existing records.')) {
+          for (const store in data) {
+            if (Array.isArray(data[store])) {
+              for (const item of data[store]) {
+                await db.put(store, item);
+              }
+            }
+          }
+          alert('Import successful!');
+          window.location.reload();
+        }
+      } catch (err) {
+        alert('Invalid backup file.');
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -48,6 +84,12 @@ const DatabaseConfig: React.FC = () => {
           <h2 className="text-lg font-bold text-eecol-blue dark:text-blue-300 mb-4 uppercase">Maintenance & Backup</h2>
           <div className="flex flex-col gap-3">
              <button onClick={handleExport} className="w-full bg-eecol-blue text-white font-bold py-3 rounded-xl btn-tactile uppercase">Generate Full JSON Backup</button>
+
+             <label className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl btn-tactile uppercase text-center cursor-pointer">
+                Import JSON Backup
+                <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+             </label>
+
              <button onClick={async () => {if(confirm('Nuclear Option: Clear ALL data?')){ localStorage.clear(); indexedDB.deleteDatabase('EECOLTools_v2'); window.location.reload(); }}} className="w-full bg-red-600 text-white font-bold py-3 rounded-xl btn-tactile uppercase">Factory Reset (Delete All)</button>
           </div>
         </div>

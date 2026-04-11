@@ -1,12 +1,34 @@
 import React, { useState } from 'react';
 import { toMeters, calculateCapacity, METERS_TO_FEET } from './utils/logic';
 
+const REEL_PRESETS = [
+  { name: 'EE-24W', flange: 24, core: 12, width: 14 },
+  { name: 'EE-30W', flange: 30, core: 15, width: 18 },
+  { name: 'EE-36W', flange: 36, core: 18, width: 22 },
+  { name: 'EE-42W', flange: 42, core: 21, width: 26 },
+  { name: 'EE-48W', flange: 48, core: 24, width: 30 },
+  { name: 'EE-54W', flange: 54, core: 27, width: 34 },
+  { name: 'EE-60W', flange: 60, core: 30, width: 38 }
+];
+
 const ReelCapacity: React.FC = () => {
   const [inputs, setInputs] = useState({
     flange: 0, flangeUnit: 'in', core: 0, coreUnit: 'in', width: 0, widthUnit: 'in',
     wireD: 0, wireDUnit: 'in', freeboard: 2, freeboardUnit: 'in', efficiency: 0.9
   });
   const [result, setResult] = useState<any>(null);
+
+  const applyPreset = (preset: typeof REEL_PRESETS[0]) => {
+    setInputs(prev => ({
+      ...prev,
+      flange: preset.flange,
+      core: preset.core,
+      width: preset.width,
+      flangeUnit: 'in',
+      coreUnit: 'in',
+      widthUnit: 'in'
+    }));
+  };
 
   const calculate = () => {
     const df = toMeters(inputs.flange, inputs.flangeUnit);
@@ -23,6 +45,17 @@ const ReelCapacity: React.FC = () => {
     <div className="flex-1 flex flex-col items-center p-4 animate-entrance pb-24">
       <div className="w-full max-w-2xl bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-eecol-blue/20">
         <h1 className="text-2xl font-black header-gradient text-center mb-6 uppercase">Reel Capacity Estimator</h1>
+
+        <div className="mb-6">
+           <label className="text-[10px] font-bold header-gradient uppercase mb-2 block">Standard Reel Presets</label>
+           <div className="flex flex-wrap gap-2">
+             {REEL_PRESETS.map(p => (
+               <button key={p.name} onClick={() => applyPreset(p)} className="px-2 py-1 bg-eecol-light-blue dark:bg-blue-900/40 text-eecol-blue dark:text-blue-300 text-[10px] font-black rounded border border-eecol-blue/20 hover:bg-eecol-blue hover:text-white transition-colors">
+                 {p.name}
+               </button>
+             ))}
+           </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
            <div>

@@ -108,13 +108,14 @@ const Home: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
         <ToolCard to="/cutting-records" icon="📊" title="Wire Cut Records" description="Log, track, and analyze wire cuts efficiently." large />
         <ToolCard to="/inventory-records" icon="📦" title="Wire Inventory Records" description="Track and manage wire inventory efficiently." large />
+        <ToolCard to="/live-stats" icon="📉" title="Live Statistics" description="Real-time operational dashboard." />
         <ToolCard to="/reports" icon="📈" title="Reports" description="Statistical analysis and trends." />
         <ToolCard to="/mark-calculator" icon="📏" title="Mark Calculator" description="Calculate length between wire marks." />
         <ToolCard to="/stop-mark" icon="⏹️" title="Stop Mark Calculator" description="Determine exact stopping points." />
         <ToolCard to="/reel-capacity" icon="🔄" title="Reel Capacity Estimator" description="Calculate maximum wire capacity." />
         <ToolCard to="/reel-size" icon="📐" title="Reel Size Estimator" description="Find optimal reel for wire length." />
         <ToolCard to="/weight" icon="⚖️" title="Weight Calculator" description="Estimate wire weight by length." />
-        <ToolCard to="#" icon="✂️" title="Multi-Cut Planner" description="Plan multiple reel cuts & capacity." disabled />
+        <ToolCard to="/multicut-planner" icon="✂️" title="Multi-Cut Planner" description="Plan multiple reel cuts & capacity." />
         <ToolCard to="/shipping-manifest" icon="📋" title="Shipping Manifest" description="Create reel labels for shipping." />
         <ToolCard to="/reel-labels" icon="🏷️" title="Reel Inventory Labels" description="Simple large-format reel identification." />
         <ToolCard to="/maintenance" icon="🔧" title="Machine Maintenance" description="Daily equipment inspection checklists." />
