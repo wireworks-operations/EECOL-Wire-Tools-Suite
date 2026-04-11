@@ -6,3 +6,6 @@ my-journal
 node_modules
 wire-refrences
 server.log
+dist
+*.log
+.DS_Store
