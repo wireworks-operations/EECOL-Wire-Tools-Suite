@@ -38,9 +38,9 @@ This application is designed as a **local-first** Progressive Web App (PWA). All
 ### Hardening Checklist
 
 - [x] **Content Security Policy (CSP)**: Strict policy implemented in `index.html` including fonts and CDN scripts.
-- [x] **Secure by Default** Rendering: Strict use of `.textContent` over `innerHTML` for user-controllable data.
-- [x] **Sanitization Layer**: Manual escaping using `window.escapeHTML` (uppercase HTML) where necessary.
-- [x] **Subresource Integrity (SRI)**: Integrity hashes used for all CDN dependencies (Chart.js, jsPDF).
+- [x] **Secure by Default Rendering**: Strict use of `.textContent` over `innerHTML` for user-controllable data.
+- [x] **Sanitization Layer**: Manual escaping using `window.escapeHTML` where necessary.
+- [x] **Subresource Integrity (SRI)**: Integrity hashes used for CDN dependencies.
 - [ ] **Automated Dependency Scanning**: (Planned).
 
 ### Attack Vector Analysis

@@ -124,4 +124,6 @@ critical patterns for the EECOL Wire Tools Suite.
 
 ---
 
-**Created with ❤️ by Jules 🤖**
+### ✍️ Author
+
+Created with ❤️ by Jules 🤖
