@@ -23,3 +23,7 @@
 ## 2025-08-04 - Search Debouncing and Formatter Optimization
 **Learning:** The cutting records search was triggering full O(N) re-renders on every keystroke, and the filtering logic was creating temporary objects for each record. Additionally, repeated calls to `toLocaleString()` in render loops are significantly slower than using a pre-initialized `Intl.DateTimeFormat`.
 **Action:** Implemented a 250ms debounce on the search input, optimized `getFilteredRecords` to avoid object allocation, and pre-initialized `Intl.DateTimeFormat` for consistent, high-performance date string generation. Decoupled `updateStats()` from the render loop to ensure it only runs on data mutation.
+
+## 2026-03-15 - Sorting Invariants for O(N) Rendering
+**Learning:** Removing an O(N log N) sort from a high-frequency render path (like filtering) requires strict enforcement of sorting invariants in all mutation paths (add, edit, delete, import, undo/redo). If even one mutation path forgets to maintain the order, the UI state becomes inconsistent.
+**Action:** Always verify all functions that modify the base collection (Array.push, Array.map, etc.) to ensure they either insert in order or re-sort the base array once before the next filter/render cycle.

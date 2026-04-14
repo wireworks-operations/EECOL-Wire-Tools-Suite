@@ -420,6 +420,9 @@ async function undoLastOperation() {
         }
     }
 
+    // Ensure items remain sorted after restoration
+    inventoryItems.sort((a, b) => b.timestamp - a.timestamp);
+
     // Update database
     await saveInventoryStateToDB();
 
@@ -712,38 +715,43 @@ async function editInventoryItem(id) {
 }
 
 function getFilteredInventoryItems() {
-    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+    const searchTermLower = document.getElementById('searchInput').value.trim().toLowerCase();
+    const searchTermUpper = searchTermLower.toUpperCase();
     const filterField = document.getElementById('filterByField').value;
-    const filterValue = document.querySelector('input[name="filterDamaged"]:checked').value;
-    const dateFromValue = document.getElementById('dateFrom').value;
-    const dateToValue = document.getElementById('dateTo').value;
-    const dateFrom = dateFromValue ? new Date(dateFromValue).getTime() : null;
-    const dateTo = dateToValue ? new Date(dateToValue).getTime() + 86399999 : null; // Include entire day
+    const filterValue = (document.querySelector('input[name="filterDamaged"]:checked') || { value: 'all' }).value;
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
 
     /**
      * BOLT OPTIMIZATION: High-performance filtering
-     * Avoids creating temporary search strings for every single record in the loop.
-     * Uses direct property access and short-circuiting for O(N) efficiency.
+     * - Uses string-based date comparison to avoid expensive new Date() parsing.
+     * - Only compares the YYYY-MM-DD portion to remain inclusive of full days.
+     * - Caches search terms and uses case-insensitive comparison.
+     * - Employs short-circuiting for O(N) efficiency.
      */
     let filtered = inventoryItems.filter(item => {
-        // Date filtering
+        // Date filtering (lexicographical comparison for YYYY-MM-DD)
         if (dateFrom || dateTo) {
-            const itemTime = new Date(item.inventoryDate).getTime();
-            if (dateFrom && itemTime < dateFrom) return false;
-            if (dateTo && itemTime > dateTo) return false;
+            const itemDate = item.inventoryDate;
+            if (itemDate) {
+                // Take only the date part to ensure "2023-10-27T14:00" is included when dateTo is "2023-10-27"
+                const itemDatePart = itemDate.length > 10 ? itemDate.substring(0, 10) : itemDate;
+                if (dateFrom && itemDatePart < dateFrom) return false;
+                if (dateTo && itemDatePart > dateTo) return false;
+            }
         }
 
         // Text search filtering
-        if (searchTerm) {
+        if (searchTermLower) {
             if (filterField !== 'all') {
                 const val = item[filterField];
-                if (!val || !val.toLowerCase().includes(searchTerm)) return false;
+                if (!val || !val.toString().toUpperCase().includes(searchTermUpper)) return false;
             } else {
                 // Search 'all' fields with optimized short-circuiting
-                const match = (item.productCode && item.productCode.toLowerCase().includes(searchTerm)) ||
-                            (item.personName && item.personName.toLowerCase().includes(searchTerm)) ||
-                            (item.inventoryComments && item.inventoryComments.toLowerCase().includes(searchTerm)) ||
-                            (item.lineCode && item.lineCode.toLowerCase().includes(searchTerm));
+                const match = (item.productCode && item.productCode.toString().toUpperCase().includes(searchTermUpper)) ||
+                            (item.personName && item.personName.toString().toUpperCase().includes(searchTermUpper)) ||
+                            (item.lineCode && item.lineCode.toString().toUpperCase().includes(searchTermUpper)) ||
+                            (item.inventoryComments && item.inventoryComments.toString().toUpperCase().includes(searchTermUpper));
                 if (!match) return false;
             }
         }
@@ -764,18 +772,32 @@ function getFilteredInventoryItems() {
     // Sorting
     const sortField = document.getElementById('sortByField').value;
     if (sortField === 'personName') {
-        filtered.sort((a, b) => (a.personName || '').localeCompare(b.personName || ''));
+        filtered.sort((a, b) => {
+            const na = (a.personName || '').toUpperCase();
+            const nb = (b.personName || '').toUpperCase();
+            return na < nb ? -1 : (na > nb ? 1 : 0);
+        });
     } else if (sortField === 'productCode') {
-        filtered.sort((a, b) => (a.productCode || '').localeCompare(b.productCode || ''));
+        filtered.sort((a, b) => {
+            const pa = (a.productCode || '').toUpperCase();
+            const pb = (b.productCode || '').toUpperCase();
+            return pa < pb ? -1 : (pa > pb ? 1 : 0);
+        });
     } else if (sortField === 'currentLength') {
         filtered.sort((a, b) => (a.currentLength || 0) - (b.currentLength || 0));
     } else if (sortField === 'actualLength') {
         filtered.sort((a, b) => (a.actualLength || 0) - (b.actualLength || 0));
     } else if (sortField === 'inventoryDate') {
-        filtered.sort((a, b) => new Date(b.inventoryDate || '1970-01-01') - new Date(a.inventoryDate || '1970-01-01'));
+        filtered.sort((a, b) => {
+            const da = a.inventoryDate || '';
+            const db = b.inventoryDate || '';
+            return da < db ? 1 : (da > db ? -1 : 0);
+        });
     } else {
         // Default: timestamp sort
-        filtered.sort((a, b) => b.timestamp - a.timestamp);
+        // Base array `inventoryItems` is always kept sorted by timestamp descending
+        // in all mutation paths (load, add, edit, undo, redo, import).
+        // Array.prototype.filter() is stable and preserves this order.
     }
 
     return filtered;
@@ -824,9 +846,8 @@ function renderInventoryItems() {
 
     totalItemsElement.textContent = filteredItems.length;
 
-    while (inventoryList.firstChild) {
-        inventoryList.removeChild(inventoryList.firstChild);
-    }
+    // BOLT OPTIMIZATION: Faster list clearing using replaceChildren()
+    inventoryList.replaceChildren();
 
     if (filteredItems.length === 0) {
         const emptyMsg = document.createElement('p');
