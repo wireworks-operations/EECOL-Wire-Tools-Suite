@@ -5,7 +5,7 @@ This path gets you from **clone → running app** in under 90 seconds.
 ## 📋 Prerequisites
 
 - **Node.js**: >= 16.0.0
-- **npm**: (Bundled with Node.js) or **pnpm** / **yarn**
+- **npm**: (Bundled with Node.js)
 
 ## 1) Clone & Enter
 
@@ -18,7 +18,7 @@ cd eecol-wire-tools-suite-v2
 
 ```bash
 # Install dependencies
-npm install  # or pnpm install / yarn install
+npm install
 
 # Start the application locally
 npm run dev
@@ -39,7 +39,7 @@ python3 verification/verify_idb.py
 
 ### 🛡️ Local-First Note
 
-The application is **entirely client-side**. No backend or database setup is required. All data you enter is stored securely in your browser's IndexedDB.
+The application is **entirely client-side**. No backend or database setup is required. All data you enter is stored securely in your browser's IndexedDB (v8).
 
 ### For deeper setup and architecture
 

@@ -17,7 +17,7 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 ### Prerequisites
 
 - **Node.js**: >= 16.0.0
-- **npm**: (Bundled with Node.js) or **pnpm** / **yarn**
+- **npm**: (Bundled with Node.js)
 - **Python**: 3.x (Optional, for database verification scripts)
 
 ### 1) Clone & Install
@@ -25,7 +25,7 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 ```bash
 git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
 cd eecol-wire-tools-suite-v2
-npm install  # or pnpm install / yarn install
+npm install
 ```
 
 ### 2) Run (Local Development)
@@ -40,11 +40,11 @@ npm run dev
 | Command | Status | Description |
 | :--- | :--- | :--- |
 | `npm run dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
-| `python3 verification/verify_idb.py` | ✅ **Operational** | IDB verification via Playwright. |
+| `python3 verification/verify_idb.py` | ✅ **Operational** | IDB verification via Playwright (Python). |
 | `npm run build` | 🚧 **In-Progress** | Production build (Missing Webpack config). |
 | `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
 | `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
-| `npm run docker:*` | 🚧 **Planned** | Containerized deployment (Missing Dockerfile). |
+| `npm run type-check` | 🚧 **In-Progress** | TypeScript verification (Missing config). |
 
 ---
 

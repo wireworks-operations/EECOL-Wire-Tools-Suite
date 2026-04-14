@@ -33,7 +33,7 @@
 
 1. **User Action**: User enters data into a tool (e.g., Cutting Records).
 2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton via `window.eecolDB`.
-3. **Local Storage**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`).
+3. **Local Storage**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`) using `relaxed` durability.
 4. **Offline Access**: Service worker (`sw.js`) serves cached HTML/JS/CSS assets even without connectivity.
 5. **Retrieval**: Analytics tools query IndexedDB to render real-time charts via Chart.js.
 

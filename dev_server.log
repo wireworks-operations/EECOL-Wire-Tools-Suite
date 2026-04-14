@@ -22,6 +22,8 @@ Available on:
 Hit CTRL-C to stop the server
 Open: http://127.0.0.1:3000
 
-[2026-04-07T07:34:16.584Z]  "GET /" "Lynx/2.9.0 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/3.8.3"
-(node:46002) [DEP0066] DeprecationWarning: OutgoingMessage.prototype._headers is deprecated
+[2026-04-14T07:35:18.770Z]  "GET /" "Lynx/2.9.0 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/3.8.3"
+(node:14497) [DEP0066] DeprecationWarning: OutgoingMessage.prototype._headers is deprecated
 (Use `node --trace-deprecation ...` to show where the warning was created)
+[2026-04-14T07:35:23.229Z]  "HEAD /" "curl/8.5.0"
+http-server stopped.
