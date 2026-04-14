@@ -43,3 +43,19 @@
 4. Hardened `createObjectStores` to support advanced (object-based) index configurations idempotently.
 5. Improved migration reliability by preventing store deletion within asynchronous cursor callbacks.
 **Validation:** Verified version 8 upgrade, compound index existence, and O(log N) query performance via Playwright automation (`verification/verify_idb_v8.py`).
+
+## 2026-04-05 - Fix upgrade idempotency and improve transaction reliability
+**Observation:**
+The `createObjectStores` method in `EECOLIndexedDB` had a non-idempotent migration path for the `multicutPlanner` store. If an upgrade was interrupted or re-run, it would attempt to `createObjectStore` for a store that might already exist, causing a `ConstraintError`. Additionally, `get`, `getAll`, and `count` methods lacked transaction-level `onerror` and `onabort` handlers, which could lead to hung promises if a transaction failed.
+
+**Learning:**
+1. **Idempotency in `onupgradeneeded`**: Always check `db.objectStoreNames.contains(name)` before calling `createObjectStore`, even during custom migration logic.
+2. **Robust Promise Handling**: When wrapping IndexedDB requests in Promises, it's critical to attach error handlers to both the `request` AND the `transaction`. A transaction failure might not always be caught by the request's `onerror` handler alone.
+3. **Migration Performance**: Iterative `await this.add(...)` calls in migration loops cause significant overhead due to multiple transactions. Using `bulkPut` (or a single transaction) is vastly more efficient for initial data migrations.
+
+**Action:**
+1. Bumped DB version to 9 (via `static DATABASE_VERSION`).
+2. Modified `createObjectStores` to check for `multicutPlanner` existence before creation.
+3. Added `transaction.onerror` and `transaction.onabort` handlers to `get`, `getAll`, and `count`.
+4. Refactored `migrateFromLocalStorage` to use `bulkPut`, reducing migration time and transaction overhead.
+**Validation:** Verified fixes and version 9 upgrade via Playwright (`verification/verify_sentinel_fix.py`).

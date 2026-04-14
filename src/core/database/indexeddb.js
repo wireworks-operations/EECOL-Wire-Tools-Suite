@@ -5,7 +5,7 @@
 
 class EECOLIndexedDB {
   static instance = null;
-  static DATABASE_VERSION = 8;
+  static DATABASE_VERSION = 9;
 
   static getInstance() {
     if (!EECOLIndexedDB.instance) {
@@ -181,12 +181,20 @@ class EECOLIndexedDB {
     // Safe data migration within the upgrade transaction
     if (db.objectStoreNames.contains('muticutPlanner')) {
       console.log('📦 Migrating data from legacy muticutPlanner store...');
-      const oldStore = transaction.objectStore('muticutPlanner');
       const config = this.stores.multicutPlanner;
-      const newStore = db.createObjectStore('multicutPlanner', {
-        keyPath: config.keyPath,
-        autoIncrement: config.keyPath === 'id'
-      });
+
+      // Ensure target store exists before migration
+      let newStore;
+      if (!db.objectStoreNames.contains('multicutPlanner')) {
+        newStore = db.createObjectStore('multicutPlanner', {
+          keyPath: config.keyPath,
+          autoIncrement: config.keyPath === 'id'
+        });
+      } else {
+        newStore = transaction.objectStore('multicutPlanner');
+      }
+
+      const oldStore = transaction.objectStore('muticutPlanner');
 
       // Recreate indexes for new store
       if (config.indexes) {
@@ -290,6 +298,9 @@ class EECOLIndexedDB {
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const request = store.get(key);
 
       request.onsuccess = () => {
@@ -311,6 +322,9 @@ class EECOLIndexedDB {
     const store = indexName ? transaction.objectStore(storeName).index(indexName) : transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const request = store.getAll(query);
 
       request.onsuccess = () => {
@@ -417,6 +431,9 @@ class EECOLIndexedDB {
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const request = store.count();
 
       request.onsuccess = () => {
@@ -549,19 +566,19 @@ class EECOLIndexedDB {
           const records = JSON.parse(cutRecordsData);
           if (Array.isArray(records) && records.length > 0) {
             console.log(`📦 Migrating ${records.length} cutting records...`);
-            for (const record of records) {
-              // Ensure record has required fields
-              if (record.wireId && record.cutLength) {
-                record.id = record.id || crypto.randomUUID();
-                record.timestamp = record.timestamp || Date.now();
-                record.createdAt = record.createdAt || record.timestamp;
-                record.updatedAt = record.updatedAt || record.timestamp;
+            const validRecords = records.filter(r => r.wireId && r.cutLength).map(record => ({
+              ...record,
+              id: record.id || crypto.randomUUID(),
+              timestamp: record.timestamp || Date.now(),
+              createdAt: record.createdAt || record.timestamp || Date.now(),
+              updatedAt: record.updatedAt || record.timestamp || Date.now()
+            }));
 
-                await this.add('cuttingRecords', record);
-                totalMigrated++;
-              }
+            if (validRecords.length > 0) {
+              await this.bulkPut('cuttingRecords', validRecords, false);
+              totalMigrated += validRecords.length;
+              console.log(`✅ Migrated ${validRecords.length} cutting records`);
             }
-            console.log(`✅ Migrated ${records.length} cutting records`);
           }
         } catch (error) {
           console.error('❌ Error migrating cutting records:', error);
@@ -575,17 +592,18 @@ class EECOLIndexedDB {
           const items = JSON.parse(inventoryData);
           if (Array.isArray(items) && items.length > 0) {
             console.log(`📦 Migrating ${items.length} inventory items...`);
-            for (const item of items) {
-              if (item.wireType) {
-                item.id = item.id || crypto.randomUUID();
-                item.timestamp = item.timestamp || Date.now();
-                item.lastUpdated = item.lastUpdated || new Date().toISOString();
+            const validItems = items.filter(i => i.wireType).map(item => ({
+              ...item,
+              id: item.id || crypto.randomUUID(),
+              timestamp: item.timestamp || Date.now(),
+              lastUpdated: item.lastUpdated || new Date().toISOString()
+            }));
 
-                await this.add('inventoryRecords', item);
-                totalMigrated++;
-              }
+            if (validItems.length > 0) {
+              await this.bulkPut('inventoryRecords', validItems, false);
+              totalMigrated += validItems.length;
+              console.log(`✅ Migrated ${validItems.length} inventory items`);
             }
-            console.log(`✅ Migrated ${items.length} inventory items`);
           }
         } catch (error) {
           console.error('❌ Error migrating inventory items:', error);
