@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useDatabase } from '../hooks/useDatabase';
 
 const machines = ['Manual Coiler', 'Green Electric', 'Blue Electric', 'Telus Machine', 'Big Blue #1', 'Big Blue #2'];
@@ -41,6 +42,12 @@ const Maintenance: React.FC = () => {
     <div className="flex-1 flex flex-col items-center p-4 animate-entrance pb-24">
       <div className="w-full max-w-4xl bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-eecol-blue/20 overflow-hidden">
         <h1 className="text-2xl font-black header-gradient text-center mb-6 uppercase">Daily Machine Maintenance</h1>
+
+        <div className="flex justify-center gap-4 mb-8">
+           <Link to="/calibration" className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs uppercase shadow-lg hover:scale-105 transition-transform">
+             🔍 Calibration Tracking
+           </Link>
+        </div>
 
         <div className="mb-6 flex flex-col md:flex-row gap-4 items-end">
            <div className="flex-1 text-left">

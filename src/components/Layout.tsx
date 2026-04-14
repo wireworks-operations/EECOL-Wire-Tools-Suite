@@ -26,7 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <footer className="mt-auto pt-4 border-t border-blue-200 hidden sm:block">
           <div className="flex justify-between items-center mb-2">
             <div className="flex space-x-2">
-              <Link to="/about" className="px-3 py-1.5 bg-sky-500 text-white font-bold rounded-xl shadow-lg text-xs no-underline">Is This Tool Useful?</Link>
+              <Link to="/useful-tool" className="px-3 py-1.5 bg-sky-500 text-white font-bold rounded-xl shadow-lg text-xs no-underline">Is This Tool Useful?</Link>
               <Link to="/privacy" className="px-3 py-1.5 bg-purple-500 text-white font-bold rounded-xl shadow-lg text-xs no-underline">🔒 Privacy Policy</Link>
             </div>
             <div className="flex space-x-2 items-center">

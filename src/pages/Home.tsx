@@ -121,7 +121,7 @@ const Home: React.FC = () => {
         <ToolCard to="/maintenance" icon="🔧" title="Machine Maintenance" description="Daily equipment inspection checklists." />
         <ToolCard to="/advanced-math" icon="🧮" title="Advanced Mathematics" description="Engineering formulas for reels." />
         <ToolCard to="/education" icon="🎓" title="Education Center" description="Master wire cutting excellence." />
-        <ToolCard to="/about" icon="💡" title="About & Feedback" description="Share feedback and learn about the suite." />
+        <ToolCard to="/useful-tool" icon="💡" title="About & Feedback" description="Share feedback and learn about the suite." />
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { _esc, _openPrint, formatPrintTimestamp } from '../utils/print/core';
 
 const ShippingManifest: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -7,24 +8,54 @@ const ShippingManifest: React.FC = () => {
   });
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow?.document.write(`
-      <html>
-        <body style="font-family: sans-serif; padding: 40px; border: 4px solid #0058B3;">
-          <h1 style="color: #0058B3; text-align: center;">EECOL SHIPPING LABEL</h1>
-          <div style="font-size: 24px; margin-bottom: 20px;">
-            <p><strong>CUSTOMER:</strong> ${formData.customerName}</p>
-            <p><strong>ORDER #:</strong> ${formData.orderNumber}</p>
-            <p><strong>WIRE ID:</strong> ${formData.wireId}</p>
-            <p><strong>LENGTH:</strong> ${formData.amount}</p>
-            <p><strong>WEIGHT:</strong> ${formData.weight}</p>
-            <p><strong>DATE:</strong> ${formData.date}</p>
+    const html = `
+      <div style="padding: 40px; border: 8px solid #0058B3; border-radius: 20px; max-width: 800px; margin: 0 auto; position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0058B3; padding-bottom: 20px; margin-bottom: 30px;">
+              <div>
+                  <h1 style="color: #0058B3; font-size: 48px; font-weight: 900; margin: 0; line-height: 1;">EECOL</h1>
+                  <p style="color: #0058B3; font-size: 16px; font-weight: bold; margin: 0; letter-spacing: 2px;">WIRE & CABLE SERVICE</p>
+              </div>
+              <div style="text-align: right;">
+                  <p style="font-size: 12px; font-weight: bold; color: #64748b; margin: 0;">SHIPPING MANIFEST</p>
+                  <p style="font-size: 18px; font-weight: 900; margin: 0;"># ${_esc(formData.orderNumber)}</p>
+              </div>
           </div>
-          <button onclick="window.print()">Print</button>
-        </body>
-      </html>
-    `);
-    printWindow?.print();
+
+          <div style="display: grid; grid-template-cols: 1fr 1fr; gap: 30px;">
+              <div>
+                  <label style="display: block; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">Customer / Consignee</label>
+                  <p style="font-size: 24px; font-weight: 900; margin: 0;">${_esc(formData.customerName)}</p>
+              </div>
+              <div style="text-align: right;">
+                  <label style="display: block; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">Date Processed</label>
+                  <p style="font-size: 20px; font-weight: 700; margin: 0;">${_esc(formData.date)}</p>
+              </div>
+              <div style="grid-column: span 2; background: #f8fafc; padding: 20px; border-radius: 10px; border: 2px solid #e2e8f0;">
+                  <label style="display: block; font-size: 10px; font-weight: 900; color: #0058B3; text-transform: uppercase; margin-bottom: 10px;">Product Identification</label>
+                  <p style="font-size: 32px; font-weight: 900; margin: 0; color: #1e293b;">${_esc(formData.wireId)}</p>
+              </div>
+              <div>
+                  <label style="display: block; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">Net Length</label>
+                  <p style="font-size: 28px; font-weight: 900; margin: 0;">${_esc(formData.amount)}</p>
+              </div>
+              <div style="text-align: right;">
+                  <label style="display: block; font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">Est. Total Weight</label>
+                  <p style="font-size: 28px; font-weight: 900; margin: 0;">${_esc(formData.weight)}</p>
+              </div>
+          </div>
+
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: flex-end;">
+              <div style="font-size: 10px; color: #94a3b8; font-style: italic;">
+                  Verified for Shipment: ${formatPrintTimestamp()}
+              </div>
+              <div style="text-align: center;">
+                  <div style="width: 200px; border-bottom: 2px solid #1e293b; margin-bottom: 5px;"></div>
+                  <p style="font-size: 8px; font-weight: 900; text-transform: uppercase; margin: 0;">Authorized Signature</p>
+              </div>
+          </div>
+      </div>
+    `;
+    _openPrint('EECOL Shipping Label', html);
   };
 
   return (

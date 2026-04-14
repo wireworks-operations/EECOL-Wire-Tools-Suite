@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
+import { _esc, _openPrint, formatPrintTimestamp } from '../utils/print/core';
 
 const ReelLabels: React.FC = () => {
   const [formData, setFormData] = useState({ wireId: '', length: '', unit: 'm', lineCode: '' });
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow?.document.write(`
-      <html>
-        <body style="font-family: sans-serif; padding: 20px; text-align: center; border: 2px solid #0058B3;">
-          <h1 style="color: #0058B3; font-size: 48px; margin: 20px 0;">${formData.wireId.toUpperCase()}</h1>
-          <h2 style="font-size: 36px; margin: 10px 0;">${formData.length} ${formData.unit}</h2>
-          <h2 style="color: #0058B3; font-size: 36px; margin: 10px 0;">L:${formData.lineCode.toUpperCase()}</h2>
-          <button onclick="window.print()">Print</button>
-        </body>
-      </html>
-    `);
-    printWindow?.print();
+    const html = `
+      <div style="padding: 20px; text-align: center; border: 15px solid #0058B3; border-radius: 40px; min-height: 500px; display: flex; flex-direction: column; justify-content: center; position: relative;">
+          <div style="position: absolute; top: 30px; left: 0; right: 0; color: #0058B3; font-weight: 900; font-size: 24px; letter-spacing: 5px;">EECOL WIRE TOOLS</div>
+
+          <h1 style="color: #0058B3; font-size: 90px; font-weight: 900; margin: 40px 0 10px 0; line-height: 1;">${_esc(formData.wireId.toUpperCase())}</h1>
+          <div style="width: 200px; height: 10px; background: #0058B3; margin: 0 auto 30px auto;"></div>
+
+          <h2 style="font-size: 70px; font-weight: 900; margin: 0;">${_esc(formData.length)} <span style="font-size: 40px;">${_esc(formData.unit)}</span></h2>
+
+          <div style="margin-top: 50px;">
+              <span style="background: #0058B3; color: white; padding: 10px 40px; border-radius: 15px; font-size: 50px; font-weight: 900;">
+                  LINE: ${_esc(formData.lineCode.toUpperCase())}
+              </span>
+          </div>
+
+          <div style="position: absolute; bottom: 30px; left: 0; right: 0; font-size: 10px; color: #94a3b8; font-style: italic;">
+              Generated: ${formatPrintTimestamp()} | Workshop Resource
+          </div>
+      </div>
+    `;
+    _openPrint('EECOL Large Reel Label', html);
   };
 
   return (
