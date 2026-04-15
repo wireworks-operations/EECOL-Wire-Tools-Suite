@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDatabase } from '../hooks/useDatabase';
 
 const StopMarkCalculator: React.FC = () => {
@@ -8,17 +8,17 @@ const StopMarkCalculator: React.FC = () => {
   const [cutLength, setCutLength] = useState(0);
   const [cutLengthUnit, setCutLengthUnit] = useState<'m' | 'ft'>('m');
   const [direction, setDirection] = useState<'up' | 'down'>('up');
-  const [counterDistance, setCounterDistance] = useState(0);
+  const [counterDistance] = useState(0);
   const [result, setResult] = useState<{ stopMark: number; visualMark: number } | null>(null);
 
   const calculate = () => {
     const METERS_TO_FEET = 3.28084;
-    let startFt = startUnit === 'm' ? startValue * METERS_TO_FEET : startValue;
-    let lengthFt = cutLengthUnit === 'm' ? cutLength * METERS_TO_FEET : cutLength;
+    const startFt = startUnit === 'm' ? startValue * METERS_TO_FEET : startValue;
+    const lengthFt = cutLengthUnit === 'm' ? cutLength * METERS_TO_FEET : cutLength;
 
-    let stopFt = direction === 'up' ? startFt + lengthFt : startFt - lengthFt;
-    let counterFt = counterDistance * (startUnit === 'm' ? METERS_TO_FEET : 1);
-    let visualFt = direction === 'up' ? stopFt - counterFt : stopFt + counterFt;
+    const stopFt = direction === 'up' ? startFt + lengthFt : startFt - lengthFt;
+    const counterFt = counterDistance * (startUnit === 'm' ? METERS_TO_FEET : 1);
+    const visualFt = direction === 'up' ? stopFt - counterFt : stopFt + counterFt;
 
     const finalStop = startUnit === 'm' ? stopFt / METERS_TO_FEET : stopFt;
     const finalVisual = startUnit === 'm' ? visualFt / METERS_TO_FEET : visualFt;

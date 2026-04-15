@@ -24,7 +24,7 @@ const MaintenanceNotification: React.FC = () => {
 
       const completedAt = new Date(dailyCheck.completedAt);
       const now = new Date();
-      let cycleStart = new Date(now);
+      const cycleStart = new Date(now);
       cycleStart.setHours(23, 0, 0, 0);
       if (now.getHours() < 23) cycleStart.setDate(cycleStart.getDate() - 1);
 

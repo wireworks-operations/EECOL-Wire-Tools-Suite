@@ -9,3 +9,8 @@ server.log
 dist
 *.log
 .DS_Store
+verification/screenshots/visual_audit/
+test-results/
+playwright-report/
+blob-report/
+dev_server.log

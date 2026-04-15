@@ -1,12 +1,15 @@
 # EECOL Wire Tools Suite <small>— Industrial-grade PWA for wire processing</small> 📘
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-green.svg)](https://nodejs.org/)
-[![npm](https://img.shields.io/badge/npm-v8%2B-red.svg)](https://www.npmjs.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2018.0.0-green.svg)](https://nodejs.org/)
+[![npm](https://img.shields.io/badge/npm-v9%2B-red.svg)](https://www.npmjs.com/)
+[![React](https://img.shields.io/badge/React-v18-blue.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-v5-blue.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-v5-purple.svg)](https://vitejs.dev/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
-[![Version](https://img.shields.io/badge/Version-0.8.0.4-blue.svg)](https://github.com/eecol/eecol-wire-tools-suite-v2/releases)
+[![Version](https://img.shields.io/badge/Version-0.9.0-blue.svg)](https://github.com/wireworks-operations/EECOL-Wire-Tools-Suite)
 
-An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designed for industrial wire processing. This suite provides specialized calculators, inventory management, and operational tracking tools that persist data directly in the browser's IndexedDB, ensuring 100% uptime without backend dependencies.
+An enterprise-grade, **"Local-First"** Single Page Application (SPA) refactored to **React, Vite, and TypeScript**. This suite provides specialized calculators, inventory management, and operational tracking tools that persist data directly in the browser's IndexedDB, ensuring 100% uptime without backend dependencies.
 
 ---
 
@@ -16,22 +19,21 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 
 ### Prerequisites
 
-- **Node.js**: >= 16.0.0
-- **npm**: (Bundled with Node.js) or **pnpm** / **yarn**
-- **Python**: 3.x (Optional, for database verification scripts)
+- **Node.js**: >= 18.0.0
+- **npm**: >= 9.0.0
 
 ### 1) Clone & Install
 
 ```bash
-git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
-cd eecol-wire-tools-suite-v2
-npm install  # or pnpm install / yarn install
+git clone https://github.com/wireworks-operations/EECOL-Wire-Tools-Suite.git
+cd EECOL-Wire-Tools-Suite
+npm install
 ```
 
 ### 2) Run (Local Development)
 
 ```bash
-# Start the development server (serves the PWA at http://localhost:3000)
+# Start the Vite development server (serves the SPA at http://localhost:5173)
 npm run dev
 ```
 
@@ -39,45 +41,45 @@ npm run dev
 
 | Command | Status | Description |
 | :--- | :--- | :--- |
-| `npm run dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
-| `python3 verification/verify_idb.py` | ✅ **Operational** | IDB verification via Playwright. |
-| `npm run build` | 🚧 **In-Progress** | Production build (Missing Webpack config). |
-| `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
-| `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
-| `npm run docker:*` | 🚧 **Planned** | Containerized deployment (Missing Dockerfile). |
+| `npm run dev` | ✅ **Operational** | Starts local dev server using Vite. |
+| `npm run build` | ✅ **Operational** | Production build using Vite + TSC. |
+| `npm run type-check` | ✅ **Operational** | TypeScript validation. |
+| `npm run lint` | ✅ **Operational** | ESLint validation for React/TS. |
+| `npm run preview` | ✅ **Operational** | Preview the production build locally. |
 
 ---
 
-## 🧭 Quickstart (90-second path)
+## 🧭 Quickstart (60-second path)
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
-cd eecol-wire-tools-suite-v2
+git clone https://github.com/wireworks-operations/EECOL-Wire-Tools-Suite.git
+cd EECOL-Wire-Tools-Suite
 
 # 2. Install dependencies and start the app
 npm install && npm run dev
 
 # 3. Open app
-# http://localhost:3000
+# http://localhost:5173/EECOL-Wire-Tools-Suite/
 ```
 
 ---
 
 ## 🏗️ Architecture
 
-The EECOL Wire Tools Suite is built on a **Local-First** architecture, meaning it operates entirely on the client-side with zero external API or database dependencies.
+The EECOL Wire Tools Suite is built on a **Local-First** React architecture, meaning it operates entirely on the client-side with zero external API or database dependencies.
 
 See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component interactions.
 
 <details>
 <summary>⚙️ Core Technology Stack</summary>
 
-- **Frontend**: Vanilla JavaScript (ESM Hybrid), HTML5, Tailwind CSS.
-- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton (v8).
-- **PWA**: Service Worker (`sw.js`) and Web App Manifest for offline capability.
-- **Visualization**: Chart.js for operational reporting and analytics.
-- **Utility**: Custom modular print system and sanitization layer.
+- **Frontend**: React 18, TypeScript 5, Vite 5.
+- **Styling**: Tailwind CSS 3 (with Native Dark Mode support).
+- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton service.
+- **PWA**: `vite-plugin-pwa` for service worker and manifest generation.
+- **Visualization**: Chart.js with `react-chartjs-2`.
+- **Icons**: Lucide React.
 
 </details>
 
