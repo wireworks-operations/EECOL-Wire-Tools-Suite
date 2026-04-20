@@ -263,31 +263,18 @@ class EECOLIndexedDB {
     await this.dbInitialized;
     if (!this.db) throw new Error('Database not initialized');
 
-    // Use relaxed durability and add transaction-level handlers
-    const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
-    const store = transaction.objectStore(storeName);
-
-    return new Promise((resolve, reject) => {
-      transaction.onerror = () => reject(transaction.error);
-      transaction.onabort = () => reject(transaction.error);
-
-      const request = store.add(data);
-
-      request.onsuccess = () => {
-        resolve(request.result);
-      };
-
-      request.onerror = () => {
-        if (this.isUniqueConstraintViolation(request.error)) {
-          console.warn(`⚠️ Duplicate key in ${storeName}, updating instead...`);
-          // Try update instead of add
-          this.update(storeName, data).then(resolve).catch(reject);
-        } else {
-          console.error(`❌ Failed to add to ${storeName}:`, request.error);
-          reject(request.error);
-        }
-      };
-    });
+    /**
+     * IDB SENTINEL FIX: Avoid using add() for records that might already exist
+     * if the intention is to update them. Attempting add() and then update() on error
+     * is an anti-pattern because the first failed add() aborts the transaction.
+     * We use a single put() operation (via update) to ensure atomicity and reliability.
+     */
+    try {
+      return await this.update(storeName, data);
+    } catch (error) {
+      console.error(`❌ Failed to add/update in ${storeName}:`, error);
+      throw error;
+    }
   }
 
   async get(storeName, key) {
