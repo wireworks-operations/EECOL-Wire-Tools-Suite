@@ -14,3 +14,8 @@
 **Vulnerability:** The shared print utility `_esc` in `src/utils/print/core.js` only checked for the lowercase `window.escapeHtml` (from a non-standard shim), failing to use the project's primary `window.escapeHTML` standard. This resulted in zero sanitization for printouts on most pages.
 **Learning:** Inconsistent naming conventions for critical security utilities (escapeHtml vs escapeHTML) led to silent failure of sanitization logic. Relying solely on global functions without a local fallback creates a fragile security posture.
 **Prevention:** Always implement a multi-layered sanitization pattern ("Defense-in-Depth"). Security-critical utilities should prioritize project standards but must always include a local regex-based fallback to ensure protection if global dependencies fail to load or are renamed.
+
+## 2026-03-11 - Project-wide CSV Injection Mitigation
+**Vulnerability:** CSV export functions in report modules (`cutting-reports.js`, `inventory-reports.js`) used naive template literals which were vulnerable to double-quote breakage and Excel Formula Injection (CSV Injection). Existing `escapeCSVValue` helpers in record modules lacked formula injection protection.
+**Learning:** Standardizing security utilities like `escapeCSVValue` across all export-capable modules is critical. Simple quoting is insufficient for CSVs opened in spreadsheet software; leading control characters (=, +, -, @) must be neutralized.
+**Prevention:** All CSV export logic must use a hardened `escapeCSVValue` utility that (1) handles RFC 4180 double-quote escaping and (2) prefixes suspicious leading characters with a single quote to prevent unauthorized macro execution in spreadsheet applications.

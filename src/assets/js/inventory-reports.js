@@ -759,6 +759,28 @@ function calculateChange(current, previous) {
     return sign + change.toFixed(1) + '%';
 }
 
+/**
+ * IDB SENTINEL: Secure CSV escaping utility
+ * Mitigates CSV Injection (Excel Formula Injection) and ensures proper RFC 4180 escaping.
+ * @param {any} value The value to escape for CSV
+ * @returns {string} The escaped and sanitized string
+ */
+function escapeCSVValue(value) {
+    if (value === null || value === undefined) return '';
+    let stringValue = value.toString();
+
+    // Mitigate CSV Injection by prefixing values starting with =, +, -, or @
+    if (['=', '+', '-', '@'].some(char => stringValue.startsWith(char))) {
+        stringValue = "'" + stringValue;
+    }
+
+    // Standard RFC 4180 double-quote escaping
+    if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('\r')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+}
+
 // Export functions
 function exportReport() {
     if (inventoryItems.length === 0) {
@@ -781,7 +803,7 @@ function exportReport() {
         record.comments || ''
     ]);
 
-    const csvContent = [header, ...rows].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
+    const csvContent = [header, ...rows].map(row => row.map(field => escapeCSVValue(field)).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

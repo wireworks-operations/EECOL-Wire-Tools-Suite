@@ -1338,9 +1338,22 @@ function setupInfiniteScroll() {
     });
 }
 
+/**
+ * IDB SENTINEL: Secure CSV escaping utility
+ * Mitigates CSV Injection (Excel Formula Injection) and ensures proper RFC 4180 escaping.
+ * @param {any} value The value to escape for CSV
+ * @returns {string} The escaped and sanitized string
+ */
 function escapeCSVValue(value) {
-    if (value == null) return '';
-    const stringValue = value.toString();
+    if (value === null || value === undefined) return '';
+    let stringValue = value.toString();
+
+    // Mitigate CSV Injection by prefixing values starting with =, +, -, or @
+    if (['=', '+', '-', '@'].some(char => stringValue.startsWith(char))) {
+        stringValue = "'" + stringValue;
+    }
+
+    // Standard RFC 4180 double-quote escaping
     if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('\r')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
     }
