@@ -27,3 +27,7 @@
 ## 2026-03-15 - Sorting Invariants for O(N) Rendering
 **Learning:** Removing an O(N log N) sort from a high-frequency render path (like filtering) requires strict enforcement of sorting invariants in all mutation paths (add, edit, delete, import, undo/redo). If even one mutation path forgets to maintain the order, the UI state becomes inconsistent.
 **Action:** Always verify all functions that modify the base collection (Array.push, Array.map, etc.) to ensure they either insert in order or re-sort the base array once before the next filter/render cycle.
+
+## 2026-03-22 - Numeric Timestamp Comparisons for Dashboard Scaling
+**Learning:** Using `new Date().toDateString()` inside high-frequency processing loops (like dashboard metrics calculation) creates significant GC pressure due to thousands of temporary `Date` objects and string allocations. This becomes a bottleneck as the local IndexedDB grows.
+**Action:** Pre-calculate boundary timestamps (e.g., `todayStart`) and use numeric comparisons within loops. Consolidate data collection for auxiliary UI elements (like INA lists) into the same primary pass to reduce the total number of iterations over the dataset.

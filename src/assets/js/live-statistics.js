@@ -6,6 +6,18 @@
 // Global variables
 let inventoryItems = [];
 let cutRecords = [];
+
+/**
+ * BOLT OPTIMIZATION: High-performance date formatter
+ * Pre-initializing Intl.DateTimeFormat at module scope avoids repeated parsing of
+ * locale strings and options inside loops.
+ */
+const shortDateFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+});
+
 let approvalChart = null;
 let productChart = null;
 let activityChart = null;
@@ -49,7 +61,8 @@ let calculatedMetrics = {
     activityTimeline: [0, 0, 0, 0, 0, 0, 0], // Last 7 days
     topProduct: 'None',
     topCustomer: '-',
-    topCustomerOrders: '-'
+    topCustomerOrders: '-',
+    recentINAItems: [] // BOLT: Pre-collected in single pass
 };
 
 // Chart.js initialization with CDN fallback
@@ -238,7 +251,11 @@ function initAutoRefresh() {
  * Consolidates multiple O(N) passes into a single iteration for each dataset.
  */
 function calculateMetrics() {
-    // Reset metrics
+    /**
+     * BOLT OPTIMIZATION: Single-pass metrics calculation
+     * Consolidates all metrics and INA item collection into single iterations using
+     * timestamp comparisons to avoid thousands of Date object allocations and string conversions.
+     */
     calculatedMetrics = {
         totalInventoryItems: inventoryItems.length,
         approvedCount: 0,
@@ -264,20 +281,23 @@ function calculateMetrics() {
         activityTimeline: [0, 0, 0, 0, 0, 0, 0],
         topProduct: 'None',
         topCustomer: '-',
-        topCustomerOrders: '-'
+        topCustomerOrders: '-',
+        recentINAItems: []
     };
 
     const now = Date.now();
-    const todayStr = new Date().toDateString();
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    const todayStart = d.getTime();
     const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = now - (14 * 24 * 60 * 60 * 1000);
 
-    // Pre-calculate activity timeline day buckets
-    const dayBuckets = [];
+    // Pre-calculate activity timeline start-of-day timestamps
+    const dayStarts = [];
     for (let i = 0; i < 7; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        dayBuckets.push(d.toDateString());
+        const tempDate = new Date(todayStart);
+        tempDate.setDate(tempDate.getDate() - (6 - i));
+        dayStarts.push(tempDate.getTime());
     }
 
     // Weekly inventory approval rate counters
@@ -289,8 +309,6 @@ function calculateMetrics() {
     // Single pass for inventory
     for (const item of inventoryItems) {
         const ts = item.timestamp;
-        const itemDate = new Date(ts);
-        const itemDateStr = itemDate.toDateString();
 
         // Approval status
         if (item.approved === true) {
@@ -313,7 +331,7 @@ function calculateMetrics() {
         }
 
         // Recency & Weekly change tracking
-        if (itemDateStr === todayStr) {
+        if (ts >= todayStart) {
             calculatedMetrics.todayInventoryCount++;
         }
         if (ts > weekAgo) {
@@ -342,13 +360,16 @@ function calculateMetrics() {
         } else {
             calculatedMetrics.quality.normal++;
         }
+
+        // BOLT: Collect top 5 INA items during metrics pass
+        if (calculatedMetrics.recentINAItems.length < 5 && item.inaNumber && item.inaNumber.trim() !== '') {
+            calculatedMetrics.recentINAItems.push(item);
+        }
     }
 
     // Single pass for cutting records
     for (const record of cutRecords) {
         const ts = record.timestamp;
-        const recordDate = new Date(ts);
-        const recordDateStr = recordDate.toDateString();
 
         // Basic metrics
         calculatedMetrics.totalLengthCut += (record.cutLength || 0);
@@ -356,7 +377,7 @@ function calculateMetrics() {
         if (record.isSystemCut === true) calculatedMetrics.performance.systemCuts++;
 
         // Recency & Timeline
-        if (recordDateStr === todayStr) {
+        if (ts >= todayStart) {
             calculatedMetrics.cutsToday++;
         }
         if (ts > weekAgo) {
@@ -366,10 +387,12 @@ function calculateMetrics() {
             calculatedMetrics.cutsLastWeek++;
         }
 
-        // Activity Timeline bucket
-        const bucketIndex = dayBuckets.indexOf(recordDateStr);
-        if (bucketIndex !== -1) {
-            calculatedMetrics.activityTimeline[bucketIndex]++;
+        // Activity Timeline bucket using pre-calculated day starts
+        for (let i = 6; i >= 0; i--) {
+            if (ts >= dayStarts[i]) {
+                calculatedMetrics.activityTimeline[i]++;
+                break;
+            }
         }
 
         // Combined Product Counts
@@ -918,12 +941,14 @@ function updateINAItems() {
     const inaList = document.getElementById('topINAItems');
     if (!inaList) return;
 
-    const inaItems = inventoryItems.filter(item => item.inaNumber && item.inaNumber.trim() !== '')
-        .slice(0, 5);
+    /**
+     * BOLT OPTIMIZATION: Faster list clearing and pre-collected items
+     * Uses replaceChildren() and leverages the INA items collected during the main
+     * metrics pass to avoid a redundant O(N) filter.
+     */
+    inaList.replaceChildren();
 
-    while (inaList.firstChild) {
-        inaList.removeChild(inaList.firstChild);
-    }
+    const inaItems = calculatedMetrics.recentINAItems;
 
     if (inaItems.length === 0) {
         const emptyLi = document.createElement('li');
@@ -934,7 +959,7 @@ function updateINAItems() {
     }
 
     inaItems.forEach(item => {
-        const date = new Date(item.timestamp).toLocaleDateString();
+        const date = shortDateFormat.format(item.timestamp);
         const inaNum = item.inaNumber;
         const value = item.totalValue ? '$' + item.totalValue.toFixed(2) : 'N/A';
         const product = item.productCode || 'Unknown';
