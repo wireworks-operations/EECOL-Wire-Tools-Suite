@@ -59,3 +59,8 @@ The `createObjectStores` method in `EECOLIndexedDB` had a non-idempotent migrati
 3. Added `transaction.onerror` and `transaction.onabort` handlers to `get`, `getAll`, and `count`.
 4. Refactored `migrateFromLocalStorage` to use `bulkPut`, reducing migration time and transaction overhead.
 **Validation:** Verified fixes and version 9 upgrade via Playwright (`verification/verify_sentinel_fix.py`).
+
+## 2026-04-20 - Fix transaction abort on duplicate key add
+**Observation:** Attempting `add()` and falling back to `update()` on `ConstraintError` causes transaction aborts, leading to rejected promises even if the update eventually succeeds (or fails silently due to the aborted transaction).
+**Learning:** In IndexedDB, a request error (like a duplicate key) marks the transaction for abort. Any further requests in that transaction will fail, and the transaction's `onabort` will trigger. Upserts should use `put()` directly.
+**Action:** Refactored `EECOLIndexedDB.add` to use `update` (`put`) directly. Updated verification script to match DB version 9.
