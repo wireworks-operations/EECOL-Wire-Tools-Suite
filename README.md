@@ -41,10 +41,11 @@ npm run dev
 | :--- | :--- | :--- |
 | `npm run dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
 | `python3 verification/verify_idb.py` | ✅ **Operational** | IDB verification via Playwright (Python). |
-| `npm run build` | 🚧 **In-Progress** | Production build (Missing Webpack config). |
-| `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
-| `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
-| `npm run type-check` | 🚧 **In-Progress** | TypeScript verification (Missing config). |
+| `npm run build` | 🚧 **In-Progress** | Production build (Missing `webpack.config.js`). |
+| `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing `jest.config.js`). |
+| `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing `.eslintrc.js`). |
+| `npm run type-check` | 🚧 **In-Progress** | TypeScript verification (Missing `tsconfig.json`). |
+| `docker:*` | 🚧 **In-Progress** | Docker deployment (Missing `Dockerfile`). |
 
 ---
 
@@ -74,7 +75,7 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 <summary>⚙️ Core Technology Stack</summary>
 
 - **Frontend**: Vanilla JavaScript (ESM Hybrid), HTML5, Tailwind CSS.
-- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton (v8).
+- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton (v9).
 - **PWA**: Service Worker (`sw.js`) and Web App Manifest for offline capability.
 - **Visualization**: Chart.js for operational reporting and analytics.
 - **Utility**: Custom modular print system and sanitization layer.
@@ -134,10 +135,14 @@ See **[SECURITY.md](SECURITY.md)** for our full security policy.
 ## 🆘 Troubleshooting
 
 - **Service Worker not registering**: Ensure you are serving via `http` or `https`. The `file://` protocol is not supported for PWAs.
-- **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes.
+- **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes. Ensure you are looking at the **EECOLTools_v2** database (Version 9).
 - **Port Conflict**: If port 3000 is in use, run `PORT=3001 npm run dev`.
 
 ---
+
+## 🗄️ Database Schema (v9)
+
+The application uses **14 specialized stores** within the `EECOLTools_v2` database (v9). See [BLUEPRINT.md](BLUEPRINT.md) for the full schema enumeration.
 
 ## 📄 License
 

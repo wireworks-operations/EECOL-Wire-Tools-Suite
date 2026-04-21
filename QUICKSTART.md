@@ -39,7 +39,7 @@ python3 verification/verify_idb.py
 
 ### 🛡️ Local-First Note
 
-The application is **entirely client-side**. No backend or database setup is required. All data you enter is stored securely in your browser's IndexedDB (v8).
+The application is **entirely client-side**. No backend or database setup is required. All data you enter is stored securely in your browser's IndexedDB (v9).
 
 ### For deeper setup and architecture
 
