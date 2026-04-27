@@ -243,9 +243,7 @@ async function clearAllCutRecordsFromDB() {
 function updateExportStatus() {
     function setExportDisplay(element, timestamp) {
         if (!element) return;
-        while (element.firstChild) {
-            element.removeChild(element.firstChild);
-        }
+        element.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
         if (!timestamp) {
             const a = document.createElement('a');
@@ -1133,9 +1131,7 @@ function renderCutRecords() {
     // Update counters
     totalRecordsElement.textContent = filteredRecords.length;
 
-    while (cutHistoryList.firstChild) {
-        cutHistoryList.removeChild(cutHistoryList.firstChild);
-    }
+    cutHistoryList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     if (filteredRecords.length === 0) {
         const emptyMsg = document.createElement('p');
@@ -2920,9 +2916,7 @@ function renderWireCutList() {
     const filter = document.getElementById('wireListStatusFilter').value;
     const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
 
-    while (container.firstChild) {
-        container.removeChild(container.firstChild);
-    }
+    container.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     const filtered = wireCutList.filter(item => {
         // Status filter

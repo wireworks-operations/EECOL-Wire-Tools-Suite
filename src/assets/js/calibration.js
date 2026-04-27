@@ -47,9 +47,7 @@ async function renderMachines() {
     const container = document.getElementById('calibrationContainer');
     if (!container) return;
 
-    while (container.firstChild) {
-        container.removeChild(container.firstChild);
-    }
+    container.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     for (let i = 0; i < machines.length; i++) {
         const machineName = machines[i];
