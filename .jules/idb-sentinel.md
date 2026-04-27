@@ -64,3 +64,12 @@ The `createObjectStores` method in `EECOLIndexedDB` had a non-idempotent migrati
 **Observation:** Attempting `add()` and falling back to `update()` on `ConstraintError` causes transaction aborts, leading to rejected promises even if the update eventually succeeds (or fails silently due to the aborted transaction).
 **Learning:** In IndexedDB, a request error (like a duplicate key) marks the transaction for abort. Any further requests in that transaction will fail, and the transaction's `onabort` will trigger. Upserts should use `put()` directly.
 **Action:** Refactored `EECOLIndexedDB.add` to use `update` (`put`) directly. Updated verification script to match DB version 9.
+
+## 2026-04-27 - Fix migration data loss risk and harden transactions
+**Observation:** The `migrateFromLocalStorage` method removed all `localStorage` keys if at least one item was migrated, regardless of whether other categories failed. Additionally, some transactions and cursors lacked `onerror` handlers.
+**Learning:** Granular cleanup of `localStorage` is essential in multi-step migrations to ensure data is not lost if the process is interrupted or partially fails. Robust IDB wrappers must always attach error handlers to both requests and their parent transactions.
+**Action:**
+1. Refactored `migrateFromLocalStorage` in `src/core/database/indexeddb.js` to remove each `localStorage` key individually after its successful migration.
+2. Added `transaction.onerror` and `transaction.onabort` to `getRecentCalibrationMeasurements`.
+3. Added `onerror` handler to the migration cursor in `createObjectStores`.
+**Validation:** Verified via existing `verify_sentinel_fix.py` and a new `verify_migration_safety.py` script that specifically tests partial migration scenarios.
