@@ -14,7 +14,11 @@ def run_verification():
         page = browser.new_page()
 
         try:
-            page.goto("http://localhost:3000/index.html")
+            # Try both possible index.html locations
+            try:
+                page.goto("http://localhost:3000/index.html", timeout=5000)
+            except:
+                page.goto("http://localhost:3000/src/pages/index/index.html", timeout=5000)
 
             # Verification snippet
             verification_result = page.evaluate("""
