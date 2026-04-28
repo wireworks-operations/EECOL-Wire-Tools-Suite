@@ -708,9 +708,7 @@ function calculateWeight(showErrors = false) {
     // 5. Display Results
 
     // Update Unit Weight Display
-    while (unitWeightValueDisplay.firstChild) {
-        unitWeightValueDisplay.removeChild(unitWeightValueDisplay.firstChild);
-    }
+    unitWeightValueDisplay.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
     const span = document.createElement('span');
     span.className = 'text-blue-800';
     span.textContent = `${unitWeightLbsPer1000Ft.toFixed(0)} lbs / 1,000 ft | ${unitWeightKgPer1000M.toFixed(1)} kg / 1,000 m`;

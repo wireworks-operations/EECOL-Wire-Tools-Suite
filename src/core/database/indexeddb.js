@@ -204,7 +204,11 @@ class EECOLIndexedDB {
       }
 
       // Copy records from old to new store
-      oldStore.openCursor().onsuccess = (e) => {
+      const cursorRequest = oldStore.openCursor();
+      cursorRequest.onerror = (e) => {
+        console.error('❌ Migration failed during cursor operation:', e.target.error);
+      };
+      cursorRequest.onsuccess = (e) => {
         const cursor = e.target.result;
         if (cursor) {
           newStore.put(cursor.value);
@@ -513,6 +517,9 @@ class EECOLIndexedDB {
     const index = store.index('machine_timestamp');
 
     return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
       const results = [];
       // Use compound index machine_timestamp with range to fetch only records for machineName
       // Use 'prev' cursor to get them in descending order (newest first)
@@ -564,6 +571,7 @@ class EECOLIndexedDB {
             if (validRecords.length > 0) {
               await this.bulkPut('cuttingRecords', validRecords, false);
               totalMigrated += validRecords.length;
+              localStorage.removeItem('cutRecords');
               console.log(`✅ Migrated ${validRecords.length} cutting records`);
             }
           }
@@ -589,6 +597,7 @@ class EECOLIndexedDB {
             if (validItems.length > 0) {
               await this.bulkPut('inventoryRecords', validItems, false);
               totalMigrated += validItems.length;
+              localStorage.removeItem('inventoryItems');
               console.log(`✅ Migrated ${validItems.length} inventory items`);
             }
           }
@@ -614,6 +623,7 @@ class EECOLIndexedDB {
               timestamp: new Date(data.completedAt).getTime()
             });
             totalMigrated++;
+            localStorage.removeItem('machineMaintenanceChecklist');
             console.log('✅ Migrated maintenance checklist data');
           }
         } catch (error) {
@@ -621,13 +631,6 @@ class EECOLIndexedDB {
         }
       }
 
-      // Clear migrated data from localStorage
-      if (totalMigrated > 0) {
-        localStorage.removeItem('cutRecords');
-        localStorage.removeItem('inventoryItems');
-        localStorage.removeItem('machineMaintenanceChecklist');
-        console.log('🧹 Cleared migrated data from localStorage');
-      }
 
       console.log(`✅ Migration completed: ${totalMigrated} items migrated`);
       return totalMigrated;

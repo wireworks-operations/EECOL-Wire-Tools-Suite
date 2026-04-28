@@ -54,9 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const renderRecords = async (storeName, listElement) => {
         const records = await db.getAll(storeName);
-        while (listElement.firstChild) {
-            listElement.removeChild(listElement.firstChild);
-        }
+        listElement.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         if (records.length === 0) {
             const emptyP = document.createElement('p');
             emptyP.className = 'text-gray-500';
@@ -594,9 +592,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const renderFilteredRecords = (storeName, records, listElement) => {
-        while (listElement.firstChild) {
-            listElement.removeChild(listElement.firstChild);
-        }
+        listElement.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         if (records.length === 0) {
             const searchTerm = listElement.closest('.grid').querySelector('input[type="text"]').value;
             const emptyP = document.createElement('p');

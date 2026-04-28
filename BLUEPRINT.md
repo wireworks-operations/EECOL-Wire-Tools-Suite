@@ -7,25 +7,25 @@
 ```text
                     +-------------------------+
    Browser/Client   |         Frontend        |
-  +--------------+  |  Vanilla JS + HTML5     |
-  |  User Agent  |--|  Tailwind CSS           |
+  +--------------+  |  Vanilla JS (ESM)       |
+  |  User Agent  |--|  Tailwind CSS + HTML5   |
   +--------------+  +------------+------------+
                                   |
-                                  | Direct Access (Local)
+                                  | window.eecolDB
                                   v
                     +-------------+-------------+
-                    |          IndexedDB        |
-                    |  14 Specialized Stores    |
-                    |  EECOLIndexedDB Singleton |
+                    |      EECOLIndexedDB       |
+                    |   (Singleton Pattern)     |
+                    |   Database Version: 9     |
                     +-------------+-------------+
                                   |
              +--------------------+--------------------+
              |                                         |
              v                                         v
   +---------------------+                   +---------------------+
-  |   Service Worker    |                   |    Local Storage    |
-  |  Offline Caching    |                   |  Fallback/Migration |
-  |  PWA Assets         |                   |  Legacy Support     |
+  |   Service Worker    |                   |    IndexedDB        |
+  | (sw.js) Caching     |                   |  14 Object Stores   |
+  | Offline Capability  |                   |  Local-First Data   |
   +---------------------+                   +---------------------+
 ```
 

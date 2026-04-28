@@ -1629,9 +1629,7 @@ async function updateExportStatus() {
             }
         }
 
-        while (jsonSpan.firstChild) {
-            jsonSpan.removeChild(jsonSpan.firstChild);
-        }
+        jsonSpan.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
         // Update JSON export status
         if (lastJsonExport) {

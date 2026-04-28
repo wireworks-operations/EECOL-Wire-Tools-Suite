@@ -135,10 +135,14 @@ See **[SECURITY.md](SECURITY.md)** for our full security policy.
 ## 🆘 Troubleshooting
 
 - **Service Worker not registering**: Ensure you are serving via `http` or `https`. The `file://` protocol is not supported for PWAs.
-- **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes.
+- **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes. Ensure you are looking at the **EECOLTools_v2** database (Version 9).
 - **Port Conflict**: If port 3000 is in use, run `PORT=3001 npm run dev`.
 
 ---
+
+## 🗄️ Database Schema (v9)
+
+The application uses **14 specialized stores** within the `EECOLTools_v2` database (v9). See [BLUEPRINT.md](BLUEPRINT.md) for the full schema enumeration.
 
 ## 📄 License
 
