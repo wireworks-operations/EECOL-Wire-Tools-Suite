@@ -32,19 +32,38 @@
 ## 🔄 Data Flow (Happy Path)
 
 1. **User Action**: User enters data into a tool (e.g., Cutting Records).
-2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton via `window.eecolDB`.
+2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton via `window.EECOLIndexedDB.getInstance()`.
 3. **Local Storage**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`) using `relaxed` durability.
 4. **Offline Access**: Service worker (`sw.js`) serves cached HTML/JS/CSS assets even without connectivity.
 5. **Retrieval**: Analytics tools query IndexedDB to render real-time charts via Chart.js.
 
-## 🗄️ Database Architecture (v8)
+## 🗄️ Database Architecture (v9)
 
 The application uses **14 specialized stores** within the `EECOLTools_v2` database:
 
 - **Record-Keeping**: `cuttingRecords`, `inventoryRecords`, `maintenanceLogs`.
-- **Calculators**: `markConverter`, `stopmarkConverter`, `reelcapacityEstimator`, `reelsizeEstimator`.
-- **Engineering**: `calibrationMeasurements`, `wireCutList`.
-- **Core**: `settings`, `users`, `notifications`, `sessions`, `multicutPlanner`.
+- **Calculators**: `markConverter`, `stopmarkConverter`, `reelcapacityEstimator`, `reelsizeEstimator`, `wireCutList`.
+- **Engineering**: `calibrationMeasurements`, `multicutPlanner`.
+- **Core**: `settings`, `users`, `notifications`, `sessions`.
+
+### Store Enumerable
+
+| Store Name | Key Path | Primary Purpose |
+| :--- | :--- | :--- |
+| `cuttingRecords` | `id` | Logs and analysis of wire cuts. |
+| `inventoryRecords` | `id` | Material management and tracking. |
+| `users` | `id` | Local user profiles and roles. |
+| `notifications` | `id` | Local system alerts and reminders. |
+| `maintenanceLogs` | `id` | Equipment inspection checklists. |
+| `markConverter` | `id` | Wire mark calculation history. |
+| `stopmarkConverter` | `id` | Stop mark calculation history. |
+| `reelcapacityEstimator` | `id` | Reel capacity calculation history. |
+| `reelsizeEstimator` | `id` | Reel size calculation history. |
+| `multicutPlanner` | `id` | Planning for multiple reel cuts. |
+| `settings` | `name` | Application-wide local configurations. |
+| `sessions` | `sessionId` | Local session management. |
+| `calibrationMeasurements` | `id` | Machine calibration tracking. |
+| `wireCutList` | `id` | Queue of pending wire cuts. |
 
 ## 📁 Repos & Conventions
 
@@ -58,7 +77,7 @@ The application uses **14 specialized stores** within the `EECOLTools_v2` databa
 
 - **Local-First**: Zero backend dependencies to ensure 100% uptime in industrial environments.
 - **Vanilla JS**: Chosen for longevity and to minimize framework-induced maintenance debt.
-- **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **8**.
+- **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **9**.
 - **ESM Hybrid**: Transitioning towards ES Modules (`type="module"`) while maintaining global shims for backward compatibility.
 - **Relaxed Durability**: Uses `durability: 'relaxed'` in IDB transactions for optimal UI responsiveness.
 

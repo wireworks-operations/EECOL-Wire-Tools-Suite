@@ -21,7 +21,7 @@ We take all security bugs in this project seriously. To report a security vulner
 
 ## 🏛️ Security Posture
 
-This application is designed as a **local-first** Progressive Web App (PWA). All data is stored exclusively on the client-side using IndexedDB, with no server-side components or cloud services involved.
+This application is designed as a **local-first** Progressive Web App (PWA). All data is stored exclusively on the client-side using IndexedDB (v9), with no server-side components or cloud services involved.
 
 ### Architecture Security
 
@@ -41,6 +41,7 @@ This application is designed as a **local-first** Progressive Web App (PWA). All
 - [x] **Secure by Default Rendering**: Strict use of `.textContent` over `innerHTML` for user-controllable data.
 - [x] **Sanitization Layer**: Manual escaping using `window.escapeHTML` where necessary.
 - [x] **Subresource Integrity (SRI)**: Integrity hashes used for CDN dependencies.
+- [x] **Reverse Tabnabbing Protection**: `rel="noopener noreferrer"` used on all external links.
 - [ ] **Automated Dependency Scanning**: (Planned).
 
 ### Attack Vector Analysis

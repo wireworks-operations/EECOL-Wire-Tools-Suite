@@ -6,6 +6,7 @@ This path gets you from **clone → running app** in under 90 seconds.
 
 - **Node.js**: >= 16.0.0
 - **npm**: (Bundled with Node.js)
+- **Python**: 3.x (Optional, for verification)
 
 ## 1) Clone & Enter
 
@@ -31,17 +32,15 @@ npm run dev
 ## 4) Verify
 
 ```bash
-# Optional: Run IndexedDB functional verification (requires Playwright)
+# Run IndexedDB functional verification (requires Playwright)
 python3 verification/verify_idb.py
 ```
 
 ---
 
-### 🛡️ Local-First Note
+### 🏗️ Architecture & Security
 
-The application is **entirely client-side**. No backend or database setup is required. All data you enter is stored securely in your browser's IndexedDB (v8).
-
-### For deeper setup and architecture
+The application is **entirely client-side** (Local-First). All data is stored securely in your browser's IndexedDB (v9).
 
 - [README.md](README.md) - Full installation guide
 - [BLUEPRINT.md](BLUEPRINT.md) - System architecture
