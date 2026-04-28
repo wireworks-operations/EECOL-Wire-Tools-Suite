@@ -7,25 +7,25 @@
 ```text
                     +-------------------------+
    Browser/Client   |         Frontend        |
-  +--------------+  |  Vanilla JS + HTML5     |
-  |  User Agent  |--|  Tailwind CSS           |
+  +--------------+  |  Vanilla JS (ESM)       |
+  |  User Agent  |--|  Tailwind CSS + HTML5   |
   +--------------+  +------------+------------+
                                   |
-                                  | Direct Access (Local)
+                                  | window.eecolDB
                                   v
                     +-------------+-------------+
-                    |          IndexedDB        |
-                    |  14 Specialized Stores    |
-                    |  EECOLIndexedDB Singleton |
+                    |      EECOLIndexedDB       |
+                    |   (Singleton Pattern)     |
+                    |   Database Version: 9     |
                     +-------------+-------------+
                                   |
              +--------------------+--------------------+
              |                                         |
              v                                         v
   +---------------------+                   +---------------------+
-  |   Service Worker    |                   |    Local Storage    |
-  |  Offline Caching    |                   |  Fallback/Migration |
-  |  PWA Assets         |                   |  Legacy Support     |
+  |   Service Worker    |                   |    IndexedDB        |
+  | (sw.js) Caching     |                   |  14 Object Stores   |
+  | Offline Capability  |                   |  Local-First Data   |
   +---------------------+                   +---------------------+
 ```
 
@@ -33,11 +33,11 @@
 
 1. **User Action**: User enters data into a tool (e.g., Cutting Records).
 2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton via `window.eecolDB`.
-3. **Local Storage**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`) using `relaxed` durability.
+3. **Local Persistence**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`) using `relaxed` durability for performance.
 4. **Offline Access**: Service worker (`sw.js`) serves cached HTML/JS/CSS assets even without connectivity.
 5. **Retrieval**: Analytics tools query IndexedDB to render real-time charts via Chart.js.
 
-## 🗄️ Database Architecture (v8)
+## 🗄️ Database Architecture (v9)
 
 The application uses **14 specialized stores** within the `EECOLTools_v2` database:
 
@@ -58,7 +58,7 @@ The application uses **14 specialized stores** within the `EECOLTools_v2` databa
 
 - **Local-First**: Zero backend dependencies to ensure 100% uptime in industrial environments.
 - **Vanilla JS**: Chosen for longevity and to minimize framework-induced maintenance debt.
-- **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **8**.
+- **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **9**.
 - **ESM Hybrid**: Transitioning towards ES Modules (`type="module"`) while maintaining global shims for backward compatibility.
 - **Relaxed Durability**: Uses `durability: 'relaxed'` in IDB transactions for optimal UI responsiveness.
 

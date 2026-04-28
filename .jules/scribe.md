@@ -2,16 +2,16 @@
 
 Critical learnings and repository architectural insights.
 
-## 2026-04-14 - [Full Documentation Refresh v0.8.0.4]
+## 2026-05-15 - [Full Documentation Refresh v0.8.0.4 - Syncing Schema & Tools]
 
 **Observation:**
-The repository references several advanced tools in `package.json` (Webpack, Jest, ESLint, Cypress) and provides Docker scripts, but the actual configuration files (`webpack.config.js`, `jest.config.js`, etc.) and the `Dockerfile` are missing from the root. This indicates the build/test system is currently in a transitional state or "In-Progress."
+Discovered a version mismatch between documentation (v8) and implementation (v9) of IndexedDB in `src/core/database/indexeddb.js`. Also confirmed that despite `package.json` having scripts for Webpack, Docker, and Jest, the corresponding config files and Dockerfile are missing, confirming the "In-Progress" status.
 
 **Learning:**
-The project relies heavily on a "Local-First" architecture using IndexedDB (v8) and a singleton pattern (`EECOLIndexedDB`). Documentation must reflect that the core functionality is 100% client-side and does not require a backend, even if the `package.json` suggests otherwise.
+Maintaining parity between the database version in code and documentation is crucial for developers using DevTools to inspect storage. Explicitly documenting "missing" or "in-progress" tools prevents developer frustration during onboarding.
 
 **Action:**
-Updated all documentation (README, QUICKSTART, BLUEPRINT, SECURITY) to explicitly state the operational status of tools. Consolidated headings with emojis and ensured that `npm` (bundled with Node.js) is the documented package manager for maximum first-time success, while noting that `pnpm` is also supported. Updated IndexedDB version to 8 across all documents. Verified that `npm run dev` works with a local `http-server` installation.
+Synchronized all documentation to IndexedDB v9. Enhanced the Tooling Status table in `README.md` to specify exactly which configuration files are missing for non-functional tools. Refined the ASCII blueprint to better represent the ESM Vanilla JS flow and IndexedDB singleton interaction.
 
 ## 2026-03-31 - [IndexedDB Schema Enumeration]
 
