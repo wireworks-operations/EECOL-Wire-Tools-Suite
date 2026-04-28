@@ -32,8 +32,8 @@
 ## 🔄 Data Flow (Happy Path)
 
 1. **User Action**: User enters data into a tool (e.g., Cutting Records).
-2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton via `window.eecolDB`.
-3. **Local Persistence**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`) using `relaxed` durability for performance.
+2. **Persistence**: Frontend calls the `EECOLIndexedDB` singleton via `window.EECOLIndexedDB.getInstance()`.
+3. **Local Storage**: Data is written directly to a specialized IndexedDB store (e.g., `cuttingRecords`) using `relaxed` durability.
 4. **Offline Access**: Service worker (`sw.js`) serves cached HTML/JS/CSS assets even without connectivity.
 5. **Retrieval**: Analytics tools query IndexedDB to render real-time charts via Chart.js.
 
@@ -42,9 +42,28 @@
 The application uses **14 specialized stores** within the `EECOLTools_v2` database:
 
 - **Record-Keeping**: `cuttingRecords`, `inventoryRecords`, `maintenanceLogs`.
-- **Calculators**: `markConverter`, `stopmarkConverter`, `reelcapacityEstimator`, `reelsizeEstimator`.
-- **Engineering**: `calibrationMeasurements`, `wireCutList`.
-- **Core**: `settings`, `users`, `notifications`, `sessions`, `multicutPlanner`.
+- **Calculators**: `markConverter`, `stopmarkConverter`, `reelcapacityEstimator`, `reelsizeEstimator`, `wireCutList`.
+- **Engineering**: `calibrationMeasurements`, `multicutPlanner`.
+- **Core**: `settings`, `users`, `notifications`, `sessions`.
+
+### Store Enumerable
+
+| Store Name | Key Path | Primary Purpose |
+| :--- | :--- | :--- |
+| `cuttingRecords` | `id` | Logs and analysis of wire cuts. |
+| `inventoryRecords` | `id` | Material management and tracking. |
+| `users` | `id` | Local user profiles and roles. |
+| `notifications` | `id` | Local system alerts and reminders. |
+| `maintenanceLogs` | `id` | Equipment inspection checklists. |
+| `markConverter` | `id` | Wire mark calculation history. |
+| `stopmarkConverter` | `id` | Stop mark calculation history. |
+| `reelcapacityEstimator` | `id` | Reel capacity calculation history. |
+| `reelsizeEstimator` | `id` | Reel size calculation history. |
+| `multicutPlanner` | `id` | Planning for multiple reel cuts. |
+| `settings` | `name` | Application-wide local configurations. |
+| `sessions` | `sessionId` | Local session management. |
+| `calibrationMeasurements` | `id` | Machine calibration tracking. |
+| `wireCutList` | `id` | Queue of pending wire cuts. |
 
 ## 📁 Repos & Conventions
 

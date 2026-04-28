@@ -41,11 +41,11 @@ npm run dev
 | :--- | :--- | :--- |
 | `npm run dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
 | `python3 verification/verify_idb.py` | ✅ **Operational** | IDB verification via Playwright (Python). |
-| `npm run build` | 🚧 **In-Progress** | Production build (Missing `webpack.config.js`). |
-| `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing `jest.config.js`). |
-| `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing `.eslintrc.js`). |
-| `npm run type-check` | 🚧 **In-Progress** | TypeScript verification (Missing `tsconfig.json`). |
-| `docker:*` | 🚧 **In-Progress** | Docker deployment (Missing `Dockerfile`). |
+| `npm run build` | 🚧 **In-Progress** | Production build (Missing Webpack config). |
+| `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
+| `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
+| `npm run type-check` | 🚧 **In-Progress** | TypeScript verification (Missing config). |
+| `npm run docker:build` | 🚧 **In-Progress** | Docker containerization (Missing Dockerfile). |
 
 ---
 
@@ -124,9 +124,9 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 
 ## 🔒 Security & Privacy
 
-- **Zero Data Transmission**: All data remains in the browser's IndexedDB. No cloud sync.
+- **Zero Data Transmission**: All data remains in the browser's IndexedDB (v9). No cloud sync.
 - **XSS Mitigation**: Strict use of `.textContent` ("Secure by Default") and a robust Content Security Policy (CSP).
-- **Offline Reliability**: Service workers ensure the app loads even without an internet connection.
+- **Offline Reliability**: Service workers ensure the app loads even without an internet connectivity.
 
 See **[SECURITY.md](SECURITY.md)** for our full security policy.
 
