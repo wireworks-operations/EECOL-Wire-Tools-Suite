@@ -121,9 +121,7 @@ import {
              if (DdRatio) DdRatio.textContent = '--';
              if (targetAchievement) targetAchievement.textContent = '--';
              if (layerList) {
-                 while (layerList.firstChild) {
-                     layerList.removeChild(layerList.firstChild);
-                 }
+                 layerList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
                  const p = document.createElement('p');
                  p.className = 'text-sm text-gray-500';
                  p.textContent = 'Enter data and calculate to see layer breakdown.';
@@ -302,9 +300,7 @@ import {
                     C_dead_m += L_n_m;
                 }
 
-                while (layerList.firstChild) {
-                    layerList.removeChild(layerList.firstChild);
-                }
+                layerList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
                 // Show all physical layers that actually fit in the freeboard-limited space
                 for (let n = 1; n <= N_layers; n++) {
@@ -1197,9 +1193,7 @@ function handleCableDesignationChange(event) {
         // Show preset mode indicator with both buttons
         const indicator = document.getElementById('presetModeIndicator');
         indicator.classList.remove('hidden');
-        while (indicator.firstChild) {
-            indicator.removeChild(indicator.firstChild);
-        }
+        indicator.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
         const titleSpan = document.createElement('span');
         titleSpan.className = 'font-semibold';

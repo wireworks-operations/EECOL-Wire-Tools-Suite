@@ -225,9 +225,7 @@ function populateReelConfigurationSelector() {
 
     // Clear existing options except the default
     const defaultOption = selector.querySelector('option[value=""]');
-    while (selector.firstChild) {
-        selector.removeChild(selector.firstChild);
-    }
+    selector.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     if (defaultOption) {
         selector.appendChild(defaultOption);

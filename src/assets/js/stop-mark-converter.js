@@ -148,9 +148,7 @@ function calculateConversion(showErrors = false) {
 
     const referenceList = document.getElementById('referenceMarksList');
     if (referenceList) {
-        while (referenceList.firstChild) {
-            referenceList.removeChild(referenceList.firstChild);
-        }
+        referenceList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
         const createReferenceRow = (icon, label, value, valueClass) => {
             const rowDiv = document.createElement('div');
