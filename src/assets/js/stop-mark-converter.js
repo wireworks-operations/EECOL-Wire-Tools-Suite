@@ -222,70 +222,50 @@ function printWireCutResults() {
         // Use shared print utility
         if (typeof printWireStopMarkResults === 'function') {
             printWireStopMarkResults(stoppingMark, visualMark);
+            return;
+        }
+
+        const html = `
+            <html>
+            <head>
+                <title>EECOL Wire Cut Results</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h2 { color: #0058B3; }
+                    .result { margin: 20px 0; padding: 15px; border: 2px solid #0058B3; border-radius: 8px; }
+                    .label { font-weight: bold; color: #666; }
+                    .value { font-size: 24px; color: #0058B3; font-weight: bold; }
+                    @media print { button { display: none; } }
+                </style>
+            </head>
+            <body>
+                <h2>EECOL Wire Cut Stop Mark Results</h2>
+                <div class="result">
+                    <p class="label">Stopping Mark:</p>
+                    <p class="value">${window.escapeHTML(stoppingMark)}</p>
+                </div>
+                <div class="result">
+                    <p class="label">Visual Reference Mark (at Reel):</p>
+                    <p class="value">${window.escapeHTML(visualMark)}</p>
+                </div>
+                <button onclick="window.print()">Print</button>
+            </body>
+            </html>
+        `;
+
+        if (typeof createPrintWindow === 'function') {
+            createPrintWindow('EECOL Wire Cut Results', html);
         } else {
-            // Fallback (same as original)
+            // Fallback (hardened)
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                            <html>
-                            <head>
-                                <title>EECOL Wire Cut Results</title>
-                                <style>
-                                    body { font-family: Arial, sans-serif; padding: 20px; }
-                                    h2 { color: #0058B3; }
-                                    .result { margin: 20px 0; padding: 15px; border: 2px solid #0058B3; border-radius: 8px; }
-                                    .label { font-weight: bold; color: #666; }
-                                    .value { font-size: 24px; color: #0058B3; font-weight: bold; }
-                                    @media print { button { display: none; } }
-                                </style>
-                            </head>
-                            <body>
-                                <h2>EECOL Wire Cut Stop Mark Results</h2>
-                                <div class="result">
-                                    <p class="label">Stopping Mark:</p>
-                                    <p class="value">${window.escapeHTML(stoppingMark)}</p>
-                                </div>
-                                <div class="result">
-                                    <p class="label">Visual Reference Mark (at Reel):</p>
-                                    <p class="value">${window.escapeHTML(visualMark)}</p>
-                                </div>
-                                <button onclick="window.print()">Print</button>
-                            </body>
-                            </html>
-                        `);
-            printWindow.print();
+            if (printWindow) {
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.print();
+            }
         }
     } catch (error) {
         console.error('Print failed:', error);
-        // Fallback as above
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-                        <html>
-                        <head>
-                            <title>EECOL Wire Cut Results</title>
-                            <style>
-                                body { font-family: Arial, sans-serif; padding: 20px; }
-                                h2 { color: #0058B3; }
-                                .result { margin: 20px 0; padding: 15px; border: 2px solid #0058B3; border-radius: 8px; }
-                                .label { font-weight: bold; color: #666; }
-                                .value { font-size: 24px; color: #0058B3; font-weight: bold; }
-                                @media print { button { display: none; } }
-                            </style>
-                        </head>
-                        <body>
-                            <h2>EECOL Wire Cut Stop Mark Results</h2>
-                            <div class="result">
-                                <p class="label">Stopping Mark:</p>
-                                <p class="value">${window.escapeHTML(stoppingMark)}</p>
-                            </div>
-                            <div class="result">
-                                <p class="label">Visual Reference Mark (at Reel):</p>
-                                <p class="value">${window.escapeHTML(visualMark)}</p>
-                            </div>
-                            <button onclick="window.print()">Print</button>
-                        </body>
-                        </html>
-                    `);
-        printWindow.print();
     }
 }
 
