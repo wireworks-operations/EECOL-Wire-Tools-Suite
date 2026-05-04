@@ -1730,7 +1730,7 @@ function printRecords(filtered = false) {
         <body>
             <div class="header">
                 <div class="title">EECOL Wire Cut Records Report</div>
-                <div>Total Records: ${records.length} | Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
+                <div>Total Records: ${records.length} | Generated: ${window.escapeHTML(new Date().toLocaleDateString())} ${window.escapeHTML(new Date().toLocaleTimeString())}</div>
             </div>
             <table>
                 <thead>
@@ -1751,33 +1751,40 @@ function printRecords(filtered = false) {
                 <tbody>
                     ${records.map(record => `
                         <tr>
-                            <td>${escapeHTML(record.wireId)}</td>
-                            <td>${escapeHTML(record.cutLength)} ${escapeHTML(record.cutLengthUnit)}</td>
-                            <td>${record.isFullPick ? 'Full Pick' : escapeHTML(record.startingMark) + ' ' + escapeHTML(record.startingMarkUnit)}</td>
-                            <td>${record.isFullPick ? 'Full Pick' : (record.isSingleUnitCut ? '1 unit cut' : escapeHTML(record.endingMark) + ' ' + escapeHTML(record.endingMarkUnit))}</td>
-                            <td>${escapeHTML(record.lineCode || 'N/A')}</td>
-                            <td>${escapeHTML(record.cutterName)}</td>
-                            <td>${escapeHTML(record.orderNumber)}</td>
-                            <td>${escapeHTML(record.customerName)}</td>
-                            <td>${record.coilOrReel === 'coil' ? 'Coil' : (record.reelSize ? `RLS EE-${escapeHTML(record.reelSize)}W` : 'Reel')}</td>
-                            <td>${escapeHTML(record.orderComments || 'N/A')}</td>
-                            <td>${new Date(record.timestamp).toLocaleString()}</td>
+                            <td>${window.escapeHTML(record.wireId)}</td>
+                            <td>${window.escapeHTML(record.cutLength)} ${window.escapeHTML(record.cutLengthUnit)}</td>
+                            <td>${record.isFullPick ? 'Full Pick' : window.escapeHTML(record.startingMark) + ' ' + window.escapeHTML(record.startingMarkUnit)}</td>
+                            <td>${record.isFullPick ? 'Full Pick' : (record.isSingleUnitCut ? '1 unit cut' : window.escapeHTML(record.endingMark) + ' ' + window.escapeHTML(record.endingMarkUnit))}</td>
+                            <td>${window.escapeHTML(record.lineCode || 'N/A')}</td>
+                            <td>${window.escapeHTML(record.cutterName)}</td>
+                            <td>${window.escapeHTML(record.orderNumber)}</td>
+                            <td>${window.escapeHTML(record.customerName)}</td>
+                            <td>${record.coilOrReel === 'coil' ? 'Coil' : (record.reelSize ? `RLS EE-${window.escapeHTML(record.reelSize)}W` : 'Reel')}</td>
+                            <td>${window.escapeHTML(record.orderComments || 'N/A')}</td>
+                            <td>${window.escapeHTML(new Date(record.timestamp).toLocaleString())}</td>
                         </tr>
                     `).join('')}
                 </tbody>
             </table>
             <div class="branding">
                 EECOL Wire Tools Suite 2025 - Enterprise Edition<br>
-                Printed: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+                Printed: ${window.escapeHTML(new Date().toLocaleDateString())} ${window.escapeHTML(new Date().toLocaleTimeString())}
             </div>
             <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 8px 16px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer;">Print</button>
         </body>
         </html>
     `;
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(printContent);
-    printWindow.print();
+    if (typeof createPrintWindow === 'function') {
+        createPrintWindow('EECOL Cut Records', printContent);
+    } else {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    }
 }
 
 // Event Listeners

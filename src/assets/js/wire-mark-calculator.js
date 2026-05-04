@@ -221,9 +221,8 @@ const wireMarkCalculator = {
 
     // Fallback print function
     fallbackPrint(resultText) {
-        const printWindow = window.open('', '_blank');
         const safeResult = window.escapeHTML(resultText);
-        printWindow.document.write(`
+        const html = `
             <html>
             <head>
                 <title>EECOL Wire Mark Results</title>
@@ -246,8 +245,18 @@ const wireMarkCalculator = {
                 <button onclick="window.print()">Print</button>
             </body>
             </html>
-        `);
-        printWindow.print();
+        `;
+
+        if (typeof createPrintWindow === 'function') {
+            createPrintWindow('EECOL Wire Mark Results', html);
+        } else {
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.print();
+            }
+        }
     },
 
     // Save for Cutting Records functionality

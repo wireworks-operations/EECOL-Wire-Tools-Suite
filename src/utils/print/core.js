@@ -26,7 +26,8 @@ export function _esc(v) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#x2F;');
 }
 
 /**
@@ -44,6 +45,11 @@ export function _openPrint(title, html) {
     if (!w) {
         alert('Unable to open print window. Please allow popups for this site.');
         return null;
+    }
+    try {
+        w.document.title = title || 'Print';
+    } catch (e) {
+        // ignore cross-browser quirks
     }
     try { w.document.open(); } catch (e) {}
     w.document.write(html);
