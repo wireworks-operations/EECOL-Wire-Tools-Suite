@@ -73,3 +73,11 @@ The `createObjectStores` method in `EECOLIndexedDB` had a non-idempotent migrati
 2. Added `transaction.onerror` and `transaction.onabort` to `getRecentCalibrationMeasurements`.
 3. Added `onerror` handler to the migration cursor in `createObjectStores`.
 **Validation:** Verified via existing `verify_sentinel_fix.py` and a new `verify_migration_safety.py` script that specifically tests partial migration scenarios.
+
+## 2026-05-04 - Implement cross-tab change notification
+**Observation:** Multiple tabs of the PWA could show stale data because IndexedDB writes in one tab do not automatically notify other tabs. While pages like Live Statistics listen for an `eecolDBChange` localStorage key, nothing was actually updating it.
+**Learning:** The `storage` event in the Web API is an efficient way to synchronize state across tabs on the same origin. Updating a localStorage key upon every successful IDB write transaction provides a simple "push" notification to other tabs.
+**Action:**
+1. Implemented `_notifyChange()` method in `EECOLIndexedDB` that updates `localStorage.setItem('eecolDBChange', Date.now().toString())`.
+2. Integrated `_notifyChange()` into `update`, `bulkPut`, `delete`, and `clear` methods.
+**Validation:** Verified via `verification/verify_tab_sync.py` and `verification/verify_frontend_sync.py` (Playwright) ensuring that write operations correctly update the sync key.
