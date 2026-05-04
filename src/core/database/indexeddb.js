@@ -98,6 +98,16 @@ class EECOLIndexedDB {
     return this.isReady();
   }
 
+  /**
+   * IDB SENTINEL: Triggers cross-tab synchronization by updating a localStorage key.
+   * Pages like Live Statistics and Reports listen for this 'storage' event to refresh their views.
+   */
+  _notifyChange() {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('eecolDBChange', Date.now().toString());
+    }
+  }
+
   async initialize() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion);
@@ -156,7 +166,10 @@ class EECOLIndexedDB {
       const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
       const store = transaction.objectStore(storeName);
 
-      transaction.oncomplete = () => resolve();
+      transaction.oncomplete = () => {
+        this._notifyChange();
+        resolve();
+      };
       transaction.onerror = () => {
         console.error(`❌ Bulk operation failed on ${storeName}:`, transaction.error);
         reject(transaction.error);
@@ -345,6 +358,7 @@ class EECOLIndexedDB {
       const request = store.put(data);
 
       request.onsuccess = () => {
+        this._notifyChange();
         resolve(request.result);
       };
 
@@ -370,6 +384,7 @@ class EECOLIndexedDB {
       const request = store.delete(key);
 
       request.onsuccess = () => {
+        this._notifyChange();
         resolve(true);
       };
 
@@ -395,6 +410,7 @@ class EECOLIndexedDB {
       const request = store.clear();
 
       request.onsuccess = () => {
+        this._notifyChange();
         resolve();
       };
 
