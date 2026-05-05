@@ -16,15 +16,18 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 
 ### Prerequisites
 
-- **Node.js**: >= 16.0.0
-- **npm**: (Bundled with Node.js)
-- **Python**: 3.x (Optional, for database verification scripts)
+- **Node.js**: >= 16.0.0 (npm v8+)
+- **Python**: 3.x (Optional, for database verification)
+- **Docker**: (Required for `docker:*` scripts, currently in-progress)
 
-### 1) Clone & Install
+### 1) Install Dependencies
 
 ```bash
+# Clone the repository
 git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
 cd eecol-wire-tools-suite-v2
+
+# Install Node dependencies
 npm install
 ```
 
@@ -44,7 +47,6 @@ npm run dev
 | `npm run build` | 🚧 **In-Progress** | Production build (Missing Webpack config). |
 | `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
 | `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
-| `npm run type-check` | 🚧 **In-Progress** | TypeScript verification (Missing config). |
 | `npm run docker:build` | 🚧 **In-Progress** | Docker containerization (Missing Dockerfile). |
 
 ---
@@ -52,11 +54,11 @@ npm run dev
 ## 🧭 Quickstart (90-second path)
 
 ```bash
-# 1. Clone the repository
+# 1. Clone & Enter
 git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
 cd eecol-wire-tools-suite-v2
 
-# 2. Install dependencies and start the app
+# 2. Install & Start
 npm install && npm run dev
 
 # 3. Open app
@@ -90,10 +92,11 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 <summary>📦 Operations & Records</summary>
 
 - **Wire Cut Records**: Log and analyze wire cuts with single-pass metric optimization.
-- **Inventory Records**: Manage materials with automatic timestamping and length fallbacks.
+- **Wire Inventory Records**: Manage materials with automatic timestamping and length fallbacks.
 - **Machine Maintenance**: Daily equipment inspection checklists with multi-page support.
 - **Shipping Manifest**: Generate reel labels and shipping documentation.
 - **Reel Inventory Labels**: Simple large-format reel identification.
+- **Multi-Cut Planner**: (Planned) Plan multiple reel cuts & capacity.
 
 </details>
 
@@ -106,6 +109,16 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 - **Reel Size Estimator**: Find optimal reel for wire length.
 - **Weight Calculator**: Estimate wire weight based on dimensions and length.
 - **Advanced Mathematics**: Engineering formulas for reels.
+
+</details>
+
+<details>
+<summary>🎓 Support & Education</summary>
+
+- **Education Center**: Master wire cutting excellence with the Learning Hub.
+- **Backup Guide**: Step-by-step instructions for JSON-based data backups.
+- **Privacy Policy**: Details on our commitment to local-only data storage.
+- **Database Config**: Direct access to IndexedDB management and migrations.
 
 </details>
 
