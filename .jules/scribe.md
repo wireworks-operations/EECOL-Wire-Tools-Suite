@@ -2,6 +2,17 @@
 
 Critical learnings and repository architectural insights.
 
+## 2026-05-21 - [Documentation Pass v0.8.0.4 - Full Refresh]
+
+**Observation:**
+The documentation was slightly out of sync with the latest codebase changes, particularly regarding the IndexedDB v9 schema and the actual available tools listed in the Bento Box landing page (`index.html`).
+
+**Learning:**
+A documentation pass is more than just updating versions; it's about ensuring the mental model provided in `BLUEPRINT.md` and the "Happy Path" in `QUICKSTART.md` match the user's actual experience. Direct inspection of `index.html` revealed several tools (like `Wire Weight Estimator` and `Learning Hub`) that were not prominently mentioned in the main `README.md`.
+
+**Action:**
+Synchronized `README.md`, `QUICKSTART.md`, `BLUEPRINT.md`, and `SECURITY.md` to version 0.8.0.4 and IndexedDB v9. Enumerated all 14 object stores in `BLUEPRINT.md`. Updated `README.md` "Available Tools" section to reflect all modules visible in the landing page, including Support & Education. Verified setup commands (`npm install`, `npm run dev`) and verification script (`python3 verification/verify_idb.py`).
+
 ## 2026-05-15 - [Full Documentation Refresh v0.8.0.4 - Syncing Schema & Tools]
 
 **Observation:**

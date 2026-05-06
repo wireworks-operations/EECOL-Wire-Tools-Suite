@@ -57,6 +57,7 @@ This application is designed as a **local-first** Progressive Web App (PWA). All
 
 - **Cross-Site Scripting (XSS)**: Mitigated by a strict CSP and consistent use of sanitization utilities and native browser protections (`textContent`).
 - **Physical Access**: Anyone with physical access to the device can inspect IndexedDB contents via browser dev tools. Users are encouraged to secure their devices.
+- **CSV Injection**: Mitigated by the `escapeCSVValue` helper which prefixes sensitive prefixes (`=`, `+`, `-`, `@`) with a single quote.
 
 ---
 
