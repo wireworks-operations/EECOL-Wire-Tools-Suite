@@ -31,3 +31,7 @@
 ## 2026-03-22 - Numeric Timestamp Comparisons for Dashboard Scaling
 **Learning:** Using `new Date().toDateString()` inside high-frequency processing loops (like dashboard metrics calculation) creates significant GC pressure due to thousands of temporary `Date` objects and string allocations. This becomes a bottleneck as the local IndexedDB grows.
 **Action:** Pre-calculate boundary timestamps (e.g., `todayStart`) and use numeric comparisons within loops. Consolidate data collection for auxiliary UI elements (like INA lists) into the same primary pass to reduce the total number of iterations over the dataset.
+
+## 2026-04-10 - Period Key Memoization and Load-time Normalization
+**Learning:** Repeated Date allocations and complex string-based key generation (e.g., week/month strings) inside reporting loops create significant CPU overhead and GC pressure. Even if the primary loop is O(N), the constant factor for Date parsing and string formatting is high. However, cache keys for memoization must be local-timezone aware (e.g., `date.toDateString()`) rather than UTC-based math to ensure correct data grouping.
+**Action:** Normalize timestamps to numbers immediately upon loading data from IndexedDB. Use a Map to cache period keys for unique local days during chart aggregation to eliminate redundant calculations while maintaining accuracy.
