@@ -150,7 +150,18 @@ async function loadCuttingData() {
 
             if (records && records.length > 0) {
                 console.log(`📊 Found ${records.length} records in IndexedDB`);
-                cutRecords = records.sort((a, b) => b.timestamp - a.timestamp);
+
+                /**
+                 * BOLT OPTIMIZATION: Numeric timestamp normalization
+                 * Ensures all timestamps are numbers once during loading to avoid
+                 * repeated parsing overhead in processing loops.
+                 */
+                cutRecords = records.map(r => {
+                    if (r.timestamp && typeof r.timestamp === 'string') {
+                        r.timestamp = new Date(r.timestamp).getTime() || Date.now();
+                    }
+                    return r;
+                }).sort((a, b) => b.timestamp - a.timestamp);
 
                 // Update dashboard and charts
                 updateDashboard();
@@ -182,8 +193,18 @@ function loadFromLocalStorage() {
         console.log('🔍 Loading from localStorage (fallback)...');
 
         if (stored) {
-            cutRecords = JSON.parse(stored);
-            cutRecords.sort((a, b) => b.timestamp - a.timestamp);
+            const records = JSON.parse(stored);
+
+            /**
+             * BOLT OPTIMIZATION: Numeric timestamp normalization
+             */
+            cutRecords = records.map(r => {
+                if (r.timestamp && typeof r.timestamp === 'string') {
+                    r.timestamp = new Date(r.timestamp).getTime() || Date.now();
+                }
+                return r;
+            }).sort((a, b) => b.timestamp - a.timestamp);
+
             console.log(`📊 Loaded ${cutRecords.length} records from localStorage`);
 
             updateDashboard();
@@ -284,11 +305,14 @@ function getPeriodKey(date, period) {
 }
 
 
+/**
+ * BOLT OPTIMIZATION: Optimized sorting
+ * Uses direct numeric comparison since periodStart is now normalized to a timestamp
+ * in the optimized metrics pass.
+ */
 function getSortedPeriodKeys(groups) {
     return Object.keys(groups).sort((a, b) => {
-        const dateA = new Date(groups[a].periodStart);
-        const dateB = new Date(groups[b].periodStart);
-        return dateA - dateB;
+        return groups[a].periodStart - groups[b].periodStart;
     });
 }
 
@@ -314,11 +338,14 @@ function updateDashboard() {
     const customerCounts = {};
     const wireTypeCounts = {};
 
-    const now = new Date();
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(now.getDate() - 7);
-    const twoWeeksAgo = new Date(oneWeekAgo);
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 7);
+    /**
+     * BOLT OPTIMIZATION: Numeric timestamp comparison
+     * Pre-calculating boundaries as numbers avoids creating thousands of
+     * temporary Date objects inside the loop.
+     */
+    const nowMs = Date.now();
+    const oneWeekAgoMs = nowMs - (7 * 24 * 60 * 60 * 1000);
+    const twoWeeksAgoMs = nowMs - (14 * 24 * 60 * 60 * 1000);
 
     let currentWeekCount = 0;
     let previousWeekCount = 0;
@@ -362,14 +389,12 @@ function updateDashboard() {
         const wireType = record.wireId || 'Unknown';
         wireTypeCounts[wireType] = (wireTypeCounts[wireType] || 0) + 1;
 
-        // Weekly change tracking
-        const recordDate = parseDate(record.timestamp);
-        if (recordDate) {
-            if (recordDate >= oneWeekAgo) {
-                currentWeekCount++;
-            } else if (recordDate >= twoWeeksAgo) {
-                previousWeekCount++;
-            }
+        // Weekly change tracking (optimized numeric comparison)
+        const ts = record.timestamp;
+        if (ts >= oneWeekAgoMs) {
+            currentWeekCount++;
+        } else if (ts >= twoWeeksAgoMs) {
+            previousWeekCount++;
         }
     }
 
@@ -453,6 +478,13 @@ function updateCharts() {
          * Consolidates approximately 10+ separate O(N) passes (filters, reduces, and groupings)
          * into a single loop to avoid redundant passes over the cutRecords dataset.
          */
+        /**
+         * BOLT OPTIMIZATION: Period key memoization
+         * Using a Map to cache period keys (week/month strings) for unique days
+         * avoids repeated Date allocations and complex string formatting.
+         */
+        const periodKeyCache = new Map();
+
         const metrics = {
             trends: {},
             cutterCounts: {},
@@ -463,18 +495,29 @@ function updateCharts() {
         };
 
         for (const record of cutRecords) {
-            // BOLT FIX: Robust timestamp parsing
-            const date = parseDate(record.timestamp);
-            if (!date) continue;
-            const ts = date.getTime();
+            const ts = record.timestamp;
+            if (!ts) continue;
 
-            const periodKey = getPeriodKey(date, period);
+            /**
+             * BOLT FIX: Correct day-level cache key for local timezone
+             * Using the date string from the record's local time as a cache key
+             * ensures correct grouping across timezones while still avoiding
+             * redundant getPeriodKey() calculations.
+             */
+            const tempDate = new Date(ts);
+            const dateStrKey = tempDate.toDateString();
+            let periodKey = periodKeyCache.get(dateStrKey);
+
+            if (!periodKey) {
+                periodKey = getPeriodKey(tempDate, period);
+                periodKeyCache.set(dateStrKey, periodKey);
+            }
 
             // 1. Aggregated metrics for ALL data (for Detailed Reports comparison)
             if (!metrics.allPeriodMetrics[periodKey]) {
                 metrics.allPeriodMetrics[periodKey] = {
                     cuts: 0, length: 0, fullPicks: 0, systemCuts: 0,
-                    periodStart: new Date(date)
+                    periodStart: ts
                 };
             }
             const pMetric = metrics.allPeriodMetrics[periodKey];
@@ -482,19 +525,19 @@ function updateCharts() {
             pMetric.length += (record.cutLength || 0);
             if (record.isFullPick) pMetric.fullPicks++;
             if (record.isSystemCut) pMetric.systemCuts++;
-            if (date < pMetric.periodStart) pMetric.periodStart = new Date(date);
+            if (ts < pMetric.periodStart) pMetric.periodStart = ts;
 
             // 2. Filtered metrics for charts (only within selected date range)
             if ((!startDate || ts >= startDate) && (!endDate || ts <= endDate)) {
                 // Trends data (same as filtered metrics)
                 if (!metrics.trends[periodKey]) {
-                    metrics.trends[periodKey] = { cutsCount: 0, totalLength: 0, periodStart: new Date(date) };
+                    metrics.trends[periodKey] = { cutsCount: 0, totalLength: 0, periodStart: ts };
                 }
                 metrics.trends[periodKey].cutsCount++;
                 metrics.trends[periodKey].totalLength += (record.cutLength || 0);
 
-                if (date < metrics.trends[periodKey].periodStart) {
-                    metrics.trends[periodKey].periodStart = new Date(date);
+                if (ts < metrics.trends[periodKey].periodStart) {
+                    metrics.trends[periodKey].periodStart = ts;
                 }
 
                 // Cutter counts
@@ -729,7 +772,12 @@ function createCustomerDistributionChart(chartType, customerCounts) {
 // Reports table update
 function updateReportsTable(metrics) {
     const tableBody = document.getElementById('reportsTable');
-    tableBody.innerHTML = '';
+
+    /**
+     * BOLT OPTIMIZATION: High-performance DOM clearing
+     * replaceChildren() is faster than innerHTML = '' as it avoids HTML parsing.
+     */
+    tableBody.replaceChildren();
 
     if (cutRecords.length === 0) {
         const rowMetrics = [
