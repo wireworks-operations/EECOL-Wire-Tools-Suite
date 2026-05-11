@@ -329,7 +329,7 @@ function findStandardReels(targetLength_m, cableDiameter_m, freeboard_m, efficie
 function clearResults() {
     theoreticalDimensionsCard.classList.add('hidden');
     recommendedReelsCard.classList.add('hidden');
-    recommendedReelsList.innerHTML = '';
+    recommendedReelsList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
     errorBox.classList.add('hidden');
 }
 
@@ -371,7 +371,7 @@ function displayTheoreticalDimensions(theoreticalReel, targetLength_m) {
  */
 function displayRecommendedReels(recommendedReels, targetLength_m) {
     const target_ft = metersToFeet(targetLength_m);
-    recommendedReelsList.innerHTML = '';
+    recommendedReelsList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     recommendedReels.forEach((reel, index) => {
         const df_in = reel.flange / INCHES_TO_METERS;

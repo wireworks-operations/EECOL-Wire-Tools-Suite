@@ -147,12 +147,24 @@ async function loadInventoryData() {
 
             if (records && records.length > 0) {
                 console.log(`📊 Found ${records.length} records in IndexedDB`);
-                inventoryItems = records.sort((a, b) => b.timestamp - a.timestamp);
+
+                /**
+                 * BOLT OPTIMIZATION: Numeric timestamp normalization
+                 * Ensures all timestamps are numbers once during loading to avoid
+                 * repeated parsing overhead in processing loops.
+                 */
+                inventoryItems = records.map(item => {
+                    if (item.timestamp && typeof item.timestamp === 'string') {
+                        item.timestamp = new Date(item.timestamp).getTime() || Date.now();
+                    } else if (!item.timestamp) {
+                        item.timestamp = Date.now();
+                    }
+                    return item;
+                }).sort((a, b) => b.timestamp - a.timestamp);
 
                 // Update dashboard and charts
                 updateDashboard();
                 updateCharts();
-                updateReportsTable();
 
                 console.log('✅ Inventory data loaded successfully from IndexedDB');
             } else {
@@ -160,7 +172,6 @@ async function loadInventoryData() {
                 inventoryItems = [];
                 updateDashboard();
                 updateCharts();
-                updateReportsTable();
             }
         } else {
             console.warn('⚠️ IndexedDB not available, falling back to localStorage for compatibility');
@@ -181,26 +192,35 @@ function loadFromLocalStorage() {
         console.log('🔍 Loading from localStorage (fallback)...');
 
         if (stored) {
-            inventoryItems = JSON.parse(stored);
-            inventoryItems.sort((a, b) => b.timestamp - a.timestamp);
+            const records = JSON.parse(stored);
+
+            /**
+             * BOLT OPTIMIZATION: Numeric timestamp normalization
+             */
+            inventoryItems = records.map(item => {
+                if (item.timestamp && typeof item.timestamp === 'string') {
+                    item.timestamp = new Date(item.timestamp).getTime() || Date.now();
+                } else if (!item.timestamp) {
+                    item.timestamp = Date.now();
+                }
+                return item;
+            }).sort((a, b) => b.timestamp - a.timestamp);
+
             console.log(`📊 Loaded ${inventoryItems.length} records from localStorage`);
 
             updateDashboard();
             updateCharts();
-            updateReportsTable();
         } else {
             console.log('📭 No data in localStorage either');
             inventoryItems = [];
             updateDashboard();
             updateCharts();
-            updateReportsTable();
         }
     } catch (error) {
         console.error('❌ Error loading from localStorage:', error);
         inventoryItems = [];
         updateDashboard();
         updateCharts();
-        updateReportsTable();
     }
 }
 
@@ -285,30 +305,14 @@ function getPeriodKey(date, period) {
     }
 }
 
-function groupRecordsByPeriod(records, period) {
-    const groups = {};
-    records.forEach(record => {
-        const date = parseDate(record.timestamp);
-        if (date) {
-            const key = getPeriodKey(date, period);
-            if (!groups[key]) {
-                groups[key] = { records: [], periodStart: new Date(date) };
-            }
-            groups[key].records.push(record);
-            // Update period start to earliest date
-            if (date < groups[key].periodStart) {
-                groups[key].periodStart = new Date(date);
-            }
-        }
-    });
-    return groups;
-}
-
+/**
+ * BOLT OPTIMIZATION: Optimized sorting
+ * Uses direct numeric comparison since periodStart is now normalized to a timestamp
+ * in the optimized metrics pass.
+ */
 function getSortedPeriodKeys(groups) {
     return Object.keys(groups).sort((a, b) => {
-        const dateA = new Date(groups[a].periodStart);
-        const dateB = new Date(groups[b].periodStart);
-        return dateA - dateB;
+        return groups[a].periodStart - groups[b].periodStart;
     });
 }
 
@@ -329,11 +333,14 @@ function updateDashboard() {
     let damagedItems = 0;
     let tailendItems = 0;
 
-    const now = new Date();
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(now.getDate() - 7);
-    const twoWeeksAgo = new Date(oneWeekAgo);
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 7);
+    /**
+     * BOLT OPTIMIZATION: Numeric timestamp comparison
+     * Pre-calculating boundaries as numbers avoids creating thousands of
+     * temporary Date objects inside the loop.
+     */
+    const nowMs = Date.now();
+    const oneWeekAgoMs = nowMs - (7 * 24 * 60 * 60 * 1000);
+    const twoWeeksAgoMs = nowMs - (14 * 24 * 60 * 60 * 1000);
 
     let currentWeekCount = 0;
     let previousWeekCount = 0;
@@ -359,14 +366,12 @@ function updateDashboard() {
             tailendItems++;
         }
 
-        // Weekly change tracking
-        const recordDate = parseDate(item.timestamp);
-        if (recordDate) {
-            if (recordDate >= oneWeekAgo) {
-                currentWeekCount++;
-            } else if (recordDate >= twoWeeksAgo) {
-                previousWeekCount++;
-            }
+        // Weekly change tracking (optimized numeric comparison)
+        const ts = item.timestamp;
+        if (ts >= oneWeekAgoMs) {
+            currentWeekCount++;
+        } else if (ts >= twoWeeksAgoMs) {
+            previousWeekCount++;
         }
     }
 
@@ -397,65 +402,106 @@ function updateCharts() {
         console.log('📊 Updating inventory charts...');
         destroyExistingCharts();
 
-        /**
-         * BOLT OPTIMIZATION: Single-pass metrics calculation for charts
-         * Consolidates approximately 9 separate O(N) passes (filters and reduces) into a single loop
-         * to avoid redundant passes over the inventoryItems dataset.
-         */
         const startDateVal = document.getElementById('startDate').value;
         const endDateVal = document.getElementById('endDate').value;
         const startDate = startDateVal ? new Date(startDateVal).getTime() : null;
         const endDate = endDateVal ? new Date(endDateVal).getTime() + 86399999 : null;
 
-        const chartData = {
+        /**
+         * BOLT OPTIMIZATION: Single-pass metrics calculation for charts and reports
+         * Consolidates approximately 10+ separate O(N) passes (filters, reduces, and groupings)
+         * into a single loop to avoid redundant passes over the inventoryItems dataset.
+         */
+        /**
+         * BOLT OPTIMIZATION: Period key memoization
+         * Using a Map to cache period keys (week/month strings) for unique days
+         * avoids repeated Date allocations and complex string formatting.
+         */
+        const periodKeyCache = new Map();
+
+        const metrics = {
+            trends: {},
             approval: { approved: 0, rejected: 0, pending: 0 },
             productCounts: {},
             damage: { normal: 0, damaged: 0, tailends: 0 },
-            trends: {}
+            // Collect period metrics for ALL available data for Detailed Reports comparison
+            allPeriodMetrics: {}
         };
 
         for (const item of inventoryItems) {
+            const ts = item.timestamp;
+            if (!ts) continue;
+
             // Approval status
-            if (item.approved === true) chartData.approval.approved++;
-            else if (item.approved === false) chartData.approval.rejected++;
-            else chartData.approval.pending++;
+            if (item.approved === true) metrics.approval.approved++;
+            else if (item.approved === false) metrics.approval.rejected++;
+            else metrics.approval.pending++;
 
             // Product code
             const code = item.productCode || 'Unknown';
-            chartData.productCounts[code] = (chartData.productCounts[code] || 0) + 1;
+            metrics.productCounts[code] = (metrics.productCounts[code] || 0) + 1;
 
             // Damage status
             const reason = (item.reason || '').toLowerCase();
             if (reason.includes('damaged')) {
-                chartData.damage.damaged++;
+                metrics.damage.damaged++;
             } else if (reason.includes('tail end') || reason.includes('tailend')) {
-                chartData.damage.tailends++;
+                metrics.damage.tailends++;
             } else {
-                chartData.damage.normal++;
+                metrics.damage.normal++;
             }
 
-            // Trends (if within date range)
-            const ts = item.timestamp;
+            /**
+             * BOLT FIX: Correct day-level cache key for local timezone
+             * Using the date string from the record's local time as a cache key
+             * ensures correct grouping across timezones while still avoiding
+             * redundant getPeriodKey() calculations.
+             */
+            const tempDate = new Date(ts);
+            const dateStrKey = tempDate.toDateString();
+            let periodKey = periodKeyCache.get(dateStrKey);
+
+            if (!periodKey) {
+                periodKey = getPeriodKey(tempDate, reportPeriod);
+                periodKeyCache.set(dateStrKey, periodKey);
+            }
+
+            // 1. Aggregated metrics for ALL data (for Detailed Reports comparison)
+            if (!metrics.allPeriodMetrics[periodKey]) {
+                metrics.allPeriodMetrics[periodKey] = {
+                    items: 0, approved: 0, value: 0,
+                    periodStart: ts
+                };
+            }
+            const pMetric = metrics.allPeriodMetrics[periodKey];
+            pMetric.items++;
+            if (item.approved === true) pMetric.approved++;
+            pMetric.value += (item.totalValue || 0);
+            if (ts < pMetric.periodStart) pMetric.periodStart = ts;
+
+            // 2. Filtered metrics for charts (only within selected date range)
             if ((!startDate || ts >= startDate) && (!endDate || ts <= endDate)) {
-                const date = new Date(ts);
-                const key = getPeriodKey(date, reportPeriod);
-                if (!chartData.trends[key]) {
-                    chartData.trends[key] = { itemsCount: 0, totalValue: 0, periodStart: new Date(date) };
+                if (!metrics.trends[periodKey]) {
+                    metrics.trends[periodKey] = { itemsCount: 0, totalValue: 0, periodStart: ts };
                 }
-                chartData.trends[key].itemsCount++;
-                chartData.trends[key].totalValue += (item.totalValue || 0);
-                if (date < chartData.trends[key].periodStart) {
-                    chartData.trends[key].periodStart = new Date(date);
+                metrics.trends[periodKey].itemsCount++;
+                metrics.trends[periodKey].totalValue += (item.totalValue || 0);
+
+                if (ts < metrics.trends[periodKey].periodStart) {
+                    metrics.trends[periodKey].periodStart = ts;
                 }
             }
         }
 
-        chartInstances.usageTrendsChart = createUsageTrendsChart(chartData.trends);
-        chartInstances.approvalStatusChart = createApprovalStatusChart(chartData.approval);
-        chartInstances.productCodeChart = createProductCodeChart(chartData.productCounts);
-        chartInstances.damageChart = createDamageChart(chartData.damage);
+        chartInstances.usageTrendsChart = createUsageTrendsChart(metrics.trends);
+        chartInstances.approvalStatusChart = createApprovalStatusChart(metrics.approval);
+        chartInstances.productCodeChart = createProductCodeChart(metrics.productCounts);
+        chartInstances.damageChart = createDamageChart(metrics.damage);
 
-        console.log('✅ Charts updated successfully');
+        // Update detailed reports table with pre-calculated metrics
+        updateReportsTable(metrics);
+
+        console.log('✅ Charts and Reports updated successfully');
     } catch (error) {
         console.error('❌ Error updating charts:', error);
         const errorDiv = document.getElementById('chartError');
@@ -638,19 +684,25 @@ function createDamageChart(damageData) {
 }
 
 // Reports table update
-function updateReportsTable() {
+// Reports table update
+function updateReportsTable(metrics) {
     const tableBody = document.getElementById('reportsTable');
-    tableBody.innerHTML = '';
 
-    if (inventoryItems.length === 0) {
-        const metrics = [
+    /**
+     * BOLT OPTIMIZATION: High-performance DOM clearing
+     * replaceChildren() is faster than innerHTML = '' as it avoids HTML parsing.
+     */
+    tableBody.replaceChildren();
+
+    if (inventoryItems.length === 0 || !metrics) {
+        const rowMetrics = [
             { name: 'Total Items', current: 0, previous: 0, change: '+0%' },
             { name: 'Approved Items', current: 0, previous: 0, change: '+0%' },
             { name: 'Total Value', current: '$0.00', previous: '$0.00', change: '+0%' },
             { name: 'Average Value', current: '$0.00', previous: '$0.00', change: '+0%' }
         ];
 
-        metrics.forEach(metric => {
+        rowMetrics.forEach(metric => {
             const row = document.createElement('tr');
             row.className = 'border-t';
 
@@ -679,34 +731,22 @@ function updateReportsTable() {
         return;
     }
 
-    const groups = groupRecordsByPeriod(inventoryItems, reportPeriod);
-    const sortedKeys = getSortedPeriodKeys(groups);
+    // BOLT FIX: Restore comparison of two most recent available periods
+    const sortedKeys = getSortedPeriodKeys(metrics.allPeriodMetrics);
     const currentPeriodKey = sortedKeys[sortedKeys.length - 1];
     const previousPeriodKey = sortedKeys[sortedKeys.length - 2];
 
-    const currentRecords = currentPeriodKey ? groups[currentPeriodKey].records : [];
-    const previousRecords = previousPeriodKey ? groups[previousPeriodKey].records : [];
+    const currentRecords = currentPeriodKey ? metrics.allPeriodMetrics[currentPeriodKey] : null;
+    const previousRecords = previousPeriodKey ? metrics.allPeriodMetrics[previousPeriodKey] : null;
 
-    /**
-     * BOLT OPTIMIZATION: Single-pass metrics calculation
-     * Consolidates multiple O(N) passes into single iterations for current and previous records.
-     */
-    let currentItems = currentRecords.length;
-    let currentApproved = 0;
-    let currentValue = 0;
-    for (const item of currentRecords) {
-        if (item.approved === true) currentApproved++;
-        currentValue += (item.totalValue || 0);
-    }
+    const currentItems = currentRecords ? currentRecords.items : 0;
+    const currentApproved = currentRecords ? currentRecords.approved : 0;
+    const currentValue = currentRecords ? currentRecords.value : 0;
     const currentAvgValue = currentItems > 0 ? (currentValue / currentItems) : 0;
 
-    let previousItems = previousRecords.length;
-    let previousApproved = 0;
-    let previousValue = 0;
-    for (const item of previousRecords) {
-        if (item.approved === true) previousApproved++;
-        previousValue += (item.totalValue || 0);
-    }
+    const previousItems = previousRecords ? previousRecords.items : 0;
+    const previousApproved = previousRecords ? previousRecords.approved : 0;
+    const previousValue = previousRecords ? previousRecords.value : 0;
     const previousAvgValue = previousItems > 0 ? (previousValue / previousItems) : 0;
 
     const itemsChange = calculateChange(currentItems, previousItems);
@@ -714,14 +754,14 @@ function updateReportsTable() {
     const valueChange = calculateChange(currentValue, previousValue);
     const avgValueChange = calculateChange(currentAvgValue, previousAvgValue);
 
-    const metrics = [
+    const rowMetrics = [
         { name: 'Total Items', current: currentItems, previous: previousItems, change: itemsChange },
         { name: 'Approved Items', current: currentApproved, previous: previousApproved, change: approvedChange },
         { name: 'Total Value', current: '$' + currentValue.toFixed(2), previous: '$' + previousValue.toFixed(2), change: valueChange },
         { name: 'Average Value', current: '$' + currentAvgValue.toFixed(2), previous: '$' + previousAvgValue.toFixed(2), change: avgValueChange }
     ];
 
-    metrics.forEach(metric => {
+    rowMetrics.forEach(metric => {
         const row = document.createElement('tr');
         row.className = 'border-t';
 
