@@ -5,7 +5,7 @@
 
 class EECOLIndexedDB {
   static instance = null;
-  static DATABASE_VERSION = 9;
+  static DATABASE_VERSION = 10;
 
   static getInstance() {
     if (!EECOLIndexedDB.instance) {
@@ -108,7 +108,23 @@ class EECOLIndexedDB {
     }
   }
 
+  /**
+   * IDB SENTINEL: Returns the current storage usage and quota.
+   */
+  async getStorageStatus() {
+    if (navigator.storage && navigator.storage.estimate) {
+      try {
+        const est = await navigator.storage.estimate();
+        return { usage: est.usage || 0, quota: est.quota || 0 };
+      } catch (e) { console.warn('Storage estimate failed', e); }
+    }
+    return null;
+  }
+
   async initialize() {
+    // IDB SENTINEL: Request persistence to prevent browser eviction
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion);
 
@@ -190,49 +206,6 @@ class EECOLIndexedDB {
   }
 
   createObjectStores(db, transaction) {
-    // Schema cleanup: migration from muticutPlanner to multicutPlanner (typo fix)
-    // Safe data migration within the upgrade transaction
-    if (db.objectStoreNames.contains('muticutPlanner')) {
-      console.log('📦 Migrating data from legacy muticutPlanner store...');
-      const config = this.stores.multicutPlanner;
-
-      // Ensure target store exists before migration
-      let newStore;
-      if (!db.objectStoreNames.contains('multicutPlanner')) {
-        newStore = db.createObjectStore('multicutPlanner', {
-          keyPath: config.keyPath,
-          autoIncrement: config.keyPath === 'id'
-        });
-      } else {
-        newStore = transaction.objectStore('multicutPlanner');
-      }
-
-      const oldStore = transaction.objectStore('muticutPlanner');
-
-      // Recreate indexes for new store
-      if (config.indexes) {
-        for (const idx of config.indexes) {
-          newStore.createIndex(idx, idx, { unique: false });
-        }
-      }
-
-      // Copy records from old to new store
-      const cursorRequest = oldStore.openCursor();
-      cursorRequest.onerror = (e) => {
-        console.error('❌ Migration failed during cursor operation:', e.target.error);
-      };
-      cursorRequest.onsuccess = (e) => {
-        const cursor = e.target.result;
-        if (cursor) {
-          newStore.put(cursor.value);
-          cursor.continue();
-        } else {
-          console.log('✅ Migration complete.');
-          // Note: We don't delete legacy stores in cursor callbacks to prevent TX hangs
-        }
-      };
-    }
-
     // Create or update all object stores
     for (const [storeName, config] of Object.entries(this.stores)) {
       let store;
@@ -269,6 +242,19 @@ class EECOLIndexedDB {
           }
         }
       }
+    }
+
+    // IDB SENTINEL: Safe migration for muticutPlanner typo
+    if (db.objectStoreNames.contains('muticutPlanner')) {
+      const oldStore = transaction.objectStore('muticutPlanner');
+      const newStore = transaction.objectStore('multicutPlanner');
+      oldStore.openCursor().onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          newStore.put(cursor.value);
+          cursor.continue();
+        }
+      };
     }
   }
 

@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Get all stores and calculate statistics
             for (const [storeName, storeConfig] of Object.entries(db.stores)) {
                 const records = await db.getAll(storeName);
-                const recordCount = records.length;
+                const recordCount = records ? records.length : 0;
                 stats.totalRecords += recordCount;
 
                 // Count by type
@@ -139,9 +139,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (recordCount > stats.largestStore.count) {
                     stats.largestStore = { name: storeName, count: recordCount };
                 }
+            }
 
-                // Estimate storage size (rough calculation: ~1KB per record)
-                stats.storageSize += recordCount * 1024; // 1KB per record estimate
+            // IDB SENTINEL: Use real browser storage metrics if available
+            const storage = await db.getStorageStatus();
+            if (storage && storage.usage > 0) {
+                stats.storageSize = storage.usage;
+            } else {
+                stats.storageSize = stats.totalRecords * 1024;
             }
 
             // Update UI with statistics
