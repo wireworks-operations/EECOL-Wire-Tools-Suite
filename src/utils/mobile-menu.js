@@ -7,6 +7,26 @@
 let mobileMenuOpen = false;
 
 /**
+ * Internal helper to safely escape strings for HTML insertion.
+ * Provides defense-in-depth against XSS.
+ * @param {any} v - Value to escape
+ * @returns {string} Escaped string
+ */
+function _esc(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof window !== 'undefined' && typeof window.escapeHTML === 'function') {
+        return window.escapeHTML(v);
+    }
+    return String(v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#x2F;');
+}
+
+/**
  * Initialize mobile menu for a page
  * @param {Object} options - Configuration options
  * @param {Array} options.menuItems - Array of menu item objects {text, href, class} or {text, action: 'click', selector, class}
@@ -79,22 +99,31 @@ function createMobileMenu(menuItems, version, credits, title) {
 
     // Mobile menu overlay HTML
     const menuItemsHtml = menuItems.map((item, index) => {
+        const text = _esc(item.text);
+        const cssClass = _esc(item.class || 'bg-[#0058B3] hover:bg-[#004a99]');
+
         if (item.action === 'click' && item.selector) {
+            const selector = _esc(item.selector);
             // Action button that clicks on a target element
             return `
-                <button data-action="click" data-selector="${item.selector}" class="block px-6 py-3 ${item.class || 'bg-[#0058B3] hover:bg-[#004a99]'} text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center text-sm w-full" style="max-width: 300px;">
-                    ${item.text}
+                <button data-action="click" data-selector="${selector}" class="block px-6 py-3 ${cssClass} text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center text-sm w-full" style="max-width: 300px;">
+                    ${text}
                 </button>
             `;
         } else {
+            const href = _esc(item.href || '#');
             // Navigation link
             return `
-                <a href="${item.href || '#'}" class="block px-6 py-3 ${item.class || 'bg-[#0058B3] hover:bg-[#004a99]'} text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center text-sm no-underline" style="width: calc(100% - 3rem); max-width: 300px;">
-                    ${item.text}
+                <a href="${href}" class="block px-6 py-3 ${cssClass} text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center text-sm no-underline" style="width: calc(100% - 3rem); max-width: 300px;">
+                    ${text}
                 </a>
             `;
         }
     }).join('');
+
+    const safeTitle = _esc(title);
+    const safeVersion = _esc(version);
+    const safeCredits = _esc(credits);
 
     const mobileMenu = `
         <div id="mobileMenuOverlay" class="fixed inset-0 z-50 sm:hidden transform -translate-x-full transition-transform duration-300 ease-out">
@@ -115,7 +144,7 @@ function createMobileMenu(menuItems, version, credits, title) {
                             <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <h2 class="text-xl font-black text-[#0058B3] header-gradient">${title}</h2>
+                    <h2 class="text-xl font-black text-[#0058B3] header-gradient">${safeTitle}</h2>
                 </div>
 
                 <!-- Close Button -->
@@ -139,8 +168,8 @@ function createMobileMenu(menuItems, version, credits, title) {
                         🌙 Dark Mode
                     </button>
 
-                    <p class="text-xs text-gray-500 font-mono mb-2">${version}</p>
-                    <p class="font-medium text-[#0058B3] text-sm mb-1">${credits}</p>
+                    <p class="text-xs text-gray-500 font-mono mb-2">${safeVersion}</p>
+                    <p class="font-medium text-[#0058B3] text-sm mb-1">${safeCredits}</p>
                     <p class="text-xs font-semibold header-gradient">EECOL Wire Tools 2025 - Enterprise Edition</p>
                 </div>
             </div>
