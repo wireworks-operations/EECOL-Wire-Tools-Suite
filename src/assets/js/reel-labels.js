@@ -30,7 +30,7 @@ function printReelLabel() {
     // Generate label content dynamically
     const labelDiv = document.querySelector('#labelContent div');
     if (!labelDiv) return;
-    labelDiv.innerHTML = '';
+    labelDiv.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     const container = document.createElement('div');
     container.style.cssText = "font-family: Arial, sans-serif; font-size: 12px; line-height: 1.3; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 15px;";

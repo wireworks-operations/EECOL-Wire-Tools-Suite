@@ -452,7 +452,7 @@ import {
         function generateReelSVG(Df_m, Dc_m, W_m, d_m, F_m, numLayers) {
             const svgVisualization = document.getElementById('svgVisualization');
             if (!svgVisualization) return;
-            svgVisualization.innerHTML = '';
+            svgVisualization.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
             const svgWidth = svgVisualization.clientWidth || 300;
             const svgHeight = svgVisualization.clientHeight || 200;
@@ -649,7 +649,7 @@ function populateReelConfigurationSelector() {
 
     // Clear existing options except the default
     const defaultOption = selector.querySelector('option[value=""]');
-    selector.innerHTML = '';
+    selector.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
     if (defaultOption) {
         selector.appendChild(defaultOption);
     } else {

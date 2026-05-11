@@ -981,7 +981,7 @@ function batchRedo() {
 
 function restoreBatchState(state) {
     const batchCutList = document.getElementById('batchCutList');
-    batchCutList.innerHTML = '';
+    batchCutList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     state.forEach(entryData => {
         const newEntry = createBatchCutEntry(entryData);
@@ -2591,13 +2591,13 @@ async function populateCalculatorDropdowns() {
 
     try {
         // Clear existing options
-        markDropdown.innerHTML = '';
+        markDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         const markLoadingOpt = document.createElement('option');
         markLoadingOpt.value = '';
         markLoadingOpt.textContent = 'Loading...';
         markDropdown.appendChild(markLoadingOpt);
 
-        stopDropdown.innerHTML = '';
+        stopDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         const stopLoadingOpt = document.createElement('option');
         stopLoadingOpt.value = '';
         stopLoadingOpt.textContent = 'Loading...';
@@ -2625,7 +2625,7 @@ async function populateCalculatorDropdowns() {
             .slice(0, 5);
 
         // Populate Mark Calculator dropdown
-        markDropdown.innerHTML = '';
+        markDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         const markDefaultOpt = document.createElement('option');
         markDefaultOpt.value = '';
         markDefaultOpt.textContent = 'Select a saved calculation...';
@@ -2654,7 +2654,7 @@ async function populateCalculatorDropdowns() {
         }
 
         // Populate Stop Calculator dropdown
-        stopDropdown.innerHTML = '';
+        stopDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         const stopDefaultOpt = document.createElement('option');
         stopDefaultOpt.value = '';
         stopDefaultOpt.textContent = 'Select a saved calculation...';
@@ -2684,13 +2684,13 @@ async function populateCalculatorDropdowns() {
 
     } catch (error) {
         console.error('Error populating calculator dropdowns:', error);
-        markDropdown.innerHTML = '';
+        markDropdown.replaceChildren(); // BOLT OPTIMIZATION
         const errOpt = document.createElement('option');
         errOpt.value = '';
         errOpt.textContent = 'Error loading history';
         markDropdown.appendChild(errOpt);
 
-        stopDropdown.innerHTML = '';
+        stopDropdown.replaceChildren(); // BOLT OPTIMIZATION
         const errOptStop = document.createElement('option');
         errOptStop.value = '';
         errOptStop.textContent = 'Error loading history';
@@ -3413,7 +3413,7 @@ async function populateFlangeDropdown() {
 
     try {
         // Clear existing options
-        dropdown.innerHTML = '';
+        dropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         const loadingOpt = document.createElement('option');
         loadingOpt.value = '';
         loadingOpt.textContent = 'Loading...';
@@ -3435,7 +3435,7 @@ async function populateFlangeDropdown() {
             .slice(0, 5);
 
         // Populate dropdown
-        dropdown.innerHTML = '';
+        dropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         const defaultOpt = document.createElement('option');
         defaultOpt.value = '';
         defaultOpt.textContent = 'Select a saved flange size...';
@@ -3465,7 +3465,7 @@ async function populateFlangeDropdown() {
 
     } catch (error) {
         console.error('Error populating flange dropdown:', error);
-        dropdown.innerHTML = '';
+        dropdown.replaceChildren(); // BOLT OPTIMIZATION
         const errOpt = document.createElement('option');
         errOpt.value = '';
         errOpt.textContent = 'Error loading configurations';
