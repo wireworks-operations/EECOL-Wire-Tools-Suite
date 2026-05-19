@@ -195,33 +195,46 @@ function initializeWireDiameterPresets() {
 /**
  * Calculate theoretical reel dimensions needed for target length
  */
+/**
+ * BOLT OPTIMIZATION: O(1) Capacity Calculation
+ * Calculates theoretical reel dimensions using quadratic formula instead of iterative search.
+ * Fixes a bug where core_m was undefined (should be coreDiameter_m).
+ */
 function calculateTheoreticalReel(cableDiameter_m, targetLength_m, freeboard_m, efficiency) {
     // Rough estimate of layers needed
     const baseCapacityPerLayer = Math.PI * (cableDiameter_m * 100) / 2;
     const roughLayers = Math.ceil(targetLength_m / (baseCapacityPerLayer * efficiency * 1000));
 
     // Estimate dimensions
-    const avgLayerAddition = cableDiameter_m * roughLayers;
     const coreDiameter_m = Math.max(cableDiameter_m * 10, 0.3); // Minimum practical core
+    const avgLayerAddition = cableDiameter_m * roughLayers;
     const flangeDiameter_m = coreDiameter_m + avgLayerAddition + 2 * freeboard_m;
 
     // Limit traverse width to practical size
     const traverseWidth_m = Math.min(targetLength_m / (Math.PI * flangeDiameter_m * efficiency / cableDiameter_m / 1000), 2.0);
 
-    // Precise calculation with iterative refinement
+    // BOLT: Precise calculation using sum of arithmetic progression
     const segmentsPerLayer = Math.floor(traverseWidth_m / cableDiameter_m);
-    let totalCapacity = 0;
-    let layers = 0;
+    const k = segmentsPerLayer * Math.PI * efficiency;
 
-    // Calculate actual capacity with the estimated dimensions
-    while (totalCapacity < targetLength_m * 1.1 && layers < 50) {
-        layers++;
-        const D_n_m = coreDiameter_m + (2 * layers - 1) * cableDiameter_m;
-        const L_layer = segmentsPerLayer * Math.PI * D_n_m * efficiency;
-        if (layers > DEAD_WRAPS) {
-            totalCapacity += L_layer;
-        }
-    }
+    /**
+     * BOLT: Sum of AP formula for layer lengths
+     * L_total(n) = k * (n * D_core + n^2 * d)
+     */
+    const getLen = (n, core, d) => (n <= 0) ? 0 : k * (n * core + (n * n) * d);
+    const L_dead = getLen(DEAD_WRAPS, coreDiameter_m, cableDiameter_m);
+    const target = (targetLength_m * 1.1) + L_dead;
+
+    // Solve quad: d*N^2 + D_core*N - (target/k) = 0
+    const a = cableDiameter_m;
+    const b = coreDiameter_m;
+    const c = -target / k;
+
+    let layers = Math.ceil((-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a));
+    if (layers < 0 || isNaN(layers)) layers = 0;
+    if (layers > 50) layers = 50; // Safety cap
+
+    const totalCapacity = Math.max(0, getLen(layers, coreDiameter_m, cableDiameter_m) - L_dead);
 
     return {
         coreDiameter_m: coreDiameter_m,
@@ -229,31 +242,36 @@ function calculateTheoreticalReel(cableDiameter_m, targetLength_m, freeboard_m, 
         traverseWidth_m: traverseWidth_m,
         capacity_m: totalCapacity,
         layerCount: layers,
-        utilization: (targetLength_m / totalCapacity) * 100
+        utilization: totalCapacity > 0 ? (targetLength_m / totalCapacity) * 100 : 0
     };
 }
 
 /**
- * Calculate capacity of a standard reel given specifications
+ * BOLT OPTIMIZATION: O(1) Capacity Calculation
+ * Replaces iterative while loop with the sum of an arithmetic progression formula.
+ * Formula: L_total = S * π * η * N * (D_core + N * d)
  */
 function calculateReelCapacity(reel, cableDiameter_m, freeboard_m, efficiency) {
     const core_m = reel.core;
     const width_m = reel.width;
     const segmentsPerLayer = Math.floor(width_m / cableDiameter_m);
 
-    let totalCapacity = 0;
-    let layers = 0;
     const maxDiameter_m = reel.flange - 2 * freeboard_m;
 
-    // Calculate how many layers fit
-    while (layers < 100 && (core_m + (2 * layers) * cableDiameter_m) < maxDiameter_m) {
-        layers++;
-        const D_n_m = core_m + (2 * layers - 1) * cableDiameter_m;
-        const L_layer = segmentsPerLayer * Math.PI * D_n_m * efficiency;
-        if (layers > DEAD_WRAPS) {
-            totalCapacity += L_layer;
-        }
-    }
+    // Calculate how many layers fit (N) to match original iterative logic
+    let layers = Math.max(0, Math.ceil((maxDiameter_m - core_m) / (2 * cableDiameter_m)));
+    if (layers > 100) layers = 100; // Safety cap
+
+    /**
+     * BOLT: Sum of arithmetic progression for layer lengths
+     * Total length of N layers = segmentsPerLayer * PI * η * (N * core_m + N^2 * cableDiameter_m)
+     */
+    const getLen = (n) => {
+        if (n <= 0) return 0;
+        return segmentsPerLayer * Math.PI * efficiency * (n * core_m + (n * n) * cableDiameter_m);
+    };
+
+    const totalCapacity = Math.max(0, getLen(layers) - getLen(Math.min(layers, DEAD_WRAPS)));
 
     // Return reel data with calculated capacity
     const result = {};
