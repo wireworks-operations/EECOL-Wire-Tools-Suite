@@ -109,8 +109,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Get all stores and calculate statistics
             for (const [storeName, storeConfig] of Object.entries(db.stores)) {
-                const records = await db.getAll(storeName);
-                const recordCount = records ? records.length : 0;
+                // IDB SENTINEL: Use count() instead of getAll() for performance and memory efficiency
+                const recordCount = await db.count(storeName);
                 stats.totalRecords += recordCount;
 
                 // Count by type
@@ -237,11 +237,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const confirmed = await showConfirm('Are you sure you want to import this data? This will overwrite existing data.');
             if (confirmed) {
                 for (const storeName of Object.keys(data)) {
-                    if (db.stores[storeName]) {
-                        await db.clear(storeName);
-                        for (const record of data[storeName]) {
-                            await db.add(storeName, record);
-                        }
+                    if (db.stores[storeName] && Array.isArray(data[storeName])) {
+                        // IDB SENTINEL: Use bulkPut for efficient, single-transaction restoration
+                        await db.bulkPut(storeName, data[storeName], true);
                     }
                 }
                 await loadAllRecords();
@@ -368,9 +366,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirmed) return;
 
         try {
-            for (const id of selectedIds) {
-                await db.delete(storeName, id);
-            }
+            // IDB SENTINEL: Use bulkDelete for efficient, single-transaction removal
+            await db.bulkDelete(storeName, selectedIds);
 
             // Clear selection
             bulkState[storeName].selected.clear();

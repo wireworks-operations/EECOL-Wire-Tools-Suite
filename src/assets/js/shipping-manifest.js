@@ -7,6 +7,14 @@
 let labelHistory = [];
 let reelConfigurations = []; // Store available reel configurations from IndexedDB
 
+/**
+ * BOLT OPTIMIZATION: High-performance date formatters
+ * Pre-initializing Intl.DateTimeFormat instances at module scope is significantly faster
+ * than calling toLocaleDateString() inside loops, as it avoids repeated parsing of
+ * locale strings and options.
+ */
+const standardDateFormat = new Intl.DateTimeFormat('en-US');
+
 // DOM elements
 const autoPullBtn = document.getElementById('autoPullBtn');
 const printLabelBtn = document.getElementById('printLabelBtn');
@@ -242,7 +250,7 @@ function populateReelConfigurationSelector() {
         option.value = index;
 
         // Format display text
-        const date = new Date(config.timestamp).toLocaleDateString();
+        const date = standardDateFormat.format(config.timestamp);
         const flange = config.flangeDiameter ? `${config.flangeDiameter.value} ${config.flangeDiameter.unit}` : 'N/A';
         const core = config.coreDiameter ? `${config.coreDiameter.value} ${config.coreDiameter.unit}` : 'N/A';
         const traverse = config.traverseWidth ? `${config.traverseWidth.value} ${config.traverseWidth.unit}` : 'N/A';
@@ -303,7 +311,7 @@ function handleReelConfigurationChange(event) {
 
     // Show success message
     if (updates.length > 0) {
-        const configDate = new Date(config.timestamp).toLocaleDateString();
+        const configDate = standardDateFormat.format(config.timestamp);
         showAlert(`Configuration loaded from ${configDate}:\n${updates.join('\n')}`, 'Configuration Auto-Filled');
     }
 }

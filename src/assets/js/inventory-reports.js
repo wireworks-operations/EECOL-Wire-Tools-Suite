@@ -9,6 +9,24 @@ let chartType = 'line';
 let reportPeriod = 'weekly';
 let chartInstances = {};
 
+/**
+ * BOLT OPTIMIZATION: High-performance date formatters
+ * Pre-initializing Intl.DateTimeFormat instances at module scope is significantly faster
+ * than calling toLocaleDateString() inside loops, as it avoids repeated parsing of
+ * locale strings and options.
+ */
+const shortDateFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric'
+});
+
+const monthYearFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    year: 'numeric'
+});
+
+const standardDateFormat = new Intl.DateTimeFormat('en-US');
+
 // Chart.js initialization with CDN fallback
 function loadChartJS() {
     return new Promise((resolve, reject) => {
@@ -549,9 +567,9 @@ function createUsageTrendsChart(trendsData) {
         const periodDate = new Date(periodData.periodStart);
         let label;
         if (reportPeriod === 'weekly') {
-            label = 'Week of ' + periodDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            label = 'Week of ' + shortDateFormat.format(periodDate);
         } else {
-            label = periodDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            label = monthYearFormat.format(periodDate);
         }
 
         data.labels.push(label);
@@ -830,7 +848,7 @@ function exportReport() {
 
     const header = ['Date', 'Product Code', 'Length', 'Unit', 'Quantity', 'Source', 'Reason', 'Assigned To', 'Approved', 'Total Value', 'Comments'];
     const rows = inventoryItems.map(record => [
-        new Date(record.timestamp).toLocaleDateString(),
+        standardDateFormat.format(record.timestamp),
         record.productCode || '',
         record.length || '',
         record.lengthUnit || '',

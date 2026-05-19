@@ -27,6 +27,26 @@ function _esc(v) {
 }
 
 /**
+ * Internal helper to sanitize URLs and prevent javascript: injections.
+ * @param {string} url - The URL to sanitize
+ * @returns {string} Sanitized URL
+ */
+function _sanitizeUrl(url) {
+    if (!url) return '#';
+    const trimmedUrl = url.trim();
+    // Allow relative paths, http, https, mailto, and tel
+    if (trimmedUrl.startsWith('/') ||
+        trimmedUrl.startsWith('./') ||
+        trimmedUrl.startsWith('../') ||
+        /^(https?|mailto|tel):/i.test(trimmedUrl)) {
+        return trimmedUrl;
+    }
+    // Block everything else (especially javascript:)
+    console.warn(`Blocked potentially unsafe URL: ${trimmedUrl}`);
+    return 'about:blank';
+}
+
+/**
  * Initialize mobile menu for a page
  * @param {Object} options - Configuration options
  */
@@ -40,6 +60,7 @@ function initMobileMenu(options = {}) {
 
     // Dynamic dark mode script loading preserved
     if (typeof window.DarkMode === 'undefined' && !document.querySelector('script[src*="dark-mode.js"]')) {
+        const script = document.createElement('script');
         const scripts = document.getElementsByTagName('script');
         let basePath = '../../utils/';
         for (let s of scripts) {
@@ -51,6 +72,9 @@ function initMobileMenu(options = {}) {
         const script = document.createElement('script');
         script.src = basePath + 'dark-mode.js';
         script.onload = () => { if (window.DarkMode) window.DarkMode.updateToggleIcons(); };
+        script.onload = () => {
+            if (window.DarkMode) window.DarkMode.updateToggleIcons();
+        };
         document.head.appendChild(script);
     }
 
@@ -63,8 +87,15 @@ function initMobileMenu(options = {}) {
  * This DOM-based approach is more robust and inherently secure.
  */
 function createMobileMenu(menuItems, version, credits, title) {
-    // Hamburger button HTML
-    const hamburgerButton = `
+    /**
+     * IDB SENTINEL: Safe Structural Template Pattern
+     * Uses a static HTML string for the component's structure (ensuring SVG and CSS class integrity)
+     * but programmatically populates all dynamic data (title, version, credits, menu items)
+     * using .textContent and .setAttribute to prevent XSS.
+     */
+
+    // Hamburger button structure
+    const hamburgerButtonHtml = `
         <button id="mobileMenuBtn" aria-label="Open Navigation Menu" aria-expanded="false" class="sm:hidden fixed bottom-4 left-4 z-40 bg-[#0058B3] hover:bg-[#004a99] text-white p-3 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-[#0058B3] focus:ring-opacity-50">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path id="hamburgerIcon" d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -73,35 +104,8 @@ function createMobileMenu(menuItems, version, credits, title) {
         </button>
     `;
 
-    // Mobile menu overlay HTML
-    const menuItemsHtml = menuItems.map((item, index) => {
-        const text = _esc(item.text);
-        const cssClass = _esc(item.class || 'bg-[#0058B3] hover:bg-[#004a99]');
-
-        if (item.action === 'click' && item.selector) {
-            const selector = _esc(item.selector);
-            // Action button that clicks on a target element
-            return `
-                <button data-action="click" data-selector="${selector}" class="block px-6 py-3 ${cssClass} text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center text-sm w-full" style="max-width: 300px;">
-                    ${text}
-                </button>
-            `;
-        } else {
-            const href = _esc(item.href || '#');
-            // Navigation link
-            return `
-                <a href="${href}" class="block px-6 py-3 ${cssClass} text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center text-sm no-underline" style="width: calc(100% - 3rem); max-width: 300px;">
-                    ${text}
-                </a>
-            `;
-        }
-    }).join('');
-
-    const safeTitle = _esc(title);
-    const safeVersion = _esc(version);
-    const safeCredits = _esc(credits);
-
-    const mobileMenu = `
+    // Mobile menu overlay structure (empty navigation container)
+    const mobileMenuHtml = `
         <div id="mobileMenuOverlay" class="fixed inset-0 z-50 sm:hidden transform -translate-x-full transition-transform duration-300 ease-out">
             <!-- Backdrop -->
             <div id="mobileMenuBackdrop" class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
@@ -120,7 +124,7 @@ function createMobileMenu(menuItems, version, credits, title) {
                             <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <h2 class="text-xl font-black text-[#0058B3] header-gradient">${safeTitle}</h2>
+                    <h2 id="mobileMenuTitle" class="text-xl font-black text-[#0058B3] header-gradient"></h2>
                 </div>
 
                 <!-- Close Button -->
@@ -133,9 +137,7 @@ function createMobileMenu(menuItems, version, credits, title) {
                 </div>
 
                 <!-- Navigation -->
-                <div class="flex-1 px-6 py-2 space-y-4 overflow-y-auto">
-                    ${menuItemsHtml}
-                </div>
+                <div id="mobileMenuNav" class="flex-1 px-6 py-2 space-y-4 overflow-y-auto"></div>
 
                 <!-- Footer Info -->
                 <div class="p-6 border-t border-blue-200 text-center">
@@ -144,17 +146,54 @@ function createMobileMenu(menuItems, version, credits, title) {
                         🌙 Dark Mode
                     </button>
 
-                    <p class="text-xs text-gray-500 font-mono mb-2">${safeVersion}</p>
-                    <p class="font-medium text-[#0058B3] text-sm mb-1">${safeCredits}</p>
+                    <p id="mobileMenuVersion" class="text-xs text-gray-500 font-mono mb-2"></p>
+                    <p id="mobileMenuCredits" class="font-medium text-[#0058B3] text-sm mb-1"></p>
                     <p class="text-xs font-semibold header-gradient">EECOL Wire Tools 2025 - Enterprise Edition</p>
                 </div>
             </div>
         </div>
     `;
 
-    // Inject elements into DOM
-    document.body.insertAdjacentHTML('beforeend', hamburgerButton);
-    document.body.insertAdjacentHTML('beforeend', mobileMenu);
+    // Inject static structures into DOM
+    document.body.insertAdjacentHTML('beforeend', hamburgerButtonHtml);
+    document.body.insertAdjacentHTML('beforeend', mobileMenuHtml);
+
+    // Securely populate data using textContent
+    const titleEl = document.getElementById('mobileMenuTitle');
+    if (titleEl) titleEl.textContent = title;
+
+    const versionEl = document.getElementById('mobileMenuVersion');
+    if (versionEl) versionEl.textContent = version;
+
+    const creditsEl = document.getElementById('mobileMenuCredits');
+    if (creditsEl) creditsEl.textContent = credits;
+
+    const navContainer = document.getElementById('mobileMenuNav');
+    if (!navContainer) return;
+
+    // Mobile menu navigation items
+    menuItems.forEach((item) => {
+        let el;
+        const cssClass = item.class || 'bg-[#0058B3] hover:bg-[#004a99]';
+        const baseClasses = "block px-6 py-3 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center text-sm";
+
+        if (item.action === 'click' && item.selector) {
+            el = document.createElement('button');
+            el.setAttribute('data-action', 'click');
+            el.setAttribute('data-selector', item.selector);
+            el.className = `${baseClasses} ${cssClass} w-full`;
+            el.style.maxWidth = "300px";
+        } else {
+            el = document.createElement('a');
+            el.setAttribute('href', _sanitizeUrl(item.href));
+            el.className = `${baseClasses} ${cssClass} no-underline`;
+            el.style.width = "calc(100% - 3rem)";
+            el.style.maxWidth = "300px";
+        }
+
+        el.textContent = item.text;
+        navContainer.appendChild(el);
+    });
 
     // Setup listener for mobile dark mode toggle if script is ready
     const mobileToggle = document.getElementById('mobileDarkModeToggle');

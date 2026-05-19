@@ -35,3 +35,7 @@
 ## 2026-04-10 - Period Key Memoization and Load-time Normalization
 **Learning:** Repeated Date allocations and complex string-based key generation (e.g., week/month strings) inside reporting loops create significant CPU overhead and GC pressure. Even if the primary loop is O(N), the constant factor for Date parsing and string formatting is high. However, cache keys for memoization must be local-timezone aware (e.g., `date.toDateString()`) rather than UTC-based math to ensure correct data grouping.
 **Action:** Normalize timestamps to numbers immediately upon loading data from IndexedDB. Use a Map to cache period keys for unique local days during chart aggregation to eliminate redundant calculations while maintaining accuracy.
+
+## 2026-04-21 - O(1) Geometric Series for Spool Capacity
+**Learning:** The reel estimators were using iterative while-loops (O(N) where N is the number of layers) to calculate spool capacity. For high-density spooling or theoretical searches (like finding a required flange), this creates unnecessary CPU cycles. Since spool layers follow an arithmetic progression, the total length can be calculated in O(1) using the sum of the sequence.
+**Action:** Replace iterative loops in capacity and size estimators with the closed-form quadratic and arithmetic progression sum formulas ({total} = N \cdot S \cdot \pi \cdot \eta \cdot (D_{core} + Nd)$). This ensures instantaneous results even for extremely long cable runs or large industrial reels.

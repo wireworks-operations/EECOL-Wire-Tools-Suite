@@ -205,6 +205,38 @@ class EECOLIndexedDB {
     });
   }
 
+  /**
+   * Performs an atomic bulk delete operation.
+   * @param {string} storeName - Target object store
+   * @param {Array} keys - Array of keys to delete
+   */
+  async bulkDelete(storeName, keys) {
+    await this.isReady();
+    if (!this.db) throw new Error('Database not initialized');
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
+      const store = transaction.objectStore(storeName);
+
+      transaction.oncomplete = () => {
+        this._notifyChange();
+        resolve();
+      };
+      transaction.onerror = () => {
+        console.error(`❌ Bulk delete failed on ${storeName}:`, transaction.error);
+        reject(transaction.error);
+      };
+      transaction.onabort = () => {
+        console.warn(`⚠️ Bulk delete aborted on ${storeName}:`, transaction.error);
+        reject(transaction.error);
+      };
+
+      for (const key of keys) {
+        store.delete(key);
+      }
+    });
+  }
+
   createObjectStores(db, transaction) {
     // Create or update all object stores
     for (const [storeName, config] of Object.entries(this.stores)) {
@@ -412,8 +444,31 @@ class EECOLIndexedDB {
    */
 
   async find(storeName, predicate) {
-    const allItems = await this.getAll(storeName);
-    return allItems.filter(predicate);
+    await this.isReady();
+    if (!this.db) throw new Error('Database not initialized');
+
+    const transaction = this.db.transaction([storeName], 'readonly');
+    const store = transaction.objectStore(storeName);
+    const results = [];
+
+    return new Promise((resolve, reject) => {
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+
+      const request = store.openCursor();
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          if (predicate(cursor.value)) {
+            results.push(cursor.value);
+          }
+          cursor.continue();
+        } else {
+          resolve(results);
+        }
+      };
+      request.onerror = () => reject(request.error);
+    });
   }
 
   async count(storeName) {

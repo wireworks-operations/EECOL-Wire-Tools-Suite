@@ -9,6 +9,24 @@ let currentChartType = 'line';
 let currentPeriod = 'weekly';
 let chartInstances = {};
 
+/**
+ * BOLT OPTIMIZATION: High-performance date formatters
+ * Pre-initializing Intl.DateTimeFormat instances at module scope is significantly faster
+ * than calling toLocaleDateString() inside loops, as it avoids repeated parsing of
+ * locale strings and options.
+ */
+const shortDateFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric'
+});
+
+const monthYearFormat = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    year: 'numeric'
+});
+
+const standardDateFormat = new Intl.DateTimeFormat('en-US');
+
 // Chart.js initialization with CDN fallback (same as original)
 function loadChartJS() {
     return new Promise((resolve, reject) => {
@@ -612,9 +630,9 @@ function createCutTrendsChart(chartType, trendsData) {
         const periodDate = new Date(periodData.periodStart);
         let label;
         if (currentPeriod === 'weekly') {
-            label = 'Week of ' + periodDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            label = 'Week of ' + shortDateFormat.format(periodDate);
         } else {
-            label = periodDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            label = monthYearFormat.format(periodDate);
         }
 
         data.labels.push(label);
@@ -920,7 +938,7 @@ function exportReport() {
 
     const header = ['Date', 'Wire ID', 'Cut Length', 'Unit', 'Starting Mark', 'Ending Mark', 'Line Code', 'Cutter', 'Order Number', 'Customer', 'Type', 'Comments', 'Full Pick', 'System Cut'];
     const rows = cutRecords.map(record => [
-        new Date(record.timestamp).toLocaleDateString(),
+        standardDateFormat.format(record.timestamp),
         record.wireId || '',
         record.cutLength || '',
         record.cutLengthUnit || '',
