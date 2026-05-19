@@ -19,3 +19,8 @@
 **Vulnerability:** CSV export functions in report modules (`cutting-reports.js`, `inventory-reports.js`) used naive template literals which were vulnerable to double-quote breakage and Excel Formula Injection (CSV Injection). Existing `escapeCSVValue` helpers in record modules lacked formula injection protection.
 **Learning:** Standardizing security utilities like `escapeCSVValue` across all export-capable modules is critical. Simple quoting is insufficient for CSVs opened in spreadsheet software; leading control characters (=, +, -, @) must be neutralized.
 **Prevention:** All CSV export logic must use a hardened `escapeCSVValue` utility that (1) handles RFC 4180 double-quote escaping and (2) prefixes suspicious leading characters with a single quote to prevent unauthorized macro execution in spreadsheet applications.
+
+## 2026-05-18 - URL Sanitization and Safe Structural Template Pattern
+**Vulnerability:** The shared mobile menu in `src/utils/mobile-menu.js` was vulnerable to XSS because it used `insertAdjacentHTML` with unsanitized `href` attributes for menu items, allowing `javascript:` protocol execution.
+**Learning:** Even when using `_esc` for text content, `href` attributes in template strings remains a dangerous injection point. A "Safe Structural Template" pattern—where the HTML structure is a static string but all dynamic data is populated via DOM methods like `.textContent` and `.setAttribute`—provides a more robust defense than manual escaping.
+**Prevention:** Always sanitize URLs using a whitelist approach (`_sanitizeUrl`) for `href` attributes. Combine this with the Safe Structural Template pattern for shared UI utilities to ensure data/structure separation and inherent XSS protection.
