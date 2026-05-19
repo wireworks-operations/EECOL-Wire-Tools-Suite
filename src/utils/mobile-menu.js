@@ -49,10 +49,6 @@ function _sanitizeUrl(url) {
 /**
  * Initialize mobile menu for a page
  * @param {Object} options - Configuration options
- * @param {Array} options.menuItems - Array of menu item objects {text, href, class} or {text, action: 'click', selector, class}
- * @param {string} options.version - Version string to display
- * @param {string} options.credits - Credits text
- * @param {string} options.title - Page title for branding
  */
 function initMobileMenu(options = {}) {
     const {
@@ -62,34 +58,33 @@ function initMobileMenu(options = {}) {
         title = 'EECOL Wire Tools'
     } = options;
 
-    // Load Dark Mode Script dynamically if not present
+    // Dynamic dark mode script loading preserved
     if (typeof window.DarkMode === 'undefined' && !document.querySelector('script[src*="dark-mode.js"]')) {
         const script = document.createElement('script');
         const scripts = document.getElementsByTagName('script');
-        let basePath = '../../utils/'; // default for pages
+        let basePath = '../../utils/';
         for (let s of scripts) {
             if (s.src.includes('mobile-menu.js')) {
                 basePath = s.src.replace('mobile-menu.js', '');
                 break;
             }
         }
-
+        const script = document.createElement('script');
         script.src = basePath + 'dark-mode.js';
+        script.onload = () => { if (window.DarkMode) window.DarkMode.updateToggleIcons(); };
         script.onload = () => {
             if (window.DarkMode) window.DarkMode.updateToggleIcons();
         };
         document.head.appendChild(script);
     }
 
-    // Create mobile menu HTML
-    createMobileMenu(menuItems, version, credits, title);
-
-    // Initialize event listeners
+    createMobileMenuElements(menuItems, version, credits, title);
     setupMobileMenuEvents();
 }
 
 /**
- * Create and inject mobile menu HTML into the DOM
+ * Programmatically create and inject mobile menu elements into the DOM.
+ * This DOM-based approach is more robust and inherently secure.
  */
 function createMobileMenu(menuItems, version, credits, title) {
     /**
@@ -221,125 +216,84 @@ function setupMobileMenuEvents() {
     const closeBtn = document.getElementById('mobileMenuCloseBtn');
     const backdrop = document.getElementById('mobileMenuBackdrop');
     const overlay = document.getElementById('mobileMenuOverlay');
-    const hamburgerIcon = document.getElementById('hamburgerIcon');
-    const closeIcon = document.getElementById('closeIcon');
 
     if (!hamburgerBtn || !overlay) return;
 
-    // Toggle menu on hamburger button click
     hamburgerBtn.addEventListener('click', () => toggleMobileMenu());
+    if (closeBtn) closeBtn.addEventListener('click', () => closeMobileMenu());
+    if (backdrop) backdrop.addEventListener('click', () => closeMobileMenu());
 
-    // Close menu on close button click
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => closeMobileMenu());
-    }
-
-    // Close menu on backdrop click
-    if (backdrop) {
-        backdrop.addEventListener('click', () => closeMobileMenu());
-    }
-
-    // ESC key to close menu
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && mobileMenuOpen) {
-            closeMobileMenu();
-        }
+        if (e.key === 'Escape' && mobileMenuOpen) closeMobileMenu();
     });
 
-    // Handle action button clicks
     document.addEventListener('click', (e) => {
-        const button = e.target.closest('button[data-action]');
-        if (button && button.getAttribute('data-action') === 'click') {
+        const button = e.target.closest('button[data-action="click"]');
+        if (button) {
             e.preventDefault();
             const selector = button.getAttribute('data-selector');
             if (selector) {
-                const targetElement = document.querySelector(selector);
-                if (targetElement) {
-                    targetElement.click();
-                    closeMobileMenu(); // Close menu after action
+                const target = document.querySelector(selector);
+                if (target) {
+                    target.click();
+                    closeMobileMenu();
                 }
             }
         }
     });
 
-    // Prevent scrolling when menu is open
     overlay.addEventListener('wheel', (e) => {
-        if (mobileMenuOpen) {
-            e.preventDefault();
-        }
-    });
+        if (mobileMenuOpen) e.preventDefault();
+    }, { passive: false });
 }
 
-/**
- * Toggle mobile menu open/close state
- */
 function toggleMobileMenu() {
-    if (mobileMenuOpen) {
-        closeMobileMenu();
-    } else {
-        openMobileMenu();
-    }
+    if (mobileMenuOpen) closeMobileMenu();
+    else openMobileMenu();
 }
 
-/**
- * Open mobile menu
- */
 function openMobileMenu() {
     const overlay = document.getElementById('mobileMenuOverlay');
-    const hamburgerBtn = document.getElementById('mobileMenuBtn');
-    const hamburgerIcon = document.getElementById('hamburgerIcon');
-    const closeIcon = document.getElementById('closeIcon');
+    const btn = document.getElementById('mobileMenuBtn');
+    const hIcon = document.getElementById('hamburgerIcon');
+    const cIcon = document.getElementById('closeIcon');
 
     if (!overlay) return;
 
     mobileMenuOpen = true;
     overlay.classList.remove('-translate-x-full');
     overlay.classList.add('translate-x-0');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
 
-    // Update ARIA state
-    if (hamburgerBtn) {
-        hamburgerBtn.setAttribute('aria-expanded', 'true');
-        hamburgerBtn.setAttribute('aria-label', 'Close Navigation Menu');
+    if (btn) {
+        btn.setAttribute('aria-expanded', 'true');
+        btn.setAttribute('aria-label', 'Close Navigation Menu');
     }
-
-    // Toggle icon (hamburger to X)
-    if (hamburgerIcon && closeIcon) {
-        hamburgerIcon.classList.add('hidden');
-        closeIcon.classList.remove('hidden');
-    }
+    if (hIcon) hIcon.classList.add('hidden');
+    if (cIcon) cIcon.classList.remove('hidden');
 }
 
-/**
- * Close mobile menu
- */
 function closeMobileMenu() {
     const overlay = document.getElementById('mobileMenuOverlay');
-    const hamburgerBtn = document.getElementById('mobileMenuBtn');
-    const hamburgerIcon = document.getElementById('hamburgerIcon');
-    const closeIcon = document.getElementById('closeIcon');
+    const btn = document.getElementById('mobileMenuBtn');
+    const hIcon = document.getElementById('hamburgerIcon');
+    const cIcon = document.getElementById('closeIcon');
 
     if (!overlay) return;
 
     mobileMenuOpen = false;
     overlay.classList.remove('translate-x-0');
     overlay.classList.add('-translate-x-full');
-    document.body.style.overflow = ''; // Restore scrolling
+    document.body.style.overflow = '';
 
-    // Update ARIA state
-    if (hamburgerBtn) {
-        hamburgerBtn.setAttribute('aria-expanded', 'false');
-        hamburgerBtn.setAttribute('aria-label', 'Open Navigation Menu');
+    if (btn) {
+        btn.setAttribute('aria-expanded', 'false');
+        btn.setAttribute('aria-label', 'Open Navigation Menu');
     }
-
-    // Toggle icon (X to hamburger)
-    if (hamburgerIcon && closeIcon) {
-        closeIcon.classList.add('hidden');
-        hamburgerIcon.classList.remove('hidden');
-    }
+    if (hIcon) hIcon.classList.remove('hidden');
+    if (cIcon) cIcon.classList.add('hidden');
 }
 
-// Make functions available globally
 if (typeof window !== 'undefined') {
     window.initMobileMenu = initMobileMenu;
     window.toggleMobileMenu = toggleMobileMenu;
