@@ -103,8 +103,17 @@ class EECOLIndexedDB {
    * Pages like Live Statistics and Reports listen for this 'storage' event to refresh their views.
    */
   _notifyChange() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('eecolDBChange', Date.now().toString());
+    try {
+      if (typeof localStorage !== 'undefined') {
+        /**
+         * IDB SENTINEL: Using a combined timestamp and random value ensures the key
+         * always changes, triggering the 'storage' event even for rapid writes.
+         */
+        localStorage.setItem('eecolDBChange', `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+      }
+    } catch (e) {
+      // localStorage might be unavailable in private browsing or due to quota
+      console.warn('⚠️ Cross-tab synchronization signal failed:', e);
     }
   }
 
@@ -365,19 +374,26 @@ class EECOLIndexedDB {
     await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
-    // Use relaxed durability and add transaction-level handlers
     const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
     const store = transaction.objectStore(storeName);
+    let result = null;
 
     return new Promise((resolve, reject) => {
+      /**
+       * IDB SENTINEL: Resolving on transaction completion ensures data is committed.
+       * request.onsuccess only means the request is valid, not that it's durable.
+       */
+      transaction.oncomplete = () => {
+        this._notifyChange();
+        resolve(result);
+      };
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
 
       const request = store.put(data);
 
       request.onsuccess = () => {
-        this._notifyChange();
-        resolve(request.result);
+        result = request.result;
       };
 
       request.onerror = () => {
@@ -391,20 +407,18 @@ class EECOLIndexedDB {
     await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
-    // Use relaxed durability and add transaction-level handlers
     const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        this._notifyChange();
+        resolve(true);
+      };
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
 
       const request = store.delete(key);
-
-      request.onsuccess = () => {
-        this._notifyChange();
-        resolve(true);
-      };
 
       request.onerror = () => {
         console.error(`❌ Failed to delete from ${storeName}:`, request.error);
@@ -417,20 +431,18 @@ class EECOLIndexedDB {
     await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
-    // Use relaxed durability and add transaction-level handlers
     const transaction = this.db.transaction([storeName], 'readwrite', { durability: 'relaxed' });
     const store = transaction.objectStore(storeName);
 
     return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        this._notifyChange();
+        resolve();
+      };
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
 
       const request = store.clear();
-
-      request.onsuccess = () => {
-        this._notifyChange();
-        resolve();
-      };
 
       request.onerror = () => {
         console.error(`❌ Failed to clear ${storeName}:`, request.error);

@@ -81,3 +81,13 @@ The `createObjectStores` method in `EECOLIndexedDB` had a non-idempotent migrati
 1. Implemented `_notifyChange()` method in `EECOLIndexedDB` that updates `localStorage.setItem('eecolDBChange', Date.now().toString())`.
 2. Integrated `_notifyChange()` into `update`, `bulkPut`, `delete`, and `clear` methods.
 **Validation:** Verified via `verification/verify_tab_sync.py` and `verification/verify_frontend_sync.py` (Playwright) ensuring that write operations correctly update the sync key.
+
+## 2026-05-10 - Harden Transaction Lifecycle and Sync Reliability
+**Observation:** Write operations (`update`, `delete`, `clear`) resolved promises on request success rather than transaction completion. This could lead to a race condition where the UI assumes data is committed before it's durable. Additionally, rapid successive writes might not trigger cross-tab sync if the timestamp remains the same.
+**Learning:** In IndexedDB, `request.onsuccess` only validates the individual request; `transaction.oncomplete` is the only guarantee that data is committed to disk. For cross-tab sync via the `storage` event, the value must *change* to trigger the event; millisecond-level writes require additional entropy.
+**Action:**
+1. Refactored `update`, `delete`, and `clear` in `EECOLIndexedDB` to resolve only on `transaction.oncomplete`.
+2. Moved `_notifyChange()` to the `oncomplete` handler to ensure notifications only fire for committed data.
+3. Enhanced `_notifyChange()` to use a hybrid value: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`.
+4. Added `try-catch` around `localStorage` access for robustness.
+**Validation:** Verified via `verification/verify_idb_v10.py` (CRUD integrity) and `verification/verify_tab_sync.py` (uniqueness of sync keys).
