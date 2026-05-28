@@ -251,16 +251,35 @@ class TapeScale extends HTMLElement {
     this.svg.appendChild(gMarker);
 
     // legend (hide on compact)
-    this.legend.innerHTML='';
+    this.legend.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
     if (!this.compact){
-      this.legend.innerHTML = `
-        <span class="badge" style="color:#0058B3"><span class="sw"></span>Inch: full inch</span>
-        <span class="badge" style="color:#3b82f6"><span class="sw"></span>Inch: 1/2, 1/4, 1/8</span>
-        <span class="badge" style="color:#93c5fd"><span class="sw"></span>Inch: 1/16</span>
-        <span class="badge" style="color:#059669"><span class="sw"></span>Metric: 10 mm</span>
-        <span class="badge" style="color:#10b981"><span class="sw"></span>Metric: 5 mm</span>
-        <span class="badge" style="color:#6ee7b7"><span class="sw"></span>Metric: 1 mm</span>
-      `;
+      /**
+       * IDB SENTINEL: Secure Rendering Pattern
+       * Refactored from innerHTML to programmatic DOM construction
+       * to prevent potential XSS and ensure visual integrity.
+       */
+      const badges = [
+        { color: '#0058B3', text: 'Inch: full inch' },
+        { color: '#3b82f6', text: 'Inch: 1/2, 1/4, 1/8' },
+        { color: '#93c5fd', text: 'Inch: 1/16' },
+        { color: '#059669', text: 'Metric: 10 mm' },
+        { color: '#10b981', text: 'Metric: 5 mm' },
+        { color: '#6ee7b7', text: 'Metric: 1 mm' }
+      ];
+
+      badges.forEach(b => {
+        const span = document.createElement('span');
+        span.className = 'badge';
+        span.style.color = b.color;
+
+        const sw = document.createElement('span');
+        sw.className = 'sw';
+        span.appendChild(sw);
+
+        span.appendChild(document.createTextNode(b.text));
+        this.legend.appendChild(span);
+      });
+
       if (this.height <= 90) this.svg.classList.add('small'); else this.svg.classList.remove('small');
     }
   }

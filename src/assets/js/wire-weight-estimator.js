@@ -729,7 +729,14 @@ function calculateWeight(showErrors = false) {
 function printWeightResults() {
     const totalShipmentWeight = document.getElementById('totalShipmentWeightLbs').textContent;
     const totalWireWeight = document.getElementById('totalWireWeightLbs').textContent;
-    const unitWeight = document.getElementById('unitWeightValue').innerHTML;
+
+    /**
+     * IDB SENTINEL: Fix XSS and Over-escaping BUG
+     * Changed from .innerHTML to .textContent to retrieve the raw data.
+     * This fixes a bug where characters were double-escaped in the print utility
+     * and prevents XSS in the local fallback.
+     */
+    const unitWeight = document.getElementById('unitWeightValue').textContent;
 
     if (typeof printWireWeightResults === 'function') {
         printWireWeightResults(totalShipmentWeight, totalWireWeight, unitWeight);
@@ -767,7 +774,7 @@ function printWeightResults() {
                         </div>
                         <div class="result">
                             <p class="label">Unit Weight:</p>
-                            <p class="value">${unitWeight}</p>
+                            <p class="value">${window.escapeHTML(unitWeight)}</p>
                         </div>
                     </div>
                 </div>

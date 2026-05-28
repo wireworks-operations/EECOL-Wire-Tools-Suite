@@ -85,6 +85,12 @@ async function renderMachines() {
 
         const entryDiv = document.createElement('div');
         entryDiv.className = 'border-t border-gray-200 dark:border-gray-700 pt-4 mt-4';
+
+        /**
+         * IDB SENTINEL: Safe Structural Template Pattern
+         * Preserves layout via innerHTML but populates all dynamic/interactive parts
+         * programmatically to ensure state integrity and security.
+         */
         entryDiv.innerHTML = `
             <h3 class="text-sm font-semibold mb-3 header-gradient dark:text-gray-300">New Calibration Entry:</h3>
             <div class="flex flex-col sm:flex-row gap-4 items-end">
@@ -112,8 +118,11 @@ async function renderMachines() {
                 </div>
             </div>
         `;
-        entryDiv.querySelector(`#save-${machineId}`).onclick = () => saveMeasurement(machineName, machineId);
-        entryDiv.querySelector(`#print-${machineId}`).onclick = () => printMeasurement(machineName);
+        // Explicitly bind handlers to the freshly created elements
+        const saveBtn = entryDiv.querySelector(`#save-${machineId}`);
+        const printBtn = entryDiv.querySelector(`#print-${machineId}`);
+        if (saveBtn) saveBtn.onclick = () => saveMeasurement(machineName, machineId);
+        if (printBtn) printBtn.onclick = () => printMeasurement(machineName);
         machineDiv.appendChild(entryDiv);
 
         container.appendChild(machineDiv);

@@ -369,24 +369,73 @@ import {
                 const deadWrapsLength = C_dead_m;
                 const deadWrapsLengthFt = metersToFeet(deadWrapsLength);
 
-                breakdownElement.innerHTML = `
-                    <p class="text-xs font-bold text-blue-800 mb-1">🎯 Capacity Breakdown Summary</p>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="bg-white p-2 rounded border">
-                            <span class="font-semibold text-red-600">Dead Wraps (3 layers):</span><br>
-                            <span class="font-bold">${deadWrapsLength.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
-                            <span class="text-gray-600">(${deadWrapsLengthFt.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
-                        </div>
-                        <div class="bg-white p-2 rounded border">
-                            <span class="font-semibold text-green-600">Usable Capacity:</span><br>
-                            <span class="font-bold">${C_working_final_m_safe.toLocaleString('en-US', {maximumFractionDigits: 0})} m</span><br>
-                            <span class="text-gray-600">(${C_working_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-blue-700 mt-2 leading-relaxed">
-                        <strong>Why dead wraps?</strong> The first 3 layers provide structural stability and proper tension for the working layers above. This engineering requirement ensures safe, reliable winding operations.
-                    </p>
-                `;
+                /**
+                 * IDB SENTINEL: Secure Rendering Pattern
+                 * Refactored from innerHTML to programmatic DOM construction
+                 * to prevent potential XSS from dynamic calculation results.
+                 */
+                const summaryTitle = document.createElement('p');
+                summaryTitle.className = 'text-xs font-bold text-blue-800 mb-1';
+                summaryTitle.textContent = '🎯 Capacity Breakdown Summary';
+                breakdownElement.appendChild(summaryTitle);
+
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'grid grid-cols-2 gap-2 text-xs';
+
+                // Dead Wraps Box
+                const deadWrapsBox = document.createElement('div');
+                deadWrapsBox.className = 'bg-white p-2 rounded border';
+
+                const dwLabel = document.createElement('span');
+                dwLabel.className = 'font-semibold text-red-600';
+                dwLabel.textContent = 'Dead Wraps (3 layers):';
+                deadWrapsBox.appendChild(dwLabel);
+                deadWrapsBox.appendChild(document.createElement('br'));
+
+                const dwMeters = document.createElement('span');
+                dwMeters.className = 'font-bold';
+                dwMeters.textContent = `${deadWrapsLength.toLocaleString('en-US', {maximumFractionDigits: 0})} m`;
+                deadWrapsBox.appendChild(dwMeters);
+                deadWrapsBox.appendChild(document.createElement('br'));
+
+                const dwFeet = document.createElement('span');
+                dwFeet.className = 'text-gray-600';
+                dwFeet.textContent = `(${deadWrapsLengthFt.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
+                deadWrapsBox.appendChild(dwFeet);
+
+                gridDiv.appendChild(deadWrapsBox);
+
+                // Usable Capacity Box
+                const usableBox = document.createElement('div');
+                usableBox.className = 'bg-white p-2 rounded border';
+
+                const uLabel = document.createElement('span');
+                uLabel.className = 'font-semibold text-green-600';
+                uLabel.textContent = 'Usable Capacity:';
+                usableBox.appendChild(uLabel);
+                usableBox.appendChild(document.createElement('br'));
+
+                const uMeters = document.createElement('span');
+                uMeters.className = 'font-bold';
+                uMeters.textContent = `${C_working_final_m_safe.toLocaleString('en-US', {maximumFractionDigits: 0})} m`;
+                usableBox.appendChild(uMeters);
+                usableBox.appendChild(document.createElement('br'));
+
+                const uFeet = document.createElement('span');
+                uFeet.className = 'text-gray-600';
+                uFeet.textContent = `(${C_working_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
+                usableBox.appendChild(uFeet);
+
+                gridDiv.appendChild(usableBox);
+                breakdownElement.appendChild(gridDiv);
+
+                const explainerP = document.createElement('p');
+                explainerP.className = 'text-xs text-blue-700 mt-2 leading-relaxed';
+                const whyStrong = document.createElement('strong');
+                whyStrong.textContent = 'Why dead wraps?';
+                explainerP.appendChild(whyStrong);
+                explainerP.appendChild(document.createTextNode(' The first 3 layers provide structural stability and proper tension for the working layers above. This engineering requirement ensures safe, reliable winding operations.'));
+                breakdownElement.appendChild(explainerP);
 
                 capacityWarning.textContent = `Note: Estimates include a ${efficiency * 100}% Winding Efficiency Factor.`;
 
