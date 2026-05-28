@@ -162,6 +162,8 @@ function setupExportFunctions() {
 // IndexedDB-based data loading functions
 async function loadCuttingData() {
     try {
+        cachedReportMetrics = null;
+        cachedTrendsData = null;
         if (window.eecolDB && await window.eecolDB.isReady()) {
             console.log('🔍 Loading cutting data from IndexedDB...');
             const records = await window.eecolDB.getAll('cuttingRecords');
@@ -276,6 +278,8 @@ function initAutoRefresh() {
 // Manual refresh function
 function manualRefresh() {
     console.log('🔃 Manual refresh triggered...');
+    cachedReportMetrics = null;
+    cachedTrendsData = null;
     const refreshBtn = document.getElementById('manualRefreshBtn');
     const originalText = refreshBtn.textContent;
 
@@ -339,6 +343,12 @@ function updateDashboard() {
     console.log('📊 Updating dashboard statistics...');
 
     const totalCuts = cutRecords.length;
+
+    // BOLT OPTIMIZATION: Memoized metrics
+    if (cachedReportMetrics) {
+        applyMetricsToDashboard(cachedReportMetrics);
+        return;
+    }
 
     /**
      * BOLT OPTIMIZATION: Single-pass metrics calculation
@@ -422,10 +432,36 @@ function updateDashboard() {
     const noMarkCutsPercent = totalCuts > 0 ? ((noMarkCuts / totalCuts) * 100).toFixed(1) : 0;
     const cutsChange = calculateChange(currentWeekCount, previousWeekCount);
 
+    cachedReportMetrics = {
+        totalCuts,
+        totalLength,
+        fullPicks,
+        systemCuts,
+        noMarkCuts,
+        longestCut,
+        longestCutOrder,
+        cutterCounts,
+        customerCounts,
+        wireTypeCounts,
+        currentWeekCount,
+        previousWeekCount,
+        cutsChange
+    };
+
+    applyMetricsToDashboard(cachedReportMetrics);
+}
+
+function applyMetricsToDashboard(m) {
+    const totalCuts = m.totalCuts;
+    const avgCutLength = totalCuts > 0 ? (m.totalLength / totalCuts).toFixed(2) : 0;
+    const fullPicksPercent = totalCuts > 0 ? ((m.fullPicks / totalCuts) * 100).toFixed(1) : 0;
+    const systemCutsPercent = totalCuts > 0 ? ((m.systemCuts / totalCuts) * 100).toFixed(1) : 0;
+    const noMarkCutsPercent = totalCuts > 0 ? ((m.noMarkCuts / totalCuts) * 100).toFixed(1) : 0;
+
     // Top cutter calculation
     let topCutter = '-';
     let topCutterCuts = 0;
-    for (const [cutter, count] of Object.entries(cutterCounts)) {
+    for (const [cutter, count] of Object.entries(m.cutterCounts)) {
         if (count > topCutterCuts) {
             topCutterCuts = count;
             topCutter = cutter;
@@ -435,7 +471,7 @@ function updateDashboard() {
     // Top customer calculation
     let topCustomer = '-';
     let topCustomerCuts = 0;
-    for (const [customer, count] of Object.entries(customerCounts)) {
+    for (const [customer, count] of Object.entries(m.customerCounts)) {
         if (count > topCustomerCuts) {
             topCustomerCuts = count;
             topCustomer = customer;
@@ -445,7 +481,7 @@ function updateDashboard() {
     // Most cut wire type
     let mostCutWire = '-';
     let mostCutWireCount = 0;
-    for (const [wireType, count] of Object.entries(wireTypeCounts)) {
+    for (const [wireType, count] of Object.entries(m.wireTypeCounts)) {
         if (count > mostCutWireCount) {
             mostCutWireCount = count;
             mostCutWire = wireType;
@@ -454,9 +490,9 @@ function updateDashboard() {
 
     // Update DOM elements
     document.getElementById('totalCutsStat').textContent = totalCuts;
-    document.getElementById('totalLengthStat').textContent = totalLength.toFixed(2) + 'm';
+    document.getElementById('totalLengthStat').textContent = m.totalLength.toFixed(2) + 'm';
     document.getElementById('avgCutLength').textContent = avgCutLength + 'm avg';
-    document.getElementById('fullPicksStat').textContent = fullPicks;
+    document.getElementById('fullPicksStat').textContent = m.fullPicks;
     document.getElementById('fullPicksPercent').textContent = fullPicksPercent + '% of total';
     document.getElementById('topCutterStat').textContent = topCutter;
     document.getElementById('topCutterCuts').textContent = topCutterCuts + ' cuts';
@@ -464,13 +500,13 @@ function updateDashboard() {
     document.getElementById('topCustomerCuts').textContent = topCustomerCuts + ' cuts';
     document.getElementById('mostCutWireStat').textContent = mostCutWire;
     document.getElementById('mostCutWireCount').textContent = mostCutWireCount + ' cuts';
-    document.getElementById('longestCutStat').textContent = longestCut.toFixed(2) + 'm';
-    document.getElementById('longestCutOrder').textContent = 'Order ' + longestCutOrder;
-    document.getElementById('systemCutsStat').textContent = systemCuts;
+    document.getElementById('longestCutStat').textContent = m.longestCut.toFixed(2) + 'm';
+    document.getElementById('longestCutOrder').textContent = 'Order ' + m.longestCutOrder;
+    document.getElementById('systemCutsStat').textContent = m.systemCuts;
     document.getElementById('systemCutsPercent').textContent = systemCutsPercent + '% of total';
-    document.getElementById('noMarkCutsStat').textContent = noMarkCuts;
+    document.getElementById('noMarkCutsStat').textContent = m.noMarkCuts;
     document.getElementById('noMarkCutsPercent').textContent = noMarkCutsPercent + '% of total';
-    document.getElementById('totalCutsChange').textContent = cutsChange + ' this week';
+    document.getElementById('totalCutsChange').textContent = m.cutsChange + ' this week';
 
     console.log('✅ Dashboard statistics updated');
 }
@@ -479,10 +515,22 @@ function updateDashboard() {
 function updateCharts() {
     try {
         console.log('📊 Updating charts...');
-        destroyExistingCharts();
 
         const chartType = document.getElementById('chartType').value;
         const period = document.getElementById('reportPeriod').value;
+
+        // BOLT OPTIMIZATION: Memoized trends and metrics for charts
+        if (cachedTrendsData && cachedTrendsData.period === period && cachedTrendsData.startDate === document.getElementById('startDate').value && cachedTrendsData.endDate === document.getElementById('endDate').value) {
+            destroyExistingCharts();
+            chartInstances.cutTrendsChart = createCutTrendsChart(chartType, cachedTrendsData.metrics.trends);
+            chartInstances.cutterPerformanceChart = createCutterPerformanceChart(chartType, cachedTrendsData.metrics.cutterCounts);
+            chartInstances.wireTypeChart = createWireTypeChart(chartType, cachedTrendsData.metrics.wireTypeCounts);
+            chartInstances.customerDistributionChart = createCustomerDistributionChart(chartType, cachedTrendsData.metrics.customerCounts);
+            updateReportsTable(cachedTrendsData.metrics);
+            return;
+        }
+
+        destroyExistingCharts();
         // BOLT FIX: Synchronize global currentPeriod with selected period
         currentPeriod = period;
 
@@ -582,6 +630,14 @@ function updateCharts() {
 
         // Update detailed reports table with pre-calculated metrics
         updateReportsTable(metrics);
+
+        // BOLT: Cache calculation results
+        cachedTrendsData = {
+            period: period,
+            startDate: document.getElementById('startDate').value,
+            endDate: document.getElementById('endDate').value,
+            metrics: metrics
+        };
 
         console.log('✅ Charts and Reports updated successfully');
     } catch (error) {

@@ -5,6 +5,8 @@
 
 // Global variables
 let inventoryItems = [];
+let cachedReportMetrics = null;
+let cachedTrendsData = null;
 let chartType = 'line';
 let reportPeriod = 'weekly';
 let chartInstances = {};
@@ -159,6 +161,8 @@ function setupExportFunctions() {
 // IndexedDB-based data loading functions
 async function loadInventoryData() {
     try {
+        cachedReportMetrics = null;
+        cachedTrendsData = null;
         if (window.eecolDB && await window.eecolDB.isReady()) {
             console.log('🔍 Loading inventory data from IndexedDB...');
             const records = await window.eecolDB.getAll('inventoryRecords');
@@ -340,6 +344,12 @@ function updateDashboard() {
 
     const totalItems = inventoryItems.length;
 
+    // BOLT OPTIMIZATION: Memoized metrics
+    if (cachedReportMetrics) {
+        applyMetricsToDashboard(cachedReportMetrics);
+        return;
+    }
+
     /**
      * BOLT OPTIMIZATION: Single-pass metrics calculation
      * Consolidates approximately 7 separate O(N) passes (filters and reduces) into a single loop
@@ -399,17 +409,35 @@ function updateDashboard() {
     const tailendPercent = totalItems > 0 ? ((tailendItems / totalItems) * 100).toFixed(1) : 0;
     const itemsChange = calculateChange(currentWeekCount, previousWeekCount);
 
+    cachedReportMetrics = {
+        totalItems,
+        approvedItems,
+        totalProcessed,
+        totalValue,
+        damagedItems,
+        tailendItems,
+        approvedRate,
+        avgValue,
+        damagedPercent,
+        tailendPercent,
+        itemsChange
+    };
+
+    applyMetricsToDashboard(cachedReportMetrics);
+}
+
+function applyMetricsToDashboard(m) {
     // Update DOM elements
-    document.getElementById('totalItemsStat').textContent = totalItems;
-    document.getElementById('approvedRateStat').textContent = approvedRate + '%';
-    document.getElementById('damagedItemsStat').textContent = damagedItems;
-    document.getElementById('tailendsStat').textContent = tailendItems;
-    document.getElementById('totalValueStat').textContent = '$' + totalValue.toFixed(2);
-    document.getElementById('avgValueStat').textContent = '$' + avgValue.toFixed(2) + ' avg';
-    document.getElementById('damagedItemsPercent').textContent = damagedPercent + '% of total';
-    document.getElementById('tailendsPercent').textContent = tailendPercent + '% of total';
-    document.getElementById('totalItemsChange').textContent = itemsChange + ' this week';
-    document.getElementById('approvedRateChange').textContent = totalProcessed > 0 ? '+0% vs last week' : 'No processed';
+    document.getElementById('totalItemsStat').textContent = m.totalItems;
+    document.getElementById('approvedRateStat').textContent = m.approvedRate + '%';
+    document.getElementById('damagedItemsStat').textContent = m.damagedItems;
+    document.getElementById('tailendsStat').textContent = m.tailendItems;
+    document.getElementById('totalValueStat').textContent = '$' + m.totalValue.toFixed(2);
+    document.getElementById('avgValueStat').textContent = '$' + m.avgValue.toFixed(2) + ' avg';
+    document.getElementById('damagedItemsPercent').textContent = m.damagedPercent + '% of total';
+    document.getElementById('tailendsPercent').textContent = m.tailendPercent + '% of total';
+    document.getElementById('totalItemsChange').textContent = m.itemsChange + ' this week';
+    document.getElementById('approvedRateChange').textContent = m.totalProcessed > 0 ? '+0% vs last week' : 'No processed';
 
     console.log('✅ Dashboard statistics updated');
 }
@@ -418,10 +446,23 @@ function updateDashboard() {
 function updateCharts() {
     try {
         console.log('📊 Updating inventory charts...');
-        destroyExistingCharts();
 
+        const period = document.getElementById('reportPeriod').value;
         const startDateVal = document.getElementById('startDate').value;
         const endDateVal = document.getElementById('endDate').value;
+
+        // BOLT OPTIMIZATION: Memoized trends and metrics for charts
+        if (cachedTrendsData && cachedTrendsData.period === period && cachedTrendsData.startDate === startDateVal && cachedTrendsData.endDate === endDateVal) {
+            destroyExistingCharts();
+            createInventoryTrendsChart(cachedTrendsData.metrics.trends);
+            createValueDistributionChart(cachedTrendsData.metrics.valueDistribution);
+            createProductDistributionChart(cachedTrendsData.metrics.productCounts);
+            createDamageAnalysisChart(cachedTrendsData.metrics.damageAnalysis);
+            updateReportsTable(cachedTrendsData.metrics);
+            return;
+        }
+
+        destroyExistingCharts();
         const startDate = startDateVal ? new Date(startDateVal).getTime() : null;
         const endDate = endDateVal ? new Date(endDateVal).getTime() + 86399999 : null;
 
@@ -518,6 +559,14 @@ function updateCharts() {
 
         // Update detailed reports table with pre-calculated metrics
         updateReportsTable(metrics);
+
+        // BOLT: Cache calculation results
+        cachedTrendsData = {
+            period: period,
+            startDate: startDateVal,
+            endDate: endDateVal,
+            metrics: metrics
+        };
 
         console.log('✅ Charts and Reports updated successfully');
     } catch (error) {
