@@ -33,14 +33,14 @@ npm run dev
 
 ```bash
 # Run IndexedDB functional verification (requires Playwright/Python)
-python3 verification/verify_idb.py
+python3 verification/verify_idb_v10.py
 ```
 
 ---
 
 ### 🏗️ Architecture & Security
 
-The application is **entirely client-side** (Local-First). All data is stored securely in your browser's IndexedDB (v9).
+The application is **entirely client-side** (Local-First). All data is stored securely in your browser's IndexedDB (v10).
 
 - [README.md](README.md) - Full installation guide
 - [BLUEPRINT.md](BLUEPRINT.md) - System architecture

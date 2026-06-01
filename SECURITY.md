@@ -4,7 +4,7 @@
 
 | Version | Supported           |
 | :------ | :------------------ |
-| 0.8.0.4 | ✅ Security updates |
+| 0.8.0.5 | ✅ Security updates |
 | main    | ✅ Security updates |
 
 ## 🛡️ Reporting a Vulnerability
@@ -21,7 +21,7 @@ We take all security bugs in this project seriously. To report a security vulner
 
 ## 🏛️ Security Posture
 
-This application is designed as a **local-first** Progressive Web App (PWA). All data is stored exclusively on the client-side using IndexedDB (v9), with no server-side components or cloud services involved.
+This application is designed as a **local-first** Progressive Web App (PWA). All data is stored exclusively on the client-side using IndexedDB (v10), with no server-side components or cloud services involved.
 
 ### Architecture Security
 

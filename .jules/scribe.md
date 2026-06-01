@@ -45,3 +45,14 @@ Always verify documentation against the source of truth (`indexeddb.js`) and exi
 
 **Action:**
 Synchronized all documentation to IndexedDB v9. Refactored `QUICKSTART.md` for a 90-second "Happy Path". Standardized `SECURITY.md` with a complete hardening checklist. Enumerated all 14 stores in `BLUEPRINT.md` to provide a complete map of the local data layer. Verified everything via `markdownlint` and `verify_idb.py`.
+
+## 2026-05-25 - [Documentation Refresh v0.8.0.5 - IDB v10 Sync]
+
+**Observation:**
+The codebase has moved to IndexedDB version 10, but documentation still largely referenced v9. Also identified that `verify_idb_v10.py` is the current standard for schema verification.
+
+**Learning:**
+Documentation drift is inevitable in rapid development. A "Documentation-First" approach requires proactive synchronization of version numbers and verification scripts to ensure newcomer success. Hardened architectural details (atomic operations, relaxed durability) should be surfaced in the `BLUEPRINT.md` to guide future contributors.
+
+**Action:**
+Bumped project version to v0.8.0.5. Synchronized all documentation to IndexedDB v10. Updated `BLUEPRINT.md` with details on atomic batch operations (`bulkPut`, `bulkDelete`) and transaction durability strategies. Verified all "Getting Started" commands and the v10 verification script.
