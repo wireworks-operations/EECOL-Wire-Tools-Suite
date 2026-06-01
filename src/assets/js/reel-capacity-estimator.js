@@ -33,6 +33,7 @@ import {
         const VOLUMETRIC_EFFICIENCY = 0.90; // Default efficiency
         const TURN_SPACING_FACTOR = 1.1; // Axial spacing = 1.1 * wire diameter for safe winding
         const REEL_FACTOR_CONSTANT = 0.262; // C_const for Imperial units
+        const DEAD_WRAPS = 3; // Standard mandatory dead wraps for safety
 
         // Specific Gravity Constants from AIO version
         const SPECIFIC_GRAVITY = {
@@ -71,22 +72,58 @@ import {
         // TARGET LENGTH FUNCTION (Extracted from reel-size-estimator.html)
         // ====================================================================
 
-        function calculateRequiredFlange(target_m, Dc_m, W_m, F_m, d_m) {
-            // Start from minimum possible Df
-            let Df_m = Dc_m + 2 * d_m + 2 * F_m; // initial guess: core + wire + freeboard
+        /**
+         * BOLT OPTIMIZATION: O(1) Capacity Calculation
+         * Calculates total length of N layers using the sum of an arithmetic progression.
+         * Formula: L_total = segments * PI * efficiency * N * (Dc + N * d)
+         * This replaces O(N) iterative loops with a single mathematical calculation.
+         */
+        function _getSpoolCapacity(N, Dc_m, d_m, SEGMENTS, efficiency) {
+            if (N <= 0) return 0;
+            return N * SEGMENTS * PI * efficiency * (Dc_m + N * d_m);
+        }
 
-            while (true) {
-                const capacity = calculateReelCapacity(Df_m, Dc_m, W_m, F_m, d_m);
-                if (capacity.error) return capacity;
-                if (capacity.recommendedCapacity_m >= target_m) {
-                    return {
-                        requiredDf_m: Df_m,
-                        calculatedCapacity: capacity
-                    };
+        /**
+         * BOLT OPTIMIZATION: O(1) Required Flange Calculation
+         * Solves for the required flange diameter using a closed-form quadratic solution.
+         * This replaces the O(N) iterative incrementing approach and fixes a parameter mismatch bug.
+         */
+        function calculateRequiredFlange(target_m, Dc_m, W_m, F_m, d_m) {
+            const efficiency = parseFloat(document.getElementById('windingEfficiency').value) || 0.9;
+            const segments = Math.floor(W_m / (TURN_SPACING_FACTOR * d_m));
+
+            if (segments <= 0) return { error: 'Traverse width is too narrow for the specified cable diameter.' };
+
+            // Calculate length of mandatory dead wraps
+            const deadLength = _getSpoolCapacity(DEAD_WRAPS, Dc_m, d_m, segments, efficiency);
+            const totalRequired = target_m + deadLength;
+
+            /**
+             * BOLT: Solve quadratic equation for required number of layers N
+             * Formula: L = segments * PI * efficiency * N * (Dc + N * d)
+             * K * (d*N^2 + Dc*N) - L_total = 0
+             * Quadratic coefficients: a = d, b = Dc, c = -L_total / (segments * PI * efficiency)
+             */
+            const K = segments * PI * efficiency;
+            const qa = d_m;
+            const qb = Dc_m;
+            const qc = -totalRequired / K;
+
+            const discriminant = qb * qb - 4 * qa * qc;
+            if (discriminant < 0) return { error: 'No physical solution found for the target length with these dimensions.' };
+
+            const N = Math.ceil((-qb + Math.sqrt(discriminant)) / (2 * qa));
+            const requiredDf_m = Dc_m + (2 * N * d_m) + (2 * F_m);
+
+            if (requiredDf_m > 10) return { error: 'Required flange diameter exceeds practical limits (> 10m). Check inputs.' };
+
+            return {
+                requiredDf_m: requiredDf_m,
+                calculatedCapacity: {
+                    recommendedCapacity_m: _getSpoolCapacity(N, Dc_m, d_m, segments, efficiency) - deadLength,
+                    layerCount: N
                 }
-                Df_m += 0.01; // increment by 0.01m ≈ 0.4 inches
-                if (Df_m > 10) return { error: 'Required flange diameter exceeds practical limits (> 10m). Check inputs.' }; // safety limit
-            }
+            };
         }
 
         // ====================================================================
@@ -253,21 +290,13 @@ import {
                 const F_m = toMeters(F, FUnit);
                 const d_m = toMeters(d, dUnit);
 
-                const DEAD_WRAPS = 3;
-
                 // Calculate absolute total capacity (no freeboard subtraction)
                 const D_absolute_m = Df_m; // Full flange diameter
-                const N_layers_absolute = Math.floor((D_absolute_m - Dc_m) / (2 * d_m));
-
-                let C_absolute_total_m_by_layer = 0;
+                const N_layers_absolute = Math.max(0, Math.floor((D_absolute_m - Dc_m) / (2 * d_m)));
                 const SEGMENTS_PER_LAYER_absolute = Math.floor(W_m / (TURN_SPACING_FACTOR * d_m));
 
-                for (let n = 1; n <= N_layers_absolute; n++) {
-                    const D_n_m = Dc_m + (2 * n - 1) * d_m;
-                    const L_n_m_theoretical = SEGMENTS_PER_LAYER_absolute * PI * D_n_m;
-                    const L_n_m = L_n_m_theoretical * efficiency;
-                    C_absolute_total_m_by_layer += L_n_m;
-                }
+                // BOLT: O(1) total absolute capacity calculation
+                const C_absolute_total_m_by_layer = _getSpoolCapacity(N_layers_absolute, Dc_m, d_m, SEGMENTS_PER_LAYER_absolute, efficiency);
 
                 // Calculate freeboard-based capacity (current working capacity with freeboard applied)
                 const D_usable_m = Df_m - (2 * F_m);
@@ -283,22 +312,14 @@ import {
                 }
 
                 const Dd_ratio_value = Dc_m / d_m;
-                const N_layers = Math.floor((D_usable_m - Dc_m) / (2 * d_m));
-
-                let C_total_m_by_layer = 0;
-                let C_working_m = 0;
-                let layersHtml = '';
+                const N_layers = Math.max(0, Math.floor((D_usable_m - Dc_m) / (2 * d_m)));
 
                 const SEGMENTS_PER_LAYER = Math.floor(W_m / (TURN_SPACING_FACTOR * d_m));
 
-                // First, calculate dead wraps length for the summary
-                let C_dead_m = 0;
-                for (let n = 1; n <= Math.min(DEAD_WRAPS, N_layers); n++) {
-                    const D_n_m = Dc_m + (2 * n - 1) * d_m;
-                    const L_n_m_theoretical = SEGMENTS_PER_LAYER * PI * D_n_m;
-                    const L_n_m = L_n_m_theoretical * efficiency;
-                    C_dead_m += L_n_m;
-                }
+                // BOLT: O(1) capacity calculations to eliminate iterative accumulation
+                const C_dead_m = _getSpoolCapacity(Math.min(DEAD_WRAPS, N_layers), Dc_m, d_m, SEGMENTS_PER_LAYER, efficiency);
+                const C_total_m_by_layer = _getSpoolCapacity(N_layers, Dc_m, d_m, SEGMENTS_PER_LAYER, efficiency);
+                const C_working_m = Math.max(0, C_total_m_by_layer - C_dead_m);
 
                 layerList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
@@ -307,14 +328,6 @@ import {
                     const D_n_m = Dc_m + (2 * n - 1) * d_m;
                     const L_n_m_theoretical = SEGMENTS_PER_LAYER * PI * D_n_m;
                     const L_n_m = L_n_m_theoretical * efficiency; // Use selected efficiency
-
-                    // Always add to total capacity (all physical layers)
-                    C_total_m_by_layer += L_n_m;
-
-                    // Only add to working capacity if not a dead wrap
-                    if (n > DEAD_WRAPS) {
-                        C_working_m += L_n_m;
-                    }
 
                     const L_n_ft = metersToFeet(L_n_m);
 
