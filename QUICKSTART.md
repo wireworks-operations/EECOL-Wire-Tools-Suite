@@ -40,7 +40,7 @@ python3 verification/verify_idb.py
 
 ### 🏗️ Architecture & Security
 
-The application is **entirely client-side** (Local-First). All data is stored securely in your browser's IndexedDB (v9).
+The application is **entirely client-side** (Local-First). All data is stored securely in your browser's IndexedDB (v10).
 
 - [README.md](README.md) - Full installation guide
 - [BLUEPRINT.md](BLUEPRINT.md) - System architecture

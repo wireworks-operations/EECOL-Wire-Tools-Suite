@@ -77,7 +77,7 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 <summary>⚙️ Core Technology Stack</summary>
 
 - **Frontend**: Vanilla JavaScript (ESM Hybrid), HTML5, Tailwind CSS.
-- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton (v9).
+- **Persistence**: IndexedDB (Primary) via `EECOLIndexedDB` singleton (v10).
 - **PWA**: Service Worker (`sw.js`) and Web App Manifest for offline capability.
 - **Visualization**: Chart.js for operational reporting and analytics.
 - **Utility**: Custom modular print system and sanitization layer.
@@ -137,7 +137,7 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 
 ## 🔒 Security & Privacy
 
-- **Zero Data Transmission**: All data remains in the browser's IndexedDB (v9). No cloud sync.
+- **Zero Data Transmission**: All data remains in the browser's IndexedDB (v10). No cloud sync.
 - **XSS Mitigation**: Strict use of `.textContent` ("Secure by Default") and a robust Content Security Policy (CSP).
 - **Offline Reliability**: Service workers ensure the app loads even without an internet connectivity.
 
@@ -148,14 +148,14 @@ See **[SECURITY.md](SECURITY.md)** for our full security policy.
 ## 🆘 Troubleshooting
 
 - **Service Worker not registering**: Ensure you are serving via `http` or `https`. The `file://` protocol is not supported for PWAs.
-- **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes. Ensure you are looking at the **EECOLTools_v2** database (Version 9).
+- **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes. Ensure you are looking at the **EECOLTools_v2** database (Version 10).
 - **Port Conflict**: If port 3000 is in use, run `PORT=3001 npm run dev`.
 
 ---
 
-## 🗄️ Database Schema (v9)
+## 🗄️ Database Schema (v10)
 
-The application uses **14 specialized stores** within the `EECOLTools_v2` database (v9). See [BLUEPRINT.md](BLUEPRINT.md) for the full schema enumeration.
+The application uses **14 specialized stores** within the `EECOLTools_v2` database (v10). See [BLUEPRINT.md](BLUEPRINT.md) for the full schema enumeration.
 
 ## 📄 License
 
