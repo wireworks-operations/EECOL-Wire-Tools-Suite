@@ -835,7 +835,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
         ],
-        version: 'v0.8.0.4',
+        version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Database Config'
     });

@@ -78,7 +78,6 @@ The application uses **14 specialized stores** within the `EECOLTools_v2` databa
 - **Local-First**: Zero backend dependencies to ensure 100% uptime in industrial environments.
 - **Vanilla JS**: Chosen for longevity and to minimize framework-induced maintenance debt.
 - **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **10**.
-- **Atomic Operations**: Implements `bulkPut` and `bulkDelete` for efficient batch processing within a single transaction.
 - **ESM Hybrid**: Transitioning towards ES Modules (`type="module"`) while maintaining global shims for backward compatibility.
 - **Relaxed Durability**: Uses `durability: 'relaxed'` in IDB transactions for optimal UI responsiveness and performance in local-only scenarios.
 

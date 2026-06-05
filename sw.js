@@ -3,9 +3,9 @@
  * Provides offline functionality, caching, and background sync
  */
 
-const CACHE_NAME = 'eecol-tools-v0.8.0.4';
-const STATIC_CACHE = 'eecol-static-v0.8.0.4';
-const DYNAMIC_CACHE = 'eecol-dynamic-v0.8.0.4';
+const CACHE_NAME = 'eecol-tools-v0.8.0.5';
+const STATIC_CACHE = 'eecol-static-v0.8.0.5';
+const DYNAMIC_CACHE = 'eecol-dynamic-v0.8.0.5';
 
 // Files to cache immediately on install - relative to sw.js (root)
 const STATIC_ASSETS = [

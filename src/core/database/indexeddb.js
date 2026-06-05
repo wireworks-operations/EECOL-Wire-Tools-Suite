@@ -209,7 +209,7 @@ class EECOLIndexedDB {
       }
 
       for (const item of items) {
-        store.put(item);
+        store.put(this._normalizeRecord(storeName, item));
       }
     });
   }
@@ -390,7 +390,7 @@ class EECOLIndexedDB {
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
 
-      const request = store.put(data);
+      const request = store.put(this._normalizeRecord(storeName, data));
 
       request.onsuccess = () => {
         result = request.result;
@@ -720,6 +720,41 @@ class EECOLIndexedDB {
 
   isUniqueConstraintViolation(error) {
     return error && error.name === 'ConstraintError';
+  }
+
+  /**
+   * IDB SENTINEL: Normalizes record data types and casing for consistency.
+   * Ensures timestamps are numbers and key identifiers are uppercase.
+   * @param {string} storeName - Name of the object store
+   * @param {Object} record - The record to normalize
+   * @returns {Object} The normalized record
+   */
+  _normalizeRecord(storeName, record) {
+    if (!record || typeof record !== 'object') return record;
+
+    // Create a shallow copy to avoid mutating the original object
+    const normalized = { ...record };
+
+    // 1. Normalize timestamps to numbers
+    const timeFields = ['timestamp', 'createdAt', 'updatedAt', 'cutInSystemTimestamp', 'reviewedTimestamp'];
+    for (const field of timeFields) {
+      if (normalized[field]) {
+        const val = typeof normalized[field] === 'string' ? Date.parse(normalized[field]) : normalized[field];
+        if (!isNaN(val)) {
+          normalized[field] = val;
+        }
+      }
+    }
+
+    // 2. Enforce uppercase for identification fields to improve search/filter reliability
+    const upperFields = ['wireId', 'orderNumber', 'cutterName', 'customerName', 'personName', 'productCode'];
+    for (const field of upperFields) {
+      if (typeof normalized[field] === 'string') {
+        normalized[field] = normalized[field].toUpperCase().trim();
+      }
+    }
+
+    return normalized;
   }
 
   async isReady() {
