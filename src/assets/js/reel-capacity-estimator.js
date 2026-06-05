@@ -1588,22 +1588,40 @@ function collectPrintData() {
     };
 }
 
+/**
+ * IDB SENTINEL: Internal helper to safely escape strings for HTML insertion.
+ * Provides defense-in-depth against XSS even if global helpers are missing.
+ * @param {any} v - Value to escape
+ * @returns {string} Escaped string
+ */
+function _esc(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof window !== 'undefined' && typeof window.escapeHTML === 'function') {
+        return window.escapeHTML(v);
+    }
+    return String(v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#x2F;');
+}
+
 // Custom print function for reel capacity results using existing print utilities
 function printReelCapacityResults(data) {
-    const printWindow = window.open('', '_blank');
+    const formattedTitle = data.title || 'EECOL Reel Capacity Estimator Results';
+    const specs = data.specifications || {};
+    const results = data.results || {};
+    const layers = data.layerBreakdown || '';
+    const provided = data.providedSpecs || {};
 
-    const formattedTitle = data.title;
-    const specs = data.specifications;
-    const results = data.results;
-    const layers = data.layerBreakdown;
-    const provided = data.providedSpecs;
-
-    printWindow.document.write(`
+    const html = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
-            <title>${window.escapeHTML(formattedTitle)}</title>
+            <title>${_esc(formattedTitle)}</title>
             <style>
                 body {
                     font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
@@ -1682,22 +1700,22 @@ function printReelCapacityResults(data) {
         </head>
         <body>
             <div class="header">
-                <div class="title">${window.escapeHTML(formattedTitle)}</div>
+                <div class="title">${_esc(formattedTitle)}</div>
             </div>
 
             <div class="section">
                 <div class="section-title">📐 Reel Specifications</div>
                 <div class="spec-row">
                     <span class="spec-label">Flange Diameter:</span>
-                    <span class="spec-value">${window.escapeHTML(specs.flangeDiameter)}</span>
+                    <span class="spec-value">${_esc(specs.flangeDiameter)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Core Diameter:</span>
-                    <span class="spec-value">${window.escapeHTML(specs.coreDiameter)}</span>
+                    <span class="spec-value">${_esc(specs.coreDiameter)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Traverse Width:</span>
-                    <span class="spec-value">${window.escapeHTML(specs.traverseWidth)}</span>
+                    <span class="spec-value">${_esc(specs.traverseWidth)}</span>
                 </div>
             </div>
 
@@ -1705,23 +1723,23 @@ function printReelCapacityResults(data) {
                 <div class="section-title">📊 Calculation Results</div>
                 <div class="spec-row">
                     <span class="spec-label">Total Capacity:</span>
-                    <span class="spec-value">${window.escapeHTML(results.totalCapacity)}</span>
+                    <span class="spec-value">${_esc(results.totalCapacity)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Working Capacity:</span>
-                    <span class="spec-value">${window.escapeHTML(results.workingCapacity)}</span>
+                    <span class="spec-value">${_esc(results.workingCapacity)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Absolute Capacity:</span>
-                    <span class="spec-value">${window.escapeHTML(results.absoluteCapacity)}</span>
+                    <span class="spec-value">${_esc(results.absoluteCapacity)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Core-to-Cable Ratio:</span>
-                    <span class="spec-value">${window.escapeHTML(results.coreToCableRatio)}</span>
+                    <span class="spec-value">${_esc(results.coreToCableRatio)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Target Achievement:</span>
-                    <span class="spec-value">${window.escapeHTML(results.targetAchievement)}</span>
+                    <span class="spec-value">${_esc(results.targetAchievement)}</span>
                 </div>
             </div>
 
@@ -1729,19 +1747,19 @@ function printReelCapacityResults(data) {
                 <div class="section-title">📋 Provided Specifications</div>
                 <div class="spec-row">
                     <span class="spec-label">Core Diameter:</span>
-                    <span class="spec-value">${window.escapeHTML(provided.core)}</span>
+                    <span class="spec-value">${_esc(provided.core)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Flange Diameter:</span>
-                    <span class="spec-value">${window.escapeHTML(provided.flange)}</span>
+                    <span class="spec-value">${_esc(provided.flange)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Traverse Width:</span>
-                    <span class="spec-value">${window.escapeHTML(provided.traverse)}</span>
+                    <span class="spec-value">${_esc(provided.traverse)}</span>
                 </div>
                 <div class="spec-row">
                     <span class="spec-label">Target Length:</span>
-                    <span class="spec-value">${window.escapeHTML(provided.target)}</span>
+                    <span class="spec-value">${_esc(provided.target)}</span>
                 </div>
             </div>
 
@@ -1749,22 +1767,43 @@ function printReelCapacityResults(data) {
             <div class="section">
                 <div class="section-title">🔍 Layer Breakdown</div>
                 <div class="layer-info">
-                    ${window.escapeHTML(layers).replace(/\n/g, '<br>')}
+                    ${_esc(layers).replace(/\n/g, '<br>')}
                 </div>
             </div>
             ` : ''}
 
             <div class="branding">
                 EECOL Wire Tools Suite 2025 - Enterprise Edition<br>
-                Generated: ${window.escapeHTML(data.timestamp)}
+                Generated: ${_esc(data.timestamp)}
             </div>
 
             <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 8px 16px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer;">Print</button>
         </body>
         </html>
-    `);
+    `;
 
-    printWindow.print();
+    /**
+     * IDB SENTINEL: Use central hardened print utility if available.
+     * Otherwise, fallback to a local hardened pattern that handles popup blockers
+     * and document stream closing.
+     */
+    if (typeof createPrintWindow === 'function') {
+        createPrintWindow(formattedTitle, html);
+    } else {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Unable to open print window. Please allow popups for this site.');
+            return;
+        }
+        try {
+            printWindow.document.title = formattedTitle;
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.print();
+        } catch (err) {
+            console.error('Hardened print fallback failed:', err);
+        }
+    }
 }
 
 // ============================================================================

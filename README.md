@@ -4,7 +4,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-green.svg)](https://nodejs.org/)
 [![npm](https://img.shields.io/badge/npm-v8%2B-red.svg)](https://www.npmjs.com/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
-[![Version](https://img.shields.io/badge/Version-0.8.0.4-blue.svg)](https://github.com/eecol/eecol-wire-tools-suite-v2/releases)
+[![Version](https://img.shields.io/badge/Version-0.8.0.5-blue.svg)](https://github.com/eecol/eecol-wire-tools-suite-v2/releases)
 
 An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designed for industrial wire processing. This suite provides specialized calculators, inventory management, and operational tracking tools that persist data directly in the browser's IndexedDB, ensuring 100% uptime without backend dependencies.
 
@@ -17,37 +17,65 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 ### Prerequisites
 
 - **Node.js**: >= 16.0.0 (npm v8+)
-- **Python**: 3.x (Optional, for database verification)
-- **Docker**: (Required for `docker:*` scripts, currently in-progress)
+- **Python**: 3.x (Required for verification scripts)
+- **Docker**: Optional (For containerized deployment)
 
-### 1) Install Dependencies
+### 1) Python Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/eecol/eecol-wire-tools-suite-v2.git
-cd eecol-wire-tools-suite-v2
+# It is recommended to use a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Install Node dependencies
+# Install verification dependencies
+pip install playwright
+playwright install chromium
+```
+
+### 2) Node Setup
+
+```bash
+# Install project dependencies
 npm install
 ```
 
-### 2) Run (Local Development)
+### 3) Run (Local)
 
 ```bash
 # Start the development server (serves the PWA at http://localhost:3000)
 npm run dev
 ```
 
-### 3) Tooling Status
+### 4) Docker (Optional)
+
+```bash
+# Build the production image
+npm run docker:build
+
+# Run the container
+npm run docker:run
+```
+
+### 5) Test & Verification
+
+```bash
+# Run IndexedDB v10 schema verification
+python3 verification/verify_idb_v10.py
+
+# Run UI version verification
+python3 verification/verify_ui_v0.8.0.5.py
+```
+
+### 🧭 Tooling Status
 
 | Command | Status | Description |
 | :--- | :--- | :--- |
 | `npm run dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
-| `python3 verification/verify_idb.py` | ✅ **Operational** | IDB verification via Playwright (Python). |
+| `python3 verification/verify_idb_v10.py` | ✅ **Operational** | IDB verification via Playwright (Python). |
+| `python3 verification/verify_ui_v0.8.0.5.py` | ✅ **Operational** | UI Version verification via Playwright. |
 | `npm run build` | 🚧 **In-Progress** | Production build (Missing Webpack config). |
 | `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
 | `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
-| `npm run docker:build` | 🚧 **In-Progress** | Docker containerization (Missing Dockerfile). |
 
 ---
 

@@ -33,7 +33,7 @@ npm run dev
 
 ```bash
 # Run IndexedDB functional verification (requires Playwright/Python)
-python3 verification/verify_idb.py
+python3 verification/verify_idb_v10.py
 ```
 
 ---

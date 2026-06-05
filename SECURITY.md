@@ -4,7 +4,7 @@
 
 | Version | Supported           |
 | :------ | :------------------ |
-| 0.8.0.4 | ✅ Security updates |
+| 0.8.0.5 | ✅ Security updates |
 | main    | ✅ Security updates |
 
 ## 🛡️ Reporting a Vulnerability

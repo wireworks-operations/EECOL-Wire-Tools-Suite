@@ -79,7 +79,7 @@ The application uses **14 specialized stores** within the `EECOLTools_v2` databa
 - **Vanilla JS**: Chosen for longevity and to minimize framework-induced maintenance debt.
 - **IndexedDB**: Used over LocalStorage for structured, high-capacity data persistence. Target version is **10**.
 - **ESM Hybrid**: Transitioning towards ES Modules (`type="module"`) while maintaining global shims for backward compatibility.
-- **Relaxed Durability**: Uses `durability: 'relaxed'` in IDB transactions for optimal UI responsiveness.
+- **Relaxed Durability**: Uses `durability: 'relaxed'` in IDB transactions for optimal UI responsiveness and performance in local-only scenarios.
 
 ## ⚠️ Risks & Trade-offs
 
