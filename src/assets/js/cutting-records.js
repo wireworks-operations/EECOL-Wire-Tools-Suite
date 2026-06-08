@@ -3360,17 +3360,26 @@ function getDragAfterElement(container, y) {
 async function saveWireListOrder() {
     const container = document.getElementById('wireCutListItems');
     const items = [...container.querySelectorAll('.wire-list-item')];
+    const itemsToUpdate = [];
 
     for (let i = 0; i < items.length; i++) {
         const id = items[i].dataset.id;
         const item = wireCutList.find(item => item.id === id);
         if (item) {
             item.position = i;
-            if (window.eecolDB && await window.eecolDB.isReady()) {
-                await window.eecolDB.update('wireCutList', item);
-            }
+            itemsToUpdate.push(item);
         }
     }
+
+    if (itemsToUpdate.length > 0 && window.eecolDB && await window.eecolDB.isReady()) {
+        /**
+         * IDB SENTINEL: Optimized reordering using atomic bulkPut.
+         * Consolidates multiple update transactions into a single O(1) transaction,
+         * significantly reducing disk syncs and improving UI responsiveness during drag-drop.
+         */
+        await window.eecolDB.bulkPut('wireCutList', itemsToUpdate, false);
+    }
+
     // Refresh local list
     const records = await window.eecolDB.getAll('wireCutList');
     wireCutList = records.sort((a, b) => (a.position || 0) - (b.position || 0));

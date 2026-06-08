@@ -164,6 +164,15 @@ class EECOLIndexedDB {
           // Optionally notify user or reload
         };
 
+        /**
+         * IDB SENTINEL: Global database error handler.
+         * Catches and logs unhandled transaction errors that bubble up to the database object,
+         * improving observability for debugging complex race conditions or storage issues.
+         */
+        this.db.onerror = (event) => {
+          console.error('❌ IndexedDB Global Error:', event.target.error);
+        };
+
         resolve();
       };
 
@@ -747,7 +756,7 @@ class EECOLIndexedDB {
     }
 
     // 2. Enforce uppercase for identification fields to improve search/filter reliability
-    const upperFields = ['wireId', 'orderNumber', 'cutterName', 'customerName', 'personName', 'productCode'];
+    const upperFields = ['wireId', 'orderNumber', 'cutterName', 'customerName', 'personName', 'productCode', 'lineCode', 'turnedToLineCode', 'coilCode'];
     for (const field of upperFields) {
       if (typeof normalized[field] === 'string') {
         normalized[field] = normalized[field].toUpperCase().trim();
