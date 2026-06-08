@@ -1,3 +1,34 @@
+/**
+ * BOLT OPTIMIZATION: Debounce utility
+ * Limits the rate at which a function can fire. Essential for search inputs to prevent
+ * expensive O(N) filtering and re-rendering on every single keystroke.
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * BOLT OPTIMIZATION: High-performance date formatter
+ * Pre-initializing Intl.DateTimeFormat at module scope avoids repeated parsing of
+ * locale strings and options inside high-frequency loops (like record formatting during search).
+ * Passing undefined as the first argument uses the user's browser/system locale.
+ */
+const standardDateFormat = new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize DB
     if (typeof EECOLIndexedDB === 'undefined') {
@@ -32,7 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load and render records
     const formatRecord = (storeName, record) => {
-        const timestamp = new Date(record.timestamp).toLocaleString();
+        // BOLT: Ensure we pass a Date object to the formatter for type safety (handles strings/numbers)
+        const timestamp = standardDateFormat.format(new Date(record.timestamp));
         switch (storeName) {
             case 'markConverter':
                 return `Start: ${record.startMark}, End: ${record.endMark}, Unit: ${record.unit} (${timestamp})`;
@@ -663,9 +695,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const markSortSelect = document.getElementById('markSortSelect');
     const markClearSearch = document.getElementById('markClearSearch');
 
-    markSearchInput.addEventListener('input', () => {
+    markSearchInput.addEventListener('input', debounce(() => {
         updateFilteredRecords('markConverter', markConverterList, markSearchInput, markSortSelect);
-    });
+    }, 250));
 
     markSortSelect.addEventListener('change', () => {
         updateFilteredRecords('markConverter', markConverterList, markSearchInput, markSortSelect);
@@ -682,9 +714,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const stopmarkSortSelect = document.getElementById('stopmarkSortSelect');
     const stopmarkClearSearch = document.getElementById('stopmarkClearSearch');
 
-    stopmarkSearchInput.addEventListener('input', () => {
+    stopmarkSearchInput.addEventListener('input', debounce(() => {
         updateFilteredRecords('stopmarkConverter', stopmarkConverterList, stopmarkSearchInput, stopmarkSortSelect);
-    });
+    }, 250));
 
     stopmarkSortSelect.addEventListener('change', () => {
         updateFilteredRecords('stopmarkConverter', stopmarkConverterList, stopmarkSearchInput, stopmarkSortSelect);
@@ -701,9 +733,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const wireCutSortSelect = document.getElementById('wireCutSortSelect');
     const wireCutClearSearch = document.getElementById('wireCutClearSearch');
 
-    wireCutSearchInput.addEventListener('input', () => {
+    wireCutSearchInput.addEventListener('input', debounce(() => {
         updateFilteredRecords('wireCutList', wireCutListList, wireCutSearchInput, wireCutSortSelect);
-    });
+    }, 250));
 
     wireCutSortSelect.addEventListener('change', () => {
         updateFilteredRecords('wireCutList', wireCutListList, wireCutSearchInput, wireCutSortSelect);
@@ -729,7 +761,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderFilteredRecords('reelcapacityEstimator', filteredRecords, reelcapacityEstimatorList);
     };
 
-    reelSearchInput.addEventListener('input', updateReelFilteredRecords);
+    reelSearchInput.addEventListener('input', debounce(updateReelFilteredRecords, 250));
     reelSortSelect.addEventListener('change', updateReelFilteredRecords);
     reelCategoryFilter.addEventListener('change', updateReelFilteredRecords);
 
