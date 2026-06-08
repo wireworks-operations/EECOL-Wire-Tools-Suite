@@ -6,3 +6,7 @@ my-journal
 node_modules
 wire-refrences
 server.log
+.venv/
+__pycache__/
+*.log
+.DS_Store

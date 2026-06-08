@@ -64,20 +64,30 @@ const DarkMode = {
 
     // Update icons for all toggles
     updateToggleIcons() {
+        /**
+         * IDB SENTINEL: Secure DOM Update Pattern
+         * Strictly avoids innerHTML for dynamic icons and labels.
+         * Uses .replaceChildren() and .textContent to provide inherent XSS protection.
+         */
         const isDark = this.isDark();
         const icon = isDark ? '🌞' : '🌙'; // Sun for dark mode (to switch to light), Moon for light mode
 
         // Update Desktop Toggle
         const desktopBtn = document.getElementById(this.config.toggleId);
         if (desktopBtn) {
-            desktopBtn.innerHTML = icon;
+            desktopBtn.textContent = icon;
             desktopBtn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
         }
 
         // Update Mobile Toggle (if it exists independently)
         const mobileBtn = document.getElementById(this.config.mobileToggleId);
         if (mobileBtn) {
-            mobileBtn.innerHTML = `${icon} <span class="ml-2">${isDark ? 'Light Mode' : 'Dark Mode'}</span>`;
+            mobileBtn.replaceChildren();
+            mobileBtn.appendChild(document.createTextNode(icon + ' '));
+            const span = document.createElement('span');
+            span.className = 'ml-2';
+            span.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            mobileBtn.appendChild(span);
         }
     },
 
