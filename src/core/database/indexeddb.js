@@ -745,10 +745,17 @@ class EECOLIndexedDB {
     const normalized = { ...record };
 
     // 1. Normalize timestamps to numbers
-    const timeFields = ['timestamp', 'createdAt', 'updatedAt', 'cutInSystemTimestamp', 'reviewedTimestamp'];
+    const timeFields = [
+      'timestamp', 'createdAt', 'updatedAt', 'cutInSystemTimestamp', 'reviewedTimestamp',
+      'lastLogin', 'lastModified', 'expiresAt', 'completedAt'
+    ];
     for (const field of timeFields) {
       if (normalized[field]) {
-        const val = typeof normalized[field] === 'string' ? Date.parse(normalized[field]) : normalized[field];
+        let val = normalized[field];
+        if (typeof val === 'string') {
+          // If it's a numeric string, parse it as a number; otherwise use Date.parse
+          val = /^\d+$/.test(val) ? parseInt(val, 10) : Date.parse(val);
+        }
         if (!isNaN(val)) {
           normalized[field] = val;
         }
@@ -756,7 +763,11 @@ class EECOLIndexedDB {
     }
 
     // 2. Enforce uppercase for identification fields to improve search/filter reliability
-    const upperFields = ['wireId', 'orderNumber', 'cutterName', 'customerName', 'personName', 'productCode', 'lineCode', 'turnedToLineCode', 'coilCode'];
+    const upperFields = [
+      'wireId', 'orderNumber', 'cutterName', 'customerName', 'personName',
+      'productCode', 'lineCode', 'turnedToLineCode', 'coilCode',
+      'machineName', 'payloadCableType', 'wireType', 'equipment', 'technician'
+    ];
     for (const field of upperFields) {
       if (typeof normalized[field] === 'string') {
         normalized[field] = normalized[field].toUpperCase().trim();
