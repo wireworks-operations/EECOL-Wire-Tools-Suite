@@ -24,3 +24,8 @@
 **Vulnerability:** The shared mobile menu in `src/utils/mobile-menu.js` was vulnerable to XSS because it used `insertAdjacentHTML` with unsanitized `href` attributes for menu items, allowing `javascript:` protocol execution.
 **Learning:** Even when using `_esc` for text content, `href` attributes in template strings remains a dangerous injection point. A "Safe Structural Template" pattern—where the HTML structure is a static string but all dynamic data is populated via DOM methods like `.textContent` and `.setAttribute`—provides a more robust defense than manual escaping.
 **Prevention:** Always sanitize URLs using a whitelist approach (`_sanitizeUrl`) for `href` attributes. Combine this with the Safe Structural Template pattern for shared UI utilities to ensure data/structure separation and inherent XSS protection.
+
+## 2026-06-15 - Hardened Print Fallback Pattern
+**Vulnerability:** Feature modules using legacy local print fallbacks (bypassing central utilities) were vulnerable to XSS and prone to document stream hanging.
+**Learning:** In a hybrid architecture where global utilities may occasionally fail to load or are bypassed, local fallbacks must be independently hardened. Relying on `window.open` without checking for popup blockers or failing to call `document.close()` can lead to poor UX and security gaps.
+**Prevention:** Use the "Hardened Print Fallback" pattern: (1) Check for `null` window return, (2) include a local `_esc` helper with regex-based escaping as defense-in-depth, and (3) always wrap `document.write` with `document.open()` and `document.close()` to ensure proper stream management.
