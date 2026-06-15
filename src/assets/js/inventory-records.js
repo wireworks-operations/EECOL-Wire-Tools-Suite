@@ -118,6 +118,7 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
 let editingId = null;
 let currentView = 'inventory';
 let displayedItemsCount = 0;
@@ -715,8 +716,7 @@ async function editInventoryItem(id) {
 }
 
 function getFilteredInventoryItems() {
-    const searchTermLower = document.getElementById('searchInput').value.trim().toLowerCase();
-    const searchTermUpper = searchTermLower.toUpperCase();
+    const searchTerm = document.getElementById('searchInput').value.trim().toUpperCase();
     const filterField = document.getElementById('filterByField').value;
     const filterValue = (document.querySelector('input[name="filterDamaged"]:checked') || { value: 'all' }).value;
     const dateFrom = document.getElementById('dateFrom').value;
@@ -725,9 +725,8 @@ function getFilteredInventoryItems() {
     /**
      * BOLT OPTIMIZATION: High-performance filtering
      * - Uses string-based date comparison to avoid expensive new Date() parsing.
-     * - Only compares the YYYY-MM-DD portion to remain inclusive of full days.
-     * - Caches search terms and uses case-insensitive comparison.
-     * - Employs short-circuiting for O(N) efficiency.
+     * - Caches search term once to avoid repeated .toUpperCase() on input.
+     * - Uses type-safe and case-insensitive checks on fields.
      */
     let filtered = inventoryItems.filter(item => {
         // Date filtering (lexicographical comparison for YYYY-MM-DD)
@@ -742,16 +741,16 @@ function getFilteredInventoryItems() {
         }
 
         // Text search filtering
-        if (searchTermLower) {
+        if (searchTerm) {
             if (filterField !== 'all') {
                 const val = item[filterField];
-                if (!val || !val.toString().toUpperCase().includes(searchTermUpper)) return false;
+                if (!val || !val.toString().toUpperCase().includes(searchTerm)) return false;
             } else {
                 // Search 'all' fields with optimized short-circuiting
-                const match = (item.productCode && item.productCode.toString().toUpperCase().includes(searchTermUpper)) ||
-                            (item.personName && item.personName.toString().toUpperCase().includes(searchTermUpper)) ||
-                            (item.lineCode && item.lineCode.toString().toUpperCase().includes(searchTermUpper)) ||
-                            (item.inventoryComments && item.inventoryComments.toString().toUpperCase().includes(searchTermUpper));
+                const match = (item.productCode && item.productCode.toString().toUpperCase().includes(searchTerm)) ||
+                            (item.personName && item.personName.toString().toUpperCase().includes(searchTerm)) ||
+                            (item.lineCode && item.lineCode.toString().toUpperCase().includes(searchTerm)) ||
+                            (item.inventoryComments && item.inventoryComments.toString().toUpperCase().includes(searchTerm));
                 if (!match) return false;
             }
         }
@@ -855,7 +854,6 @@ function renderInventoryItems() {
         emptyMsg.textContent = 'No inventory items found yet.';
         inventoryList.appendChild(emptyMsg);
         displayedItemsElement.textContent = '0';
-        // BOLT: updateStats() is now only called upon data mutation
         return;
     }
 
@@ -863,9 +861,16 @@ function renderInventoryItems() {
     displayedItemsCount = itemsToShow;
     displayedItemsElement.textContent = displayedItemsCount;
 
+    /**
+     * BOLT OPTIMIZATION: High-performance list rendering
+     * Uses a DocumentFragment to batch DOM insertions, minimizing layout thrashing
+     * and reducing the number of reflows/repaints when rendering large lists.
+     */
+    const fragment = document.createDocumentFragment();
+
     filteredItems.slice(0, displayedItemsCount).forEach((item) => {
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'inventory-item bg-white p-3 rounded-lg shadow-sm border';
+        itemDiv.className = 'inventory-item bg-white p-3 rounded-lg shadow-sm border mb-2';
 
         const gridDiv = document.createElement('div');
         gridDiv.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs';
@@ -910,14 +915,14 @@ function renderInventoryItems() {
          * Uses pre-initialized Intl.DateTimeFormat instead of .toLocaleString()
          * which is significantly faster within high-frequency render loops.
          */
-        const date = fullDateTimeFormat.format(item.timestamp);
+        const date = fullDateTimeFormat.format(new Date(item.timestamp));
         const metaP = document.createElement('p');
         metaP.className = 'text-xs text-gray-500 mt-2';
         metaP.textContent = `@ ${date} by Local`;
         itemDiv.appendChild(metaP);
 
-        const createdDate = fullDateTimeFormat.format(item.createdAt || item.timestamp);
-        const updatedDate = item.updatedAt && item.updatedAt !== item.createdAt ? ` | Updated: ${fullDateTimeFormat.format(item.updatedAt)}` : '';
+        const createdDate = fullDateTimeFormat.format(new Date(item.createdAt || item.timestamp));
+        const updatedDate = item.updatedAt && item.updatedAt !== item.createdAt ? ` | Updated: ${fullDateTimeFormat.format(new Date(item.updatedAt))}` : '';
         const createdP = document.createElement('p');
         createdP.className = 'text-xs text-gray-400';
         createdP.textContent = `Created: ${createdDate}${updatedDate}`;
@@ -1001,8 +1006,10 @@ function renderInventoryItems() {
 
         actionsDiv.appendChild(rightActions);
         itemDiv.appendChild(actionsDiv);
-        inventoryList.appendChild(itemDiv);
+        fragment.appendChild(itemDiv);
     });
+
+    inventoryList.appendChild(fragment);
 
     if (displayedItemsCount < filteredItems.length) {
         const moreDiv = document.createElement('div');
@@ -1014,9 +1021,6 @@ function renderInventoryItems() {
         moreDiv.appendChild(moreBtn);
         inventoryList.appendChild(moreDiv);
     }
-
-    // BOLT: Removed redundant updateStats() call from render loop.
-    // Statistics are now only recalculated upon data mutation.
 }
 
 function loadMoreInventoryItems() {
@@ -1418,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-        const personNameInput = document.getElementById('personName');
+    const personNameInput = document.getElementById('personName');
     if (personNameInput) {
         personNameInput.addEventListener('input', function(e) {
             e.target.value = e.target.value.toUpperCase();
@@ -1672,8 +1676,7 @@ async function updateExportStatus() {
 function updateStats() {
     /**
      * BOLT OPTIMIZATION: Single-pass metrics calculation
-     * Consolidates 3 redundant O(N) passes (filter and reduce) into a single iteration
-     * to avoid redundant passes over the inventoryItems dataset.
+     * Consolidates redundant O(N) passes into a single iteration.
      */
     const totalItems = inventoryItems.length;
     let totalLength = 0;
