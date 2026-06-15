@@ -527,6 +527,26 @@ function findReelOptions(showErrors = false) {
 // PRINT FUNCTIONALITY
 // ====================================================================
 
+/**
+ * IDB SENTINEL: Internal helper to safely escape strings for HTML insertion.
+ * Provides defense-in-depth against XSS even if global helpers are missing.
+ * @param {any} v - Value to escape
+ * @returns {string} Escaped string
+ */
+function _esc(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof window !== 'undefined' && typeof window.escapeHTML === 'function') {
+        return window.escapeHTML(v);
+    }
+    return String(v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#x2F;');
+}
+
 function printReelSizeResults() {
     // Collect result data for printing
     const theoreticalVisible = !theoreticalDimensionsCard.classList.contains('hidden');
@@ -556,21 +576,26 @@ function printReelSizeResults() {
     }
 
     const printContent = `
-        <html>
+        <!DOCTYPE html>
+        <html lang="en">
         <head>
+            <meta charset="UTF-8">
             <title>EECOL Reel Size Estimation Results</title>
             <style>
-                body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+                body { font-family: 'Roboto', 'Segoe UI', Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; color: #333; }
                 h1 { color: #0058B3; text-align: center; }
                 h2 { color: #0058B3; border-bottom: 2px solid #0058B3; padding-bottom: 5px; }
                 .section { margin: 20px 0; page-break-inside: avoid; }
-                .result { margin: 10px 0; padding: 15px; border: 2px solid #0058B3; border-radius: 8px; }
-                .label { font-weight: bold; color: #666; }
+                .result { margin: 10px 0; padding: 15px; border: 2px solid #0058B3; border-radius: 8px; background: #f8f9fa; }
+                .label { font-weight: bold; color: #666; font-size: 12px; }
                 .value { font-size: 16px; color: #0058B3; font-weight: bold; }
                 .specs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
-                .spec-item { background: #f0f8ff; padding: 8px; border-radius: 4px; text-align: center; }
+                .spec-item { background: #f0f8ff; padding: 8px; border-radius: 4px; text-align: center; border: 1px solid #e0e0e0; }
+                .branding { text-align: center; margin-top: 40px; font-size: 10px; color: #999; font-style: italic; }
                 @media print {
                     body { padding: 0; max-width: none; }
+                    button { display: none !important; }
+                    .branding { page-break-inside: avoid; }
                 }
             </style>
         </head>
@@ -584,19 +609,19 @@ function printReelSizeResults() {
                     <div class="specs-grid">
                         <div class="spec-item">
                             <div class="label">Flange Diameter:</div>
-                            <div class="value">${window.escapeHTML(theoreticalData.flangeDiameter)}</div>
+                            <div class="value">${_esc(theoreticalData.flangeDiameter)}</div>
                         </div>
                         <div class="spec-item">
                             <div class="label">Core Diameter:</div>
-                            <div class="value">${window.escapeHTML(theoreticalData.coreDiameter)}</div>
+                            <div class="value">${_esc(theoreticalData.coreDiameter)}</div>
                         </div>
                         <div class="spec-item">
                             <div class="label">Traverse Width:</div>
-                            <div class="value">${window.escapeHTML(theoreticalData.traverseWidth)}</div>
+                            <div class="value">${_esc(theoreticalData.traverseWidth)}</div>
                         </div>
                     </div>
-                    <p><strong>Layers Needed:</strong> ${window.escapeHTML(theoreticalData.layers)}</p>
-                    <p><strong>Total Capacity:</strong> ${window.escapeHTML(theoreticalData.capacity)}</p>
+                    <p><strong>Layers Needed:</strong> ${_esc(theoreticalData.layers)}</p>
+                    <p><strong>Total Capacity:</strong> ${_esc(theoreticalData.capacity)}</p>
                     <p><em>Note: These are mathematically ideal dimensions and may not correspond to industry standard reel sizes.</em></p>
                 </div>
             </div>
@@ -607,24 +632,45 @@ function printReelSizeResults() {
                 <h2>Recommended Industry Standard Reels</h2>
                 ${recommendedData.map(reel => `
                     <div class="result">
-                        <h3>${window.escapeHTML(reel.title)}</h3>
-                        <p>${window.escapeHTML(reel.utilization)}</p>
+                        <h3>${_esc(reel.title)}</h3>
+                        <p>${_esc(reel.utilization)}</p>
                     </div>
                 `).join('')}
             </div>
             ` : ''}
 
-            <div style="page-break-before: always;">
-                <button onclick="window.print()">Print Results</button>
+            <div class="branding">
+                EECOL Wire Tools Suite 2025 - Enterprise Edition<br>
+                Generated: ${_esc(new Date().toLocaleDateString())} ${_esc(new Date().toLocaleTimeString())}
             </div>
+
+            <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 8px 16px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Print Results</button>
         </body>
         </html>
     `;
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
+    /**
+     * IDB SENTINEL: Use central hardened print utility if available.
+     * Otherwise, fallback to a local hardened pattern that handles popup blockers
+     * and document stream closing.
+     */
+    if (typeof createPrintWindow === 'function') {
+        createPrintWindow('EECOL Reel Size Estimation Results', printContent);
+    } else {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Unable to open print window. Please allow popups for this site.');
+            return;
+        }
+        try {
+            printWindow.document.open();
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        } catch (err) {
+            console.error('Hardened print fallback failed:', err);
+        }
+    }
 }
 
 // ====================================================================

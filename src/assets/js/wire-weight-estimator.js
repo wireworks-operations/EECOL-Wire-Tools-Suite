@@ -724,6 +724,26 @@ function calculateWeight(showErrors = false) {
 }
 
 /**
+ * IDB SENTINEL: Internal helper to safely escape strings for HTML insertion.
+ * Provides defense-in-depth against XSS even if global helpers are missing.
+ * @param {any} v - Value to escape
+ * @returns {string} Escaped string
+ */
+function _esc(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof window !== 'undefined' && typeof window.escapeHTML === 'function') {
+        return window.escapeHTML(v);
+    }
+    return String(v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#x2F;');
+}
+
+/**
  * Prints the weight results using the shared print utility.
  */
 function printWeightResults() {
@@ -741,22 +761,33 @@ function printWeightResults() {
     if (typeof printWireWeightResults === 'function') {
         printWireWeightResults(totalShipmentWeight, totalWireWeight, unitWeight);
     } else {
-        // Fallback (same as original)
+        // Fallback (hardened)
         const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
+        if (!printWindow) {
+            alert('Unable to open print window. Please allow popups for this site.');
+            return;
+        }
+
+        const html = `
+            <!DOCTYPE html>
+            <html lang="en">
             <head>
+                <meta charset="UTF-8">
                 <title>EECOL Wire Weight Results</title>
                 <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    h2 { color: #0058B3; }
+                    body { font-family: 'Roboto', 'Segoe UI', Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6; }
+                    h2 { color: #0058B3; border-bottom: 2px solid #0058B3; padding-bottom: 10px; }
                     .result-section { margin: 20px 0; }
-                    .result { margin: 10px 0; padding: 15px; border: 2px solid #0058B3; border-radius: 8px; }
-                    .label { font-weight: bold; color: #666; }
+                    .result { margin: 10px 0; padding: 15px; border: 2px solid #0058B3; border-radius: 8px; background: #f8f9fa; }
+                    .label { font-weight: bold; color: #666; font-size: 14px; }
                     .value { font-size: 18px; color: #0058B3; font-weight: bold; margin-top: 5px; }
                     .shipment-weight { color: #dc2626; font-size: 20px; }
                     .wire-weight { color: #0058B3; font-size: 18px; }
-                    @media print { button { display: none; } }
+                    .branding { text-align: center; margin-top: 40px; font-size: 10px; color: #999; font-style: italic; }
+                    @media print {
+                        button { display: none !important; }
+                        .branding { page-break-inside: avoid; }
+                    }
                 </style>
             </head>
             <body>
@@ -764,25 +795,37 @@ function printWeightResults() {
                 <div class="result-section">
                     <h3>Weight Calculations</h3>
                     <div class="result">
-                        <div class="result">
-                            <p class="label">Total Shipment Weight (Wire + Reel + Skid):</p>
-                            <p class="value shipment-weight">${window.escapeHTML(totalShipmentWeight)}</p>
-                        </div>
-                        <div class="result">
-                            <p class="label">Wire Weight Only:</p>
-                            <p class="value wire-weight">${window.escapeHTML(totalWireWeight)}</p>
-                        </div>
-                        <div class="result">
-                            <p class="label">Unit Weight:</p>
-                            <p class="value">${window.escapeHTML(unitWeight)}</p>
-                        </div>
+                        <p class="label">Total Shipment Weight (Wire + Reel + Skid):</p>
+                        <p class="value shipment-weight">${_esc(totalShipmentWeight)}</p>
+                    </div>
+                    <div class="result">
+                        <p class="label">Wire Weight Only:</p>
+                        <p class="value wire-weight">${_esc(totalWireWeight)}</p>
+                    </div>
+                    <div class="result">
+                        <p class="label">Unit Weight:</p>
+                        <p class="value">${_esc(unitWeight)}</p>
                     </div>
                 </div>
-                <button onclick="window.print()">Print</button>
+
+                <div class="branding">
+                    EECOL Wire Tools Suite 2025 - Enterprise Edition<br>
+                    Generated: ${_esc(new Date().toLocaleDateString())} ${_esc(new Date().toLocaleTimeString())}
+                </div>
+
+                <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 8px 16px; background: #0058B3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Print Results</button>
             </body>
             </html>
-        `);
-        printWindow.print();
+        `;
+
+        try {
+            printWindow.document.open();
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.print();
+        } catch (err) {
+            console.error('Hardened print fallback failed:', err);
+        }
     }
 }
 
