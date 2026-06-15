@@ -39,3 +39,7 @@
 ## 2026-04-21 - O(1) Geometric Series for Spool Capacity
 **Learning:** The reel estimators were using iterative while-loops (O(N) where N is the number of layers) to calculate spool capacity. For high-density spooling or theoretical searches (like finding a required flange), this creates unnecessary CPU cycles. Since spool layers follow an arithmetic progression, the total length can be calculated in O(1) using the sum of the sequence.
 **Action:** Replace iterative loops in capacity and size estimators with the closed-form quadratic and arithmetic progression sum formulas ({total} = N \cdot S \cdot \pi \cdot \eta \cdot (D_{core} + Nd)$). This ensures instantaneous results even for extremely long cable runs or large industrial reels.
+
+## 2026-05-18 - Safe UI Search Robustness and Batched Rendering
+**Learning:** Even with an IndexedDB normalization layer, UI search filters should maintain explicit `.toString().toUpperCase()` on record fields within search loops to ensure robustness against legacy data or manual entries. Additionally, replacing iterative `appendChild` with `DocumentFragment` reduces layout thrashing from O(N) to O(1) during large list renders.
+**Action:** Use `DocumentFragment` for list rendering and cache the search term's uppercase version once while maintaining type-safe checks in filter loops.
