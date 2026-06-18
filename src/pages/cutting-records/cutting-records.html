@@ -849,10 +849,17 @@
                     <input id="wireListWireType" type="text" placeholder="TK6/3CU"
                         class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1">Length (Z)</label>
-                    <input id="wireListLength" type="text" placeholder="44"
-                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Length (Z)</label>
+                        <input id="wireListLength" type="text" placeholder="44"
+                            class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Reel Size (in)</label>
+                        <input id="wireListReelSize" type="number" placeholder="40"
+                            class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold mb-1">Urgency</label>
@@ -904,18 +911,22 @@
     </div>
 
     <!-- Right-click Context Menu -->
-    <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-48">
+    <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-52">
         <button id="ctxEdit" class="w-full text-left px-4 py-2 hover:bg-blue-100 text-sm flex items-center">
             ✏️ Edit
+        </button>
+        <button id="ctxActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700">
+            🌟 Make Active
         </button>
         <button id="ctxRemove" class="w-full text-left px-4 py-2 hover:bg-red-100 text-sm flex items-center">
             🗑️ Remove
         </button>
-        <button id="ctxChangeColor" class="w-full text-left px-4 py-2 hover:bg-green-100 text-sm flex items-center">
-            🎨 Change Color
-        </button>
         <div class="px-4 py-2 border-t border-gray-100">
-            <input type="color" id="ctxColorPicker" class="w-full h-8 cursor-pointer border-none p-0">
+            <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Softer Colors</p>
+            <div id="pastelPresets" class="grid grid-cols-4 gap-2 mb-2">
+                <!-- Preset buttons added by JS -->
+            </div>
+            <input type="color" id="ctxColorPicker" class="w-full h-6 cursor-pointer border-none p-0 opacity-50" title="Custom color (Softness advised)">
         </div>
     </div>
 
