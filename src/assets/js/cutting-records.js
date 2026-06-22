@@ -57,6 +57,7 @@ let batchRedoStack = [];
 // Wire Cut List variables
 let wireCutList = [];
 let wireListEditingId = null;
+let pendingAutoFillId = null;
 let currentContextMenuId = null;
 let draggedItemId = null;
 
@@ -500,6 +501,52 @@ function hideError() {
     document.getElementById('errorBox').classList.add('hidden');
 }
 
+/**
+ * Show a non-intrusive toast notification
+ * @param {string} message The message to display
+ * @param {string} type The type of toast ('info', 'success', 'warning', 'error')
+ */
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        // Create container if it doesn't exist
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[60] flex flex-col items-center pointer-events-none gap-2 w-full max-w-xs px-4';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `p-3 rounded-lg shadow-2xl text-white text-xs font-bold transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-2 pointer-events-auto w-full`;
+
+    // Set color based on type
+    switch (type) {
+        case 'success': toast.classList.add('bg-green-600'); break;
+        case 'error': toast.classList.add('bg-red-600'); break;
+        case 'warning': toast.classList.add('bg-yellow-600'); break;
+        default: toast.classList.add('bg-blue-600'); break;
+    }
+
+    toast.textContent = message;
+
+    document.getElementById('toastContainer').appendChild(toast);
+
+    // Animate in
+    setTimeout(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+    }, 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-[-10px]', 'opacity-0');
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
 function clearForm() {
     document.getElementById('wireId').value = '';
     document.getElementById('cutLength').value = '';
@@ -518,6 +565,7 @@ function clearForm() {
     document.getElementById('orderNumber').value = '';
     document.getElementById('customerName').value = '';
     editingId = null;
+    pendingAutoFillId = null;
     document.getElementById('recordBtn').textContent = 'RECORD CUT';
     hideError();
     // Trigger the checkbox change to re-enable fields
@@ -659,8 +707,14 @@ async function saveSingleRecord() {
             }, 100);
         }
 
-        clearForm();
+        // After successful save, check for pending autofill item completion
+        const autoCompletedId = pendingAutoFillId;
+        clearForm(); // Note: clearForm() now resets pendingAutoFillId
         updateButtonStates();
+
+        if (autoCompletedId) {
+            await completeWireListItem(autoCompletedId, true);
+        }
 
         await showAlert('Cut record saved successfully!', 'Success');
 
@@ -756,12 +810,19 @@ async function saveBatchRecords() {
             }
         }
 
+        // After successful save, check for pending autofill item completion
+        const autoCompletedId = pendingAutoFillId;
+
         // Reset display counter and re-render
         displayedRecordsCount = 0;
         renderCutRecords();
         updateStats(); // Batch update stats
-        clearForm();
+        clearForm(); // Note: clearForm() now resets pendingAutoFillId
         updateButtonStates();
+
+        if (autoCompletedId) {
+            await completeWireListItem(autoCompletedId, true);
+        }
 
         await showAlert(`Successfully saved ${newRecords.length} batch cut records!`);
 
@@ -2834,6 +2895,44 @@ async function initWireCutList() {
 
     if (addBtn) addBtn.addEventListener('click', () => showWireListItemModal());
     if (refreshBtn) refreshBtn.addEventListener('click', loadWireCutList);
+
+    // Initialize Pastel Presets
+    const pastelPresets = document.getElementById('pastelPresets');
+    if (pastelPresets) {
+        const softColors = [
+            '#eff6ff', // Soft Blue
+            '#ecfdf5', // Soft Green
+            '#fffbeb', // Soft Yellow
+            '#fef2f2', // Soft Red
+            '#f5f3ff', // Soft Purple
+            '#faf5ff', // Soft Pink
+            '#f0fdf4', // Soft Emerald
+            '#fff7ed'  // Soft Orange
+        ];
+
+        softColors.forEach(color => {
+            const btn = document.createElement('button');
+            btn.className = 'w-full aspect-square rounded-md border border-black/5 hover:scale-110 transition-transform';
+            btn.style.backgroundColor = color;
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                if (currentContextMenuId) {
+                    updateWireListItemColor(currentContextMenuId, color);
+                }
+            };
+            pastelPresets.appendChild(btn);
+        });
+    }
+
+    // Custom color picker fallback (still available but advised softness)
+    const ctxColorPicker = document.getElementById('ctxColorPicker');
+    if (ctxColorPicker) {
+        ctxColorPicker.addEventListener('input', (e) => {
+            if (currentContextMenuId) {
+                updateWireListItemColor(currentContextMenuId, e.target.value);
+            }
+        });
+    }
     if (statusFilter) statusFilter.addEventListener('change', renderWireCutList);
     if (searchInput) searchInput.addEventListener('input', renderWireCutList);
 
@@ -2870,17 +2969,18 @@ async function initWireCutList() {
     document.getElementById('ctxEdit').addEventListener('click', () => {
         if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
     });
+    document.getElementById('ctxActive').addEventListener('click', async () => {
+        if (currentContextMenuId) {
+            await setActiveWireListItem(currentContextMenuId);
+        }
+    });
+
     document.getElementById('ctxRemove').addEventListener('click', async () => {
         if (currentContextMenuId) {
             const confirm = await showConfirm('Remove this item from the list?', 'Remove Item');
             if (confirm) {
                 await deleteWireListItem(currentContextMenuId);
             }
-        }
-    });
-    document.getElementById('ctxColorPicker').addEventListener('input', (e) => {
-        if (currentContextMenuId) {
-            updateWireListItemColor(currentContextMenuId, e.target.value);
         }
     });
 
@@ -2962,6 +3062,10 @@ function renderWireCutList() {
 
         const card = document.createElement('div');
         card.className = 'wire-list-card';
+        if (item.isActive) {
+            card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
+        }
+
         if (item.color) {
             card.style.backgroundColor = item.color;
             card.style.borderColor = 'rgba(0,0,0,0.1)';
@@ -2988,6 +3092,13 @@ function renderWireCutList() {
         orderLine.className = 'font-bold text-sm flex items-center gap-2';
         orderLine.textContent = `${item.orderNumber || 'N/A'} / ${item.lineNumber || '1'}`;
 
+        if (item.isActive) {
+            const activeBadge = document.createElement('span');
+            activeBadge.className = 'px-1 bg-amber-100 text-amber-800 rounded text-[8px] uppercase border border-amber-300 font-black';
+            activeBadge.textContent = '🌟 Active';
+            orderLine.appendChild(activeBadge);
+        }
+
         if (item.urgency && item.urgency !== 'normal') {
             const urgencyBadge = document.createElement('span');
             urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
@@ -3006,7 +3117,11 @@ function renderWireCutList() {
         highlightBox.className = 'mt-2 bg-black/5 border border-black/10 p-1 rounded italic font-black text-xs';
 
         const typeLength = document.createElement('div');
-        typeLength.textContent = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
+        let typeLengthText = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
+        if (item.reelSize) {
+            typeLengthText += ` \u00A0\u00A0 [RLS: ${item.reelSize}\"]`;
+        }
+        typeLength.textContent = typeLengthText;
 
         const desc = document.createElement('span');
         desc.className = 'text-[9px] font-normal';
@@ -3116,6 +3231,7 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListCustomer').value = item.customerName || '';
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
+            document.getElementById('wireListReelSize').value = item.reelSize || '';
             document.getElementById('wireListUrgency').value = item.urgency || 'normal';
             document.getElementById('wireListStatus').value = item.status || 'active';
             document.getElementById('wireListDescription').value = item.description || '';
@@ -3129,6 +3245,7 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
+        document.getElementById('wireListReelSize').value = '';
         document.getElementById('wireListUrgency').value = 'normal';
         document.getElementById('wireListStatus').value = 'active';
         document.getElementById('wireListDescription').value = '';
@@ -3163,6 +3280,7 @@ async function saveWireListItem() {
         customerName: document.getElementById('wireListCustomer').value.trim().toUpperCase(),
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
         lengthZ: document.getElementById('wireListLength').value.trim(),
+        reelSize: document.getElementById('wireListReelSize').value.trim(),
         urgency: document.getElementById('wireListUrgency').value,
         status: document.getElementById('wireListStatus').value,
         description: document.getElementById('wireListDescription').value.trim(),
@@ -3170,7 +3288,8 @@ async function saveWireListItem() {
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
         timestamp: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).timestamp : Date.now(),
         position: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).position : wireCutList.length,
-        color: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).color : null
+        color: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).color : null,
+        isActive: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).isActive : false
     };
 
     try {
@@ -3196,7 +3315,33 @@ async function deleteWireListItem(id) {
     }
 }
 
-async function completeWireListItem(id) {
+async function setActiveWireListItem(id) {
+    // Clear active status from all items
+    wireCutList.forEach(item => {
+        item.isActive = false;
+    });
+
+    const item = wireCutList.find(i => i.id === id);
+    if (item) {
+        item.isActive = true;
+    }
+
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            /**
+             * IDB SENTINEL: Optimized bulk update for status change.
+             * Ensures only one item is active at a time across the database.
+             */
+            await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
+            renderWireCutList();
+            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'info');
+        }
+    } catch (error) {
+        console.error("Error setting active item:", error);
+    }
+}
+
+async function completeWireListItem(id, silent = false) {
     const item = wireCutList.find(i => i.id === id);
     if (item) {
         item.status = 'completed';
@@ -3205,10 +3350,16 @@ async function completeWireListItem(id) {
             if (window.eecolDB && await window.eecolDB.isReady()) {
                 await window.eecolDB.update('wireCutList', item);
                 await loadWireCutList();
-                await showAlert('Item marked as completed!', 'Success');
+
+                if (silent) {
+                    showToast(`Order #${item.orderNumber} auto-completed from list`, 'success');
+                } else {
+                    await showAlert('Item marked as completed!', 'Success');
+                }
             }
         } catch (error) {
             console.error("Error completing item:", error);
+            if (silent) showToast("Failed to auto-complete item", "error");
         }
     }
 }
@@ -3266,6 +3417,15 @@ async function saveRemovalWithReason() {
 }
 
 async function autoFillCuttingForm(id) {
+    // Check if there is already a pending autofill
+    if (pendingAutoFillId && pendingAutoFillId !== id) {
+        const confirmOverwrite = await showConfirm(
+            "You have an unfinished autofill entry. Overwrite with new item?",
+            "Unfinished Form"
+        );
+        if (!confirmOverwrite) return;
+    }
+
     const item = wireCutList.find(i => i.id === id);
     if (!item) return;
 
@@ -3292,12 +3452,30 @@ async function autoFillCuttingForm(id) {
         }
     }
 
+    // Handle Reel Size integration
+    const coilOrReelSelect = document.getElementById('coilOrReel');
+    const reelSizeInput = document.getElementById('reelSize');
+
+    if (item.reelSize && coilOrReelSelect && reelSizeInput) {
+        coilOrReelSelect.value = 'reel';
+        coilOrReelSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        reelSizeInput.value = item.reelSize;
+        reelSizeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (coilOrReelSelect) {
+        // Default to coil if no reel size is specified in list
+        coilOrReelSelect.value = 'coil';
+        coilOrReelSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
     // Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form
     const batchMode = document.getElementById('batchEntryMode');
     if (batchMode && batchMode.checked) {
         batchMode.checked = false;
         batchMode.dispatchEvent(new Event('change'));
     }
+
+    // Track this ID for automatic completion after record save
+    pendingAutoFillId = id;
 
     // Visual feedback
     await showAlert(`Autofilled cut details for Order #${item.orderNumber}`, 'AutoFill Success');
