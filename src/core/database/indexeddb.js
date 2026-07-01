@@ -151,6 +151,12 @@ class EECOLIndexedDB {
 
       request.onblocked = () => {
         console.warn('⚠️ IndexedDB upgrade blocked by another connection');
+        const msg = 'Database upgrade is pending. Please close all other tabs of this application to allow the update to proceed.';
+        if (typeof window !== 'undefined' && window.showAlert) {
+          window.showAlert(msg, 'Upgrade Pending');
+        } else {
+          alert(msg);
+        }
       };
 
       request.onsuccess = (event) => {
@@ -161,7 +167,15 @@ class EECOLIndexedDB {
           this.db.close();
           this.db = null; // Ensure instance state reflects closed connection
           console.log('🔄 Database closed due to version change request from another tab');
-          // Optionally notify user or reload
+          const msg = 'A new version of the database is available. This tab has been disconnected to allow the upgrade. Please refresh the page to continue.';
+          if (typeof window !== 'undefined' && window.showAlert) {
+            window.showAlert(msg, 'Database Update Available').then(() => {
+              window.location.reload();
+            });
+          } else {
+            alert(msg);
+            if (typeof window !== 'undefined') window.location.reload();
+          }
         };
 
         /**
