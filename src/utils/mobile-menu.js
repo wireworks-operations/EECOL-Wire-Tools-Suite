@@ -53,14 +53,13 @@ function _sanitizeUrl(url) {
 function initMobileMenu(options = {}) {
     const {
         menuItems = [],
-        version = 'v0.8.0.4',
+        version = 'v0.8.0.5',
         credits = 'Made With ❤️ By: Lucas and Cline 🤖',
         title = 'EECOL Wire Tools'
     } = options;
 
     // Dynamic dark mode script loading preserved
     if (typeof window.DarkMode === 'undefined' && !document.querySelector('script[src*="dark-mode.js"]')) {
-        const script = document.createElement('script');
         const scripts = document.getElementsByTagName('script');
         let basePath = '../../utils/';
         for (let s of scripts) {
@@ -71,7 +70,6 @@ function initMobileMenu(options = {}) {
         }
         const script = document.createElement('script');
         script.src = basePath + 'dark-mode.js';
-        script.onload = () => { if (window.DarkMode) window.DarkMode.updateToggleIcons(); };
         script.onload = () => {
             if (window.DarkMode) window.DarkMode.updateToggleIcons();
         };
@@ -83,10 +81,46 @@ function initMobileMenu(options = {}) {
 }
 
 /**
+ * Internal helper to resolve paths relative to the project root.
+ * Uses the mobile-menu.js script location as a reference.
+ * @param {string} href - The target href
+ * @returns {string} Resolved href
+ */
+function _resolvePath(href) {
+    if (!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+        return href;
+    }
+
+    // Find the project root URL by looking at where this script is loaded from
+    const scripts = document.getElementsByTagName('script');
+    let rootPath = '';
+    for (let s of scripts) {
+        if (s.src.includes('mobile-menu.js')) {
+            const marker = 'src/utils/mobile-menu.js';
+            const index = s.src.indexOf(marker);
+            if (index !== -1) {
+                rootPath = s.src.substring(0, index);
+                break;
+            }
+        }
+    }
+
+    if (!rootPath) {
+        // Fallback to relative path if root cannot be determined
+        return href;
+    }
+
+    // Standardize href: remove leading slash if present
+    const cleanHref = href.startsWith('/') ? href.substring(1) : href;
+
+    return rootPath + cleanHref;
+}
+
+/**
  * Programmatically create and inject mobile menu elements into the DOM.
  * This DOM-based approach is more robust and inherently secure.
  */
-function createMobileMenu(menuItems, version, credits, title) {
+function createMobileMenuElements(menuItems, version, credits, title) {
     /**
      * IDB SENTINEL: Safe Structural Template Pattern
      * Uses a static HTML string for the component's structure (ensuring SVG and CSS class integrity)
@@ -185,7 +219,8 @@ function createMobileMenu(menuItems, version, credits, title) {
             el.style.maxWidth = "300px";
         } else {
             el = document.createElement('a');
-            el.setAttribute('href', _sanitizeUrl(item.href));
+            const resolvedHref = _resolvePath(item.href);
+            el.setAttribute('href', _sanitizeUrl(resolvedHref));
             el.className = `${baseClasses} ${cssClass} no-underline`;
             el.style.width = "calc(100% - 3rem)";
             el.style.maxWidth = "300px";

@@ -5,16 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'">
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https:/cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https:/cdn.tailwindcss.com https:/fonts.googleapis.com; font-src https:/fonts.googleapis.com https:/fonts.gstatic.com; img-src 'self' data:; connect-src 'self'">
     <title>EECOL Wire Tools Suite - User Guide</title>
 
     <!-- EECOL Theme and Styles -->
-    <script src="../../utils/theme-loader.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
+    <script src="/src/pages/utils/theme-loader.js"></script>
+    <script src="https:/cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/src/pages/assets/css/eecol-theme.css">
 
     <!-- Mobile Menu -->
-    <script src="../../utils/mobile-menu.js"></script>
+    <script src="/src/pages/utils/mobile-menu.js"></script>
 
     <style>
         .tool-section {
@@ -566,13 +566,13 @@
     </footer>
 
     <script>
-        // Initialize mobile menu
+        / Initialize mobile menu
         document.addEventListener('DOMContentLoaded', function () {
             initMobileMenu({
                 title: 'EECOL Wire Tools Guide',
                 version: 'v0.8.0.5',
                 navigation: [
-                    { name: '🏠 Home', url: '../../index.html' },
+                    { name: '🏠 Home', url: '/src/pages/index.html' },
                     { name: '🎓 Learning Hub', url: 'learning-hub.html' },
                     { name: '📚 Engineering Reference', url: 'engineering-reference.html' },
                     { name: '💡 Feedback', url: 'feedback/feedback.html' }
@@ -580,7 +580,7 @@
             });
         });
     </script>
-    <script src="../../utils/dark-mode.js"></script>
+    <script src="/src/pages/utils/dark-mode.js"></script>
 </body>
 
 </html>

@@ -3,7 +3,7 @@
  * Modern IndexedDB implementation with P2P sync capability
  */
 
-// Global variables
+/ Global variables
 let cutRecords = [];
 
 /**
@@ -46,50 +46,50 @@ let editingId = null;
 let displayedRecordsCount = 0;
 let recordsPerPage = 25;
 let isLoading = false;
-let currentSortField = 'timestamp'; // Default sort by timestamp
+let currentSortField = 'timestamp'; / Default sort by timestamp
 let lastDeltaExport = null;
 let undoStack = [];
 let redoStack = [];
-let maxHistorySize = 20; // Keep last 20 states
+let maxHistorySize = 20; / Keep last 20 states
 let batchUndoStack = [];
 let batchRedoStack = [];
 
-// Wire Cut List variables
+/ Wire Cut List variables
 let wireCutList = [];
 let wireListEditingId = null;
 let pendingAutoFillId = null;
 let currentContextMenuId = null;
 let draggedItemId = null;
 
-// Diagnostic function to test database connectivity
+/ Diagnostic function to test database connectivity
 async function testDatabaseConnection() {
 
     try {
-        // Check if EECOLIndexedDB is available
+        / Check if EECOLIndexedDB is available
         if (typeof EECOLIndexedDB === 'undefined') {
             console.error('❌ EECOLIndexedDB class not found');
             return { success: false, error: 'EECOLIndexedDB class not available' };
         }
 
-        // Check if database instance exists
+        / Check if database instance exists
         if (!window.eecolDB) {
             console.error('❌ Database instance not found');
             return { success: false, error: 'Database instance not initialized' };
         }
 
-        // Check if database is ready
+        / Check if database is ready
         const isReady = await window.eecolDB.isReady();
         if (!isReady) {
             console.error('❌ Database not ready');
             return { success: false, error: 'Database not ready' };
         }
 
-        // Test basic operations
+        / Test basic operations
 
-        // Test getting all records
+        / Test getting all records
         const records = await window.eecolDB.getAll('cuttingRecords');
 
-        // Test adding a temporary record
+        / Test adding a temporary record
         const testRecord = {
             id: 'test-' + Date.now(),
             wireId: 'TEST',
@@ -104,17 +104,17 @@ async function testDatabaseConnection() {
 
         const addResult = await window.eecolDB.add('cuttingRecords', testRecord);
 
-        // Verify the record was added
+        / Verify the record was added
         const verifyRecord = await window.eecolDB.get('cuttingRecords', testRecord.id);
         if (verifyRecord) {
 
-            // Clean up test record
+            / Clean up test record
             await window.eecolDB.delete('cuttingRecords', testRecord.id);
         } else {
             console.error('❌ Test record verification failed');
         }
 
-        // Test settings store
+        / Test settings store
         const testSetting = { name: 'testSetting', value: 'testValue' };
         await window.eecolDB.update('settings', testSetting);
         const retrievedSetting = await window.eecolDB.get('settings', 'testSetting');
@@ -140,28 +140,28 @@ async function testDatabaseConnection() {
     }
 }
 
-// Make diagnostic function available globally for debugging
+/ Make diagnostic function available globally for debugging
 if (typeof window !== 'undefined') {
     window.testDatabaseConnection = testDatabaseConnection;
 }
 
-// IndexedDB-based data loading and saving functions (Fresh Database)
+/ IndexedDB-based data loading and saving functions (Fresh Database)
 async function loadCutRecords() {
     try {
-        // Load from IndexedDB (fresh database)
+        / Load from IndexedDB (fresh database)
         if (window.eecolDB && await window.eecolDB.isReady()) {
             const records = await window.eecolDB.getAll('cuttingRecords');
             if (records && records.length > 0) {
                 cutRecords = records.sort((a, b) => b.timestamp - a.timestamp);
                 displayedRecordsCount = 0;
                 renderCutRecords();
-                updateStats(); // Initial stats calculation
+                updateStats(); / Initial stats calculation
                 updateExportStatus();
                 return;
             }
         }
 
-        // Fresh database starts empty - no fallback needed
+        / Fresh database starts empty - no fallback needed
         cutRecords = [];
         displayedRecordsCount = 0;
         renderCutRecords();
@@ -179,7 +179,7 @@ async function saveCutRecordToDB(record) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             const result = await window.eecolDB.add('cuttingRecords', record);
 
-            // Verify the save worked
+            / Verify the save worked
             const verification = await window.eecolDB.get('cuttingRecords', record.id);
             if (verification) {
             } else {
@@ -244,7 +244,7 @@ async function clearAllCutRecordsFromDB() {
 function updateExportStatus() {
     function setExportDisplay(element, timestamp) {
         if (!element) return;
-        element.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+        element.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
 
         if (!timestamp) {
             const a = document.createElement('a');
@@ -285,7 +285,7 @@ function updateExportStatus() {
         element.textContent = text;
     }
 
-    // Try to get from IndexedDB first
+    / Try to get from IndexedDB first
     const jsonEl = document.getElementById('lastJsonExport');
     if (window.eecolDB && window.eecolDB.isReady()) {
         window.eecolDB.get('settings', 'lastJsonExport').then((jsonExport) => {
@@ -298,7 +298,7 @@ function updateExportStatus() {
     }
 }
 
-// Quick Stats bar update logic
+/ Quick Stats bar update logic
 async function updateStats() {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -316,30 +316,30 @@ async function updateStats() {
     const customerCounts = {};
 
     for (const r of cutRecords) {
-        // Daily cuts
+        / Daily cuts
         if (r.timestamp >= todayStart) totalCutsToday++;
 
-        // Total length
+        / Total length
         totalLength += (r.cutLength || 0);
 
-        // Full picks
+        / Full picks
         if (r.isFullPick === true) fullPicksCount++;
 
-        // System cuts
+        / System cuts
         if (r.isSystemCut === true) systemCutsCount++;
 
-        // Cutter activity
+        / Cutter activity
         if (r.cutterName) {
             cutterCounts[r.cutterName] = (cutterCounts[r.cutterName] || 0) + 1;
         }
 
-        // Customer activity
+        / Customer activity
         if (r.customerName) {
             customerCounts[r.customerName] = (customerCounts[r.customerName] || 0) + 1;
         }
     }
 
-    // Post-processing: Calculate most active cutter
+    / Post-processing: Calculate most active cutter
     let topCutter = '-';
     let maxCuts = 0;
     for (const [cutter, count] of Object.entries(cutterCounts)) {
@@ -349,7 +349,7 @@ async function updateStats() {
         }
     }
 
-    // Post-processing: Calculate most active customer
+    / Post-processing: Calculate most active customer
     let topCustomer = '-';
     let maxCutsCustomer = 0;
     for (const [customer, count] of Object.entries(customerCounts)) {
@@ -359,7 +359,7 @@ async function updateStats() {
         }
     }
 
-    // Update DOM
+    / Update DOM
     const cutsTodayEl = document.getElementById('cutsToday');
     if (cutsTodayEl) cutsTodayEl.textContent = totalCutsToday;
     document.getElementById('totalLength').textContent = totalLength.toFixed(2) + 'm';
@@ -414,7 +414,7 @@ function validateSingleInputs() {
         return false;
     }
 
-    // Check required fields when System Cut is NOT checked
+    / Check required fields when System Cut is NOT checked
     if (!isSystemCut) {
         if (!orderNumber) {
             showError("Please enter an Order Number / IBT Number (required unless System Cut is selected).");
@@ -442,7 +442,7 @@ function validateBatchInputs() {
         return false;
     }
 
-    // Check required fields when System Cut is NOT checked
+    / Check required fields when System Cut is NOT checked
     if (!isSystemCut) {
         if (!orderNumber) {
             showError("Please enter an Order Number / IBT Number (required unless System Cut is selected).");
@@ -509,7 +509,7 @@ function hideError() {
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) {
-        // Create container if it doesn't exist
+        / Create container if it doesn't exist
         const container = document.createElement('div');
         container.id = 'toastContainer';
         container.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[60] flex flex-col items-center pointer-events-none gap-2 w-full max-w-xs px-4';
@@ -519,7 +519,7 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `p-3 rounded-lg shadow-2xl text-white text-xs font-bold transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-2 pointer-events-auto w-full`;
 
-    // Set color based on type
+    / Set color based on type
     switch (type) {
         case 'success': toast.classList.add('bg-green-600'); break;
         case 'error': toast.classList.add('bg-red-600'); break;
@@ -531,13 +531,13 @@ function showToast(message, type = 'info') {
 
     document.getElementById('toastContainer').appendChild(toast);
 
-    // Animate in
+    / Animate in
     setTimeout(() => {
         toast.classList.remove('translate-y-10', 'opacity-0');
         toast.classList.add('translate-y-0', 'opacity-100');
     }, 10);
 
-    // Remove after 3 seconds
+    / Remove after 3 seconds
     setTimeout(() => {
         toast.classList.remove('translate-y-0', 'opacity-100');
         toast.classList.add('translate-y-[-10px]', 'opacity-0');
@@ -568,7 +568,7 @@ function clearForm() {
     pendingAutoFillId = null;
     document.getElementById('recordBtn').textContent = 'RECORD CUT';
     hideError();
-    // Trigger the checkbox change to re-enable fields
+    / Trigger the checkbox change to re-enable fields
     document.getElementById('singleUnitCut').dispatchEvent(new Event('change'));
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
     document.getElementById('noMarks').dispatchEvent(new Event('change'));
@@ -621,16 +621,16 @@ async function saveSingleRecord() {
         const now = Date.now();
         const existingRecord = editingId ? cutRecords.find(r => r.id === editingId) : null;
 
-        // Set cutInSystemTimestamp when checkbox is checked
+        / Set cutInSystemTimestamp when checkbox is checked
         let cutInSystemTimestamp = existingRecord?.cutInSystemTimestamp;
         if (isCutInSystem) {
-            // If checkbox is checked, set/update timestamp to now
-            // For new records or when checkbox was previously unchecked
+            / If checkbox is checked, set/update timestamp to now
+            / For new records or when checkbox was previously unchecked
             if (!existingRecord || existingRecord.isCutInSystem !== true) {
                 cutInSystemTimestamp = now;
             }
         } else {
-            // If checkbox is unchecked, keep existing timestamp or null
+            / If checkbox is unchecked, keep existing timestamp or null
             cutInSystemTimestamp = existingRecord?.cutInSystemTimestamp || null;
         }
 
@@ -665,7 +665,7 @@ async function saveSingleRecord() {
 
         saveToHistory();
 
-        // Store editing ID before clearing for scrolling
+        / Store editing ID before clearing for scrolling
         const wasEditingId = editingId;
 
         if (editingId) {
@@ -677,16 +677,16 @@ async function saveSingleRecord() {
             await saveCutRecordToDB(record);
         }
 
-        updateStats(); // Update stats after data mutation
+        updateStats(); / Update stats after data mutation
 
         cutRecords.sort((a, b) => {
             const timeDiff = b.timestamp - a.timestamp;
             if (timeDiff !== 0) return timeDiff;
-            // Stable sort for equal timestamps
+            / Stable sort for equal timestamps
             return b.id.localeCompare(a.id);
         });
 
-        // Reset display counter and re-render
+        / Reset display counter and re-render
         displayedRecordsCount = 0;
         if (wasEditingId) {
             const filteredRecords = getFilteredRecords();
@@ -697,7 +697,7 @@ async function saveSingleRecord() {
         }
         renderCutRecords();
 
-        // Scroll to edited record if we were editing
+        / Scroll to edited record if we were editing
         if (wasEditingId) {
             setTimeout(() => {
                 const editedRecordElement = document.querySelector(`button[onclick*="editRecord('${wasEditingId}')"]`);
@@ -707,9 +707,9 @@ async function saveSingleRecord() {
             }, 100);
         }
 
-        // After successful save, check for pending autofill item completion
+        / After successful save, check for pending autofill item completion
         const autoCompletedId = pendingAutoFillId;
-        clearForm(); // Note: clearForm() now resets pendingAutoFillId
+        clearForm(); / Note: clearForm() now resets pendingAutoFillId
         updateButtonStates();
 
         if (autoCompletedId) {
@@ -738,7 +738,7 @@ async function saveBatchRecords() {
         entries.forEach(entry => {
             const wireId = entry.querySelector('input[placeholder="Wire Type/ID"]').value.trim().toUpperCase();
             const cutLength = parseFloat(entry.querySelector('input[placeholder="Cut Length"]').value);
-            const cutLengthUnit = entry.querySelector('select').value; // First select is unit
+            const cutLengthUnit = entry.querySelector('select').value; / First select is unit
             const lineCode = 'L:' + entry.querySelector('input[placeholder="Line Code"]').value.trim().toUpperCase();
             const cutterName = entry.querySelector('input[placeholder="Cutter Name"]').value.trim();
             const coilOrReel = entry.querySelector('.coilOrReelSelect').value;
@@ -746,14 +746,14 @@ async function saveBatchRecords() {
             const quantity = 1;
             const chargeable = entry.querySelector('select:has(option[value="yes"])').value;
 
-            // Read individual checkboxes for this entry
+            / Read individual checkboxes for this entry
             const isSingleUnitCut = entry.querySelector('.batchEntrySingleUnitCut').checked;
             const isFullPick = entry.querySelector('.batchEntryFullPick').checked;
             const isNoMarks = entry.querySelector('.batchEntryNoMarks').checked;
             const isSystemCut = entry.querySelector('.batchEntrySystemCut').checked;
             const isCutInSystem = entry.querySelector('.batchEntryCutInSystem').checked;
 
-            // Read starting and ending mark values for this entry
+            / Read starting and ending mark values for this entry
             const startingMarkValue = entry.querySelector('.batchEntryStartingMark').value.trim();
             const startingMark = startingMarkValue !== '' ? parseFloat(startingMarkValue) : null;
             const startingMarkUnit = entry.querySelector('.batchEntryStartingMarkUnit').value;
@@ -799,25 +799,25 @@ async function saveBatchRecords() {
         cutRecords.push(...newRecords);
         cutRecords.sort((a, b) => b.timestamp - a.timestamp);
 
-        // Save all new records to database using atomic bulk operation
+        / Save all new records to database using atomic bulk operation
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('cuttingRecords', newRecords, false);
         } else {
-            // Fallback
+            / Fallback
             for (let i = 0; i < newRecords.length; i++) {
                 const record = newRecords[i];
                 await saveCutRecordToDB(record);
             }
         }
 
-        // After successful save, check for pending autofill item completion
+        / After successful save, check for pending autofill item completion
         const autoCompletedId = pendingAutoFillId;
 
-        // Reset display counter and re-render
+        / Reset display counter and re-render
         displayedRecordsCount = 0;
         renderCutRecords();
-        updateStats(); // Batch update stats
-        clearForm(); // Note: clearForm() now resets pendingAutoFillId
+        updateStats(); / Batch update stats
+        clearForm(); / Note: clearForm() now resets pendingAutoFillId
         updateButtonStates();
 
         if (autoCompletedId) {
@@ -832,33 +832,33 @@ async function saveBatchRecords() {
     }
 }
 
-// Undo/Redo functionality
+/ Undo/Redo functionality
 function saveToHistory() {
-    const currentState = JSON.parse(JSON.stringify(cutRecords)); // Deep copy
+    const currentState = JSON.parse(JSON.stringify(cutRecords)); / Deep copy
     undoStack.push(currentState);
 
-    // Keep only the last maxHistorySize states
+    / Keep only the last maxHistorySize states
     if (undoStack.length > maxHistorySize) {
         undoStack.shift();
     }
 
-    // Clear redo stack when new action is performed
+    / Clear redo stack when new action is performed
     redoStack.length = 0;
 }
 
 async function undo() {
     if (undoStack.length === 0) return;
 
-    const currentState = JSON.parse(JSON.stringify(cutRecords)); // Save current for redo
+    const currentState = JSON.parse(JSON.stringify(cutRecords)); / Save current for redo
     redoStack.push(currentState);
 
     cutRecords = undoStack.pop();
 
-    // Update database with new state using atomic bulk operation
+    / Update database with new state using atomic bulk operation
     if (window.eecolDB && await window.eecolDB.isReady()) {
         await window.eecolDB.bulkPut('cuttingRecords', cutRecords, true);
     } else {
-        // Fallback
+        / Fallback
         await clearAllCutRecordsFromDB();
         for (const record of cutRecords) {
             await saveCutRecordToDB(record);
@@ -876,16 +876,16 @@ async function undo() {
 async function redo() {
     if (redoStack.length === 0) return;
 
-    const currentState = JSON.parse(JSON.stringify(cutRecords)); // Save current for undo
+    const currentState = JSON.parse(JSON.stringify(cutRecords)); / Save current for undo
     undoStack.push(currentState);
 
     cutRecords = redoStack.pop();
 
-    // Update database with new state using atomic bulk operation
+    / Update database with new state using atomic bulk operation
     if (window.eecolDB && await window.eecolDB.isReady()) {
         await window.eecolDB.bulkPut('cuttingRecords', cutRecords, true);
     } else {
-        // Fallback
+        / Fallback
         await clearAllCutRecordsFromDB();
         for (const record of cutRecords) {
             await saveCutRecordToDB(record);
@@ -912,7 +912,7 @@ function updateButtonStates() {
         redoBtn.disabled = redoStack.length === 0;
     }
 
-    // Update batch undo/redo states
+    / Update batch undo/redo states
     const batchUndoBtn = document.getElementById('batchUndoBtn');
     const batchRedoBtn = document.getElementById('batchRedoBtn');
 
@@ -924,7 +924,7 @@ function updateButtonStates() {
         batchRedoBtn.disabled = batchRedoStack.length === 0;
     }
 
-    // Update global undo/redo states and badges
+    / Update global undo/redo states and badges
     const globalUndoBtn = document.getElementById('globalUndoBtn');
     const globalRedoBtn = document.getElementById('globalRedoBtn');
     const globalUndoBadge = document.getElementById('globalUndoBadge');
@@ -947,7 +947,7 @@ function updateButtonStates() {
     }
 }
 
-// Batch undo/redo functions
+/ Batch undo/redo functions
 function saveBatchState() {
     const batchCutList = document.getElementById('batchCutList');
     const entries = batchCutList.querySelectorAll('div.p-2');
@@ -976,7 +976,7 @@ function saveBatchState() {
     if (batchUndoStack.length > maxHistorySize) {
         batchUndoStack.shift();
     }
-    batchRedoStack.length = 0; // Clear redo on new action
+    batchRedoStack.length = 0; / Clear redo on new action
     updateButtonStates();
 }
 
@@ -1042,7 +1042,7 @@ function batchRedo() {
 
 function restoreBatchState(state) {
     const batchCutList = document.getElementById('batchCutList');
-    batchCutList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    batchCutList.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
 
     /**
      * BOLT OPTIMIZATION: High-performance list rendering
@@ -1066,7 +1066,7 @@ async function deleteRecord(id) {
     cutRecords = cutRecords.filter(record => record.id !== id);
     await deleteCutRecordFromDB(id);
 
-    // Reset display counter and re-render
+    / Reset display counter and re-render
     displayedRecordsCount = 0;
     renderCutRecords();
     updateStats();
@@ -1109,7 +1109,7 @@ function editRecord(id) {
     editingId = id;
     document.getElementById('recordBtn').textContent = 'UPDATE CUT RECORD';
 
-    // Trigger the checkbox change to update field states
+    / Trigger the checkbox change to update field states
     document.getElementById('singleUnitCut').dispatchEvent(new Event('change'));
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
     document.getElementById('noMarks').dispatchEvent(new Event('change'));
@@ -1122,7 +1122,7 @@ function getFilteredRecords() {
     const dateFromValue = document.getElementById('dateFrom').value;
     const dateToValue = document.getElementById('dateTo').value;
     const dateFrom = dateFromValue ? new Date(dateFromValue).getTime() : null;
-    const dateTo = dateToValue ? new Date(dateToValue).getTime() + 86399999 : null; // Include entire day
+    const dateTo = dateToValue ? new Date(dateToValue).getTime() + 86399999 : null; / Include entire day
 
     /**
      * BOLT OPTIMIZATION: High-performance filtering
@@ -1131,59 +1131,59 @@ function getFilteredRecords() {
      * - Uses type-safe and case-insensitive checks on fields with O(N) efficiency.
      */
     return cutRecords.filter(record => {
-        // Date filtering
+        / Date filtering
         if (dateFrom && record.timestamp < dateFrom) return false;
         if (dateTo && record.timestamp > dateTo) return false;
 
         if (!searchTerm) return true;
 
-        // Search filtering by specific field
+        / Search filtering by specific field
         if (filterField !== 'all') {
             const val = record[filterField];
             return val && val.toString().toUpperCase().includes(searchTerm);
         }
 
-        // Search filtering across 'all' fields - optimized short-circuiting
-        return (record.wireId && record.wireId.toString().toUpperCase().includes(searchTerm)) ||
-               (record.orderNumber && record.orderNumber.toString().toUpperCase().includes(searchTerm)) ||
-               (record.cutterName && record.cutterName.toString().toUpperCase().includes(searchTerm)) ||
-               (record.customerName && record.customerName.toString().toUpperCase().includes(searchTerm));
+        / Search filtering across 'all' fields - optimized short-circuiting
+        return (record.wireId && record.wireId.toLowerCase().includes(searchTerm)) ||
+               (record.orderNumber && record.orderNumber.toLowerCase().includes(searchTerm)) ||
+               (record.cutterName && record.cutterName.toLowerCase().includes(searchTerm)) ||
+               (record.customerName && record.customerName.toLowerCase().includes(searchTerm));
     });
 }
 
-// Toggle Cut In System function - one-way toggle (false to true, then disabled)
+/ Toggle Cut In System function - one-way toggle (false to true, then disabled)
 async function toggleCutInSystem(id) {
     const itemIndex = cutRecords.findIndex(r => r.id === id);
     if (itemIndex === -1) return;
 
     const record = cutRecords[itemIndex];
 
-    // Only allow toggling from false to true (one-way)
+    / Only allow toggling from false to true (one-way)
     if (record.isCutInSystem === true) {
-        return; // Already set, do nothing
+        return; / Already set, do nothing
     }
 
-    // Set to true and record timestamp
+    / Set to true and record timestamp
     const now = Date.now();
     record.isCutInSystem = true;
     record.cutInSystemTimestamp = now;
     record.updatedAt = now;
 
     try {
-        // Update in database
+        / Update in database
         await updateCutRecordInDB(record);
 
-        // Re-render the UI immediately to show changes
+        / Re-render the UI immediately to show changes
         renderCutRecords();
 
-        // Optional: visual feedback
+        / Optional: visual feedback
         await showAlert(`Cut record marked as "Cut In System" at ${shortDateTimeFormat.format(now)}`, 'System Status Updated');
 
     } catch (error) {
         console.error('Error toggling Cut In System status:', error);
         await showAlert('Failed to update system status. Please try again.', 'Update Error');
 
-        // Revert local change on error
+        / Revert local change on error
         record.isCutInSystem = false;
         record.cutInSystemTimestamp = null;
         renderCutRecords();
@@ -1197,10 +1197,10 @@ function renderCutRecords() {
 
     const filteredRecords = getFilteredRecords();
 
-    // Update counters
+    / Update counters
     totalRecordsElement.textContent = filteredRecords.length;
 
-    cutHistoryList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    cutHistoryList.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
 
     if (filteredRecords.length === 0) {
         const emptyMsg = document.createElement('p');
@@ -1208,11 +1208,11 @@ function renderCutRecords() {
         emptyMsg.textContent = 'No cut records found yet.';
         cutHistoryList.appendChild(emptyMsg);
         displayedRecordsElement.textContent = '0';
-        // BOLT: Removed redundant updateStats() call from render loop
+        / BOLT: Removed redundant updateStats() call from render loop
         return;
     }
 
-    // Load more records if needed
+    / Load more records if needed
     const recordsToShow = Math.min(displayedRecordsCount + recordsPerPage, filteredRecords.length);
     displayedRecordsCount = recordsToShow;
     displayedRecordsElement.textContent = displayedRecordsCount;
@@ -1367,7 +1367,7 @@ function renderCutRecords() {
         fragment.appendChild(recordDiv);
     });
 
-    // Add "Load More" button if there are more records
+    / Add "Load More" button if there are more records
     if (displayedRecordsCount < filteredRecords.length) {
         const moreDiv = document.createElement('div');
         moreDiv.className = 'text-center mt-4';
@@ -1379,10 +1379,8 @@ function renderCutRecords() {
         fragment.appendChild(moreDiv);
     }
 
-    cutHistoryList.appendChild(fragment);
-
-    // BOLT: Removed redundant updateStats() call from render loop.
-    // Statistics are now only recalculated upon data mutation.
+    / BOLT: Removed redundant updateStats() call from render loop.
+    / Statistics are now only recalculated upon data mutation.
 }
 
 function loadMoreRecords() {
@@ -1391,7 +1389,7 @@ function loadMoreRecords() {
     isLoading = true;
     document.getElementById('loadingIndicator').classList.remove('hidden');
 
-    // Simulate loading delay for better UX
+    / Simulate loading delay for better UX
     setTimeout(() => {
         renderCutRecords();
         document.getElementById('loadingIndicator').classList.add('hidden');
@@ -1405,7 +1403,7 @@ function setupInfiniteScroll() {
     cutHistoryList.addEventListener('scroll', function() {
         if (isLoading || displayedRecordsCount >= cutRecords.length) return;
 
-        // Check if user has scrolled to bottom
+        / Check if user has scrolled to bottom
         if (this.scrollTop + this.clientHeight >= this.scrollHeight - 100) {
             loadMoreRecords();
         }
@@ -1422,12 +1420,12 @@ function escapeCSVValue(value) {
     if (value === null || value === undefined) return '';
     let stringValue = value.toString();
 
-    // Mitigate CSV Injection by prefixing values starting with =, +, -, or @
+    / Mitigate CSV Injection by prefixing values starting with =, +, -, or @
     if (['=', '+', '-', '@'].some(char => stringValue.startsWith(char))) {
         stringValue = "'" + stringValue;
     }
 
-    // Standard RFC 4180 double-quote escaping
+    / Standard RFC 4180 double-quote escaping
     if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('\r')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
     }
@@ -1468,7 +1466,7 @@ async function exportToCSV() {
         escapeCSVValue(record.turnedToLineCode ? 'L:' + record.turnedToLineCode : '')
     ]);
 
-    // Add BOM for Excel compatibility
+    / Add BOM for Excel compatibility
     const bom = '\uFEFF';
     const csvContent = bom + [header, ...rows].map(row => row.join(',')).join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1476,7 +1474,7 @@ async function exportToCSV() {
     const a = document.createElement('a');
     a.href = url;
 
-    // Include record count and date in filename
+    / Include record count and date in filename
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     a.download = `cut_records_${cutRecords.length}_${dateStr}.csv`;
@@ -1484,7 +1482,7 @@ async function exportToCSV() {
     a.click();
     URL.revokeObjectURL(url);
 
-    // Save export timestamp to IndexedDB
+    / Save export timestamp to IndexedDB
     if (window.eecolDB && await window.eecolDB.isReady()) {
         await window.eecolDB.update('settings', { name: 'lastCsvExport', value: new Date().toISOString() });
     }
@@ -1546,7 +1544,7 @@ async function exportDeltaToCSV() {
         escapeCSVValue(record.turnedToLineCode ? 'L:' + record.turnedToLineCode : '')
     ]);
 
-    // Add BOM for Excel compatibility
+    / Add BOM for Excel compatibility
     const bom = '\uFEFF';
     const csvContent = bom + [header, ...rows].map(row => row.join(',')).join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1554,17 +1552,17 @@ async function exportDeltaToCSV() {
     const a = document.createElement('a');
     a.href = url;
 
-    // Include record count and date in filename
+    / Include record count and date in filename
     const dateStr = new Date(now).toISOString().split('T')[0];
     a.download = `cut_records_new_${newRecords.length}_${dateStr}.csv`;
 
     a.click();
     URL.revokeObjectURL(url);
 
-    // Update lastDeltaExport
+    / Update lastDeltaExport
     lastDeltaExport = now;
 
-    // Save to IndexedDB
+    / Save to IndexedDB
     if (window.eecolDB && await window.eecolDB.isReady()) {
         await window.eecolDB.update('settings', { name: 'lastDeltaExport', value: now.toString() });
         await window.eecolDB.update('settings', { name: 'lastCsvExport', value: new Date().toISOString() });
@@ -1585,19 +1583,19 @@ async function clearAllRecords() {
         displayedRecordsCount = 0;
         await clearAllCutRecordsFromDB();
         renderCutRecords();
-        updateStats(); // Update stats after clearing
+        updateStats(); / Update stats after clearing
         await showAlert('All cut records have been cleared.', 'Records Cleared');
     }
 }
 
-// Cloud sync functions for OneDrive Excel CSV
+/ Cloud sync functions for OneDrive Excel CSV
 async function syncToCloudCSV() {
     if (cutRecords.length === 0) {
         await showAlert('No records to sync. Please add some cut records first.', 'No Records');
         return;
     }
 
-    // Generate CSV content
+    / Generate CSV content
     const header = [
         'WireId', 'CutLength', 'CutLengthUnit', 'StartingMark', 'StartingMarkUnit', 'EndingMark', 'EndingMarkUnit',
         'Cut From Line Code', 'CutterName', 'OrderNumber', 'CustomerName', 'CoilOrReel', 'ReelSize', 'Chargeable', 'OrderComments', 'IsSingleUnitCut', 'IsFullPick', 'TurnedToLineCode', 'Quantity'
@@ -1631,7 +1629,7 @@ async function syncToCloudCSV() {
     const a = document.createElement('a');
     a.href = url;
 
-    // Include record count and date in filename
+    / Include record count and date in filename
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     a.download = `eecol_cut_records_${cutRecords.length}_${dateStr}.csv`;
@@ -1642,7 +1640,7 @@ async function syncToCloudCSV() {
 
 
 
-// JSON Backup Export Function
+/ JSON Backup Export Function
 async function exportJSONBackup() {
     const backup = {
         records: cutRecords,
@@ -1654,7 +1652,7 @@ async function exportJSONBackup() {
         totalWireCutListItems: wireCutList.length
     };
 
-    // Save export timestamp to IndexedDB
+    / Save export timestamp to IndexedDB
     if (window.eecolDB && await window.eecolDB.isReady()) {
         await window.eecolDB.update('settings', { name: 'lastJsonExport', value: new Date().toISOString() });
     }
@@ -1676,7 +1674,7 @@ async function exportJSONBackup() {
     await showAlert(`JSON backup exported successfully!\nContains ${backup.totalRecords} records.\nFile: eecol_json_backup_${cutRecords.length}_${dateStr}.json`, 'JSON Backup Exporter');
 }
 
-// JSON Backup Import Function
+/ JSON Backup Import Function
 async function importJSONBackup(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -1686,7 +1684,7 @@ async function importJSONBackup(event) {
         try {
             const backupData = JSON.parse(e.target?.result);
 
-            // Validate backup structure
+            / Validate backup structure
             if (!backupData.records || !Array.isArray(backupData.records)) {
                 await showAlert('Invalid backup file format. Missing records array.', 'Invalid Backup');
                 return;
@@ -1697,15 +1695,15 @@ async function importJSONBackup(event) {
             const backupVersion = backupData.version || 'unknown';
             const exportDate = backupData.exportDate ? new Date(backupData.exportDate).toLocaleDateString() : 'unknown';
 
-            // Show import options
+            / Show import options
             const merge = await showConfirm(`JSON Backup Import:\n\nBackup Details:\n- Version: ${backupVersion}\n- Export Date: ${exportDate}\n- Cut Records: ${importRecords.length}\n- Wire List Items: ${importWireCutList.length}\n\nChoose:\nOK = Merge with existing data\nCancel = Replace all existing data`, 'Import Options');
 
             cutRecords = merge ? [...cutRecords, ...importRecords] : importRecords;
             wireCutList = merge ? [...wireCutList, ...importWireCutList] : importWireCutList;
 
-            updateStats(); // Update stats after import
+            updateStats(); / Update stats after import
 
-            // Clean up records (ensure IDs, etc.)
+            / Clean up records (ensure IDs, etc.)
             cutRecords.forEach(record => {
                 if (!record.id) record.id = crypto.randomUUID();
             });
@@ -1716,12 +1714,12 @@ async function importJSONBackup(event) {
             cutRecords.sort((a, b) => b.timestamp - a.timestamp);
             wireCutList.sort((a, b) => (a.position || 0) - (b.position || 0));
 
-            // Save to database using atomic bulk operations
+            / Save to database using atomic bulk operations
             if (window.eecolDB && await window.eecolDB.isReady()) {
                 await window.eecolDB.bulkPut('cuttingRecords', cutRecords, true);
                 await window.eecolDB.bulkPut('wireCutList', wireCutList, !merge);
             } else {
-                // Fallback
+                / Fallback
                 await clearAllCutRecordsFromDB();
                 for (const record of cutRecords) {
                     await saveCutRecordToDB(record);
@@ -1734,13 +1732,13 @@ async function importJSONBackup(event) {
 
             await showAlert(`JSON import successful!\n${merge ? 'Merged' : 'Replaced'} with ${importRecords.length} records.\nTotal records: ${cutRecords.length}`, 'Import Successful');
 
-            // Reset file input to allow re-selection of same file
+            / Reset file input to allow re-selection of same file
             event.target.value = '';
 
         } catch (error) {
             await showAlert(`Error importing JSON backup: ${error.message}\n\nPlease ensure this is a valid EECOL JSON backup file.`, 'Import Error');
 
-            // Reset file input even on error to allow retry
+            / Reset file input even on error to allow retry
             event.target.value = '';
         }
     };
@@ -1749,7 +1747,7 @@ async function importJSONBackup(event) {
 
 
 
-//Print Records Capabilities using shared print utility
+/Print Records Capabilities using shared print utility
 function printRecords(filtered = false) {
     const records = filtered ? getFilteredRecords() : cutRecords;
 
@@ -1865,9 +1863,9 @@ function printRecords(filtered = false) {
     }
 }
 
-// Event Listeners
+/ Event Listeners
 document.addEventListener('DOMContentLoaded', async function() {
-    // Initialize database if not already done (important for pages that don't load index.js)
+    / Initialize database if not already done (important for pages that don't load index.js)
     if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
         try {
             window.eecolDB = EECOLIndexedDB.getInstance();
@@ -1879,12 +1877,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // Initialize modal system
+    / Initialize modal system
     if (typeof initModalSystem === 'function') {
         initModalSystem();
     }
 
-    // Batch Entry Mode toggle
+    / Batch Entry Mode toggle
     const batchEntryModeCheckbox = document.getElementById('batchEntryMode');
     const singleCutForm = document.getElementById('singleCutForm');
     const batchCutForm = document.getElementById('batchCutForm');
@@ -1901,7 +1899,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // Input validation for order number (alphanumeric, max 7, auto uppercase)
+    / Input validation for order number (alphanumeric, max 7, auto uppercase)
     const orderNumberInput = document.getElementById('orderNumber');
     if (orderNumberInput) {
         orderNumberInput.addEventListener('input', function(e) {
@@ -1909,7 +1907,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Input validation for line code (single letter or digits, max 3) and auto uppercase
+    / Input validation for line code (single letter or digits, max 3) and auto uppercase
     const lineCodeInput = document.getElementById('lineCode');
     if (lineCodeInput) {
         lineCodeInput.addEventListener('input', function(e) {
@@ -1924,7 +1922,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Auto uppercase for wire ID, customer name, and cutter name
+    / Auto uppercase for wire ID, customer name, and cutter name
     const wireIdInput = document.getElementById('wireId');
     if (wireIdInput) {
         wireIdInput.addEventListener('input', function(e) {
@@ -1946,7 +1944,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Handle coil/reel field enable/disable for single cut form
+    / Handle coil/reel field enable/disable for single cut form
     const coilOrReelSelect = document.getElementById('coilOrReel');
     if (coilOrReelSelect) {
         coilOrReelSelect.addEventListener('change', function(e) {
@@ -1965,7 +1963,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
 
-            // Enable/disable import button
+            / Enable/disable import button
             const importBtn = document.getElementById('importFromEstimatorBtn');
             if (importBtn) {
                 importBtn.disabled = !isReel;
@@ -1973,7 +1971,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Handle coil/reel field enable/disable for batch cut entries
+    / Handle coil/reel field enable/disable for batch cut entries
     (function() {
         const batchCutList = document.getElementById('batchCutList');
         if (!batchCutList) return;
@@ -2014,7 +2012,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     })();
 
-    // Search and filter event listeners
+    / Search and filter event listeners
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         /**
@@ -2064,7 +2062,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Sync endingMarkUnit with startingMarkUnit
+    / Sync endingMarkUnit with startingMarkUnit
     const startingMarkUnit = document.getElementById('startingMarkUnit');
     if (startingMarkUnit) {
         startingMarkUnit.addEventListener('change', function(e) {
@@ -2072,16 +2070,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Handle full pick checkbox - now allows mark entry even when full pick is checked
+    / Handle full pick checkbox - now allows mark entry even when full pick is checked
     const fullPickCheckbox = document.getElementById('fullPick');
     if (fullPickCheckbox) {
         fullPickCheckbox.addEventListener('change', function(e) {
-            // Full pick checkbox now allows marks to remain enabled - no changes needed
-            // User can enter marks for reference even on full pick records
+            / Full pick checkbox now allows marks to remain enabled - no changes needed
+            / User can enter marks for reference even on full pick records
         });
     }
 
-    // Handle no marks checkbox
+    / Handle no marks checkbox
     const noMarksCheckbox = document.getElementById('noMarks');
     if (noMarksCheckbox) {
         noMarksCheckbox.addEventListener('change', function(e) {
@@ -2118,7 +2116,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Handle system cut checkbox
+    / Handle system cut checkbox
     const systemCutCheckbox = document.getElementById('systemCut');
     if (systemCutCheckbox) {
         systemCutCheckbox.addEventListener('change', function(e) {
@@ -2148,7 +2146,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Handle single unit cut checkbox
+    / Handle single unit cut checkbox
     const singleUnitCutCheckbox = document.getElementById('singleUnitCut');
     if (singleUnitCutCheckbox) {
         singleUnitCutCheckbox.addEventListener('change', function(e) {
@@ -2156,53 +2154,53 @@ document.addEventListener('DOMContentLoaded', async function() {
             const cutLengthInput = document.getElementById('cutLength');
             const endingMarkInput = document.getElementById('endingMark');
             if (isChecked) {
-                // Auto-fill cut length to 1
+                / Auto-fill cut length to 1
                 cutLengthInput.value = '1';
-                // Disable ending mark input
+                / Disable ending mark input
                 endingMarkInput.disabled = true;
                 endingMarkInput.classList.add('bg-gray-100', 'cursor-not-allowed');
                 endingMarkInput.value = '';
             } else {
-                // Re-enable ending mark input
+                / Re-enable ending mark input
                 endingMarkInput.disabled = false;
                 endingMarkInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
             }
         });
     }
 
-    // Button event listeners
+    / Button event listeners
     const recordBtn = document.getElementById('recordBtn');
     if (recordBtn) recordBtn.addEventListener('click', saveCutRecord);
 
-    // Undo/Redo button event listeners
+    / Undo/Redo button event listeners
     const undoBtn = document.getElementById('undoBtn');
     if (undoBtn) undoBtn.addEventListener('click', undo);
 
     const redoBtn = document.getElementById('redoBtn');
     if (redoBtn) redoBtn.addEventListener('click', redo);
 
-    // Batch undo/redo button event listeners
+    / Batch undo/redo button event listeners
     const batchUndoBtn = document.getElementById('batchUndoBtn');
     if (batchUndoBtn) batchUndoBtn.addEventListener('click', batchUndo);
 
     const batchRedoBtn = document.getElementById('batchRedoBtn');
     if (batchRedoBtn) batchRedoBtn.addEventListener('click', batchRedo);
 
-    // Keyboard shortcuts for undo/redo
+    / Keyboard shortcuts for undo/redo
     document.addEventListener('keydown', function(event) {
-        // Ctrl+Z for undo (Cmd+Z on Mac, but we use Ctrl for simplicity)
+        / Ctrl+Z for undo (Cmd+Z on Mac, but we use Ctrl for simplicity)
         if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
             event.preventDefault();
             undo();
         }
-        // Ctrl+Y or Ctrl+Shift+Z for redo
+        / Ctrl+Y or Ctrl+Shift+Z for redo
         if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'Z' && event.shiftKey))) {
             event.preventDefault();
             redo();
         }
     });
 
-    // Import from Estimator Button - Now opens modal
+    / Import from Estimator Button - Now opens modal
     const importFromEstimatorBtn = document.getElementById('importFromEstimatorBtn');
     if (importFromEstimatorBtn) {
         importFromEstimatorBtn.addEventListener('click', () => {
@@ -2210,7 +2208,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Import from Calculator Button (enhanced with history dropdowns)
+    / Import from Calculator Button (enhanced with history dropdowns)
     const importFromCalculatorBtn = document.getElementById('importFromCalculatorBtn');
     if (importFromCalculatorBtn) {
         importFromCalculatorBtn.addEventListener('click', () => {
@@ -2218,7 +2216,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Export/Import button event listeners
+    / Export/Import button event listeners
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportToCSV);
     const exportDeltaBtn = document.getElementById('exportDeltaBtn');
@@ -2237,12 +2235,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (jsonFileInput) jsonFileInput.click();
         });
 
-        // Add the missing change event listener
+        / Add the missing change event listener
         jsonFileInput = document.getElementById('jsonFileInput');
         if (jsonFileInput) jsonFileInput.addEventListener('change', importJSONBackup);
     }
 
-    // P2P Sync button event listeners
+    / P2P Sync button event listeners
     const syncAllRecordsP2PBtn = document.getElementById('syncAllRecordsP2PBtn');
     if (syncAllRecordsP2PBtn) syncAllRecordsP2PBtn.addEventListener('click', syncAllRecordsP2P);
     const syncNewRecordsP2PBtn = document.getElementById('syncNewRecordsP2PBtn');
@@ -2255,27 +2253,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllRecords);
 
-    // Setup infinite scroll
+    / Setup infinite scroll
     setupInfiniteScroll();
 
-    // Load records on page load
+    / Load records on page load
     loadCutRecords();
 
     updateExportStatus();
 
-    // Load saved cutter name
+    / Load saved cutter name
     const savedCutterName = localStorage.getItem('cutterName');
     if (savedCutterName) {
         document.getElementById('cutterName').value = savedCutterName;
     }
 
-    // Initialize button states
+    / Initialize button states
     updateButtonStates();
 
-    // Wire Cut List initialization
+    / Wire Cut List initialization
     initWireCutList();
 
-    // Batch Cut List management
+    / Batch Cut List management
     const batchCutList = document.getElementById('batchCutList');
     const addBatchCutBtn = document.getElementById('addBatchCutBtn');
 
@@ -2346,7 +2344,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             </div>
         `;
 
-        // Set values securely using .value
+        / Set values securely using .value
         entryDiv.querySelector('.batchEntrySingleUnitCut').checked = !!data.isSingleUnitCut;
         entryDiv.querySelector('.batchEntryFullPick').checked = !!data.isFullPick;
         entryDiv.querySelector('.batchEntryNoMarks').checked = !!data.isNoMarks;
@@ -2369,7 +2367,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         entryDiv.querySelector('input[placeholder="Reel Size"]').value = data.reelSize || '';
         entryDiv.querySelector('select:has(option[value="yes"])').value = data.chargeable || '';
 
-        // Add event listeners for auto-uppercase and validation
+        / Add event listeners for auto-uppercase and validation
         const wireIdInput = entryDiv.querySelector('input[placeholder="Wire Type/ID"]');
         if (wireIdInput) {
             wireIdInput.addEventListener('input', function(e) {
@@ -2391,7 +2389,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
 
-        // Handle coil/reel field enable/disable for this entry
+        / Handle coil/reel field enable/disable for this entry
         const coilOrReelSelect = entryDiv.querySelector('.coilOrReelSelect');
         if (coilOrReelSelect) {
             coilOrReelSelect.addEventListener('change', function(e) {
@@ -2429,7 +2427,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
 
-        // Handle single unit cut checkbox for this entry
+        / Handle single unit cut checkbox for this entry
         const singleUnitCutCheckbox = entryDiv.querySelector('.batchEntrySingleUnitCut');
         if (singleUnitCutCheckbox) {
             singleUnitCutCheckbox.addEventListener('change', function(e) {
@@ -2437,21 +2435,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const cutLengthInput = entryDiv.querySelector('input[placeholder="Cut Length"]');
                 const endingMarkInput = entryDiv.querySelector('.batchEntryEndingMark');
                 if (isChecked) {
-                    // Auto-fill cut length to 1
+                    / Auto-fill cut length to 1
                     cutLengthInput.value = '1';
-                    // Disable ending mark input
+                    / Disable ending mark input
                     endingMarkInput.disabled = true;
                     endingMarkInput.classList.add('bg-gray-100', 'cursor-not-allowed');
                     endingMarkInput.value = '';
                 } else {
-                    // Re-enable ending mark input
+                    / Re-enable ending mark input
                     endingMarkInput.disabled = false;
                     endingMarkInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
                 }
             });
         }
 
-        // Remove button event
+        / Remove button event
         entryDiv.querySelector('.removeBatchCutBtn').addEventListener('click', () => {
             saveBatchState();
             batchCutList.removeChild(entryDiv);
@@ -2466,16 +2464,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         batchCutList.appendChild(newEntry);
     });
 
-    // Initialize with one empty entry
+    / Initialize with one empty entry
     batchCutList.appendChild(createBatchCutEntry());
 
-    // Quick Stats toggle functionality - starts collapsed
+    / Quick Stats toggle functionality - starts collapsed
     const statsContent = document.getElementById('statsContent');
     const statsToggle = document.getElementById('statsToggle');
     if (statsContent && statsToggle) {
-        // Start with stats hidden on page load
+        / Start with stats hidden on page load
         statsContent.classList.add('hidden');
-        statsToggle.textContent = '►'; // Right arrow indicating expandable
+        statsToggle.textContent = '►'; / Right arrow indicating expandable
     }
 
     const toggleStatsBtn = document.getElementById('toggleStats');
@@ -2485,18 +2483,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             const statsToggle = document.getElementById('statsToggle');
 
             if (statsContent.classList.contains('hidden')) {
-                // Show stats
+                / Show stats
                 statsContent.classList.remove('hidden');
                 statsToggle.textContent = '▼';
             } else {
-                // Hide stats
+                / Hide stats
                 statsContent.classList.add('hidden');
                 statsToggle.textContent = '►';
             }
         });
     }
 
-    // Quick calculators functionality
+    / Quick calculators functionality
     const toggleQuickCalc = document.getElementById('toggleQuickCalc');
     const quickCalcSection = document.getElementById('quickCalcSection');
     if (toggleQuickCalc && quickCalcSection) {
@@ -2509,7 +2507,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Data Management Controls toggle functionality
+    / Data Management Controls toggle functionality
     const toggleDataControls = document.getElementById('toggleDataControls');
     const dataControlsSection = document.getElementById('dataControlsSection');
     if (toggleDataControls && dataControlsSection) {
@@ -2522,7 +2520,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Sync Controls toggle functionality
+    / Sync Controls toggle functionality
     const toggleSyncControls = document.getElementById('toggleSyncControls');
     const syncControlsSection = document.getElementById('syncControlsSection');
     if (toggleSyncControls && syncControlsSection) {
@@ -2535,7 +2533,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Mark difference calculator
+    / Mark difference calculator
     const calcMarkDiffBtn = document.getElementById('calcMarkDiff');
     if (calcMarkDiffBtn) {
         calcMarkDiffBtn.addEventListener('click', function() {
@@ -2570,7 +2568,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Stop mark calculator
+    / Stop mark calculator
     const calcStopMarkBtn = document.getElementById('calcStopMark');
     if (calcStopMarkBtn) {
         calcStopMarkBtn.addEventListener('click', function() {
@@ -2619,22 +2617,28 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Initialize mobile menu for this page
+/ Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
-        menuItems: [
-            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
-            { text: '📈 Reports', href: '../cutting-reports/cutting-reports.html', class: 'bg-purple-600 hover:bg-purple-700' }
-        ],
         version: 'v0.8.0.5',
+        menuItems: [
+            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: '📊 Wire Cut Records', href: '/src/pages/cutting-records/cutting-records.html', class: 'bg-[#0058B3] hover:bg-[#004a99]' },
+            { text: '📈 Reports', href: '/src/pages/cutting-reports/cutting-reports.html', class: 'bg-purple-600 hover:bg-purple-700' },
+            { text: '📦 Inventory Records', href: '/src/pages/inventory-records/inventory-records.html', class: 'bg-[#0058B3] hover:bg-[#004a99]' },
+            { text: '💡 Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '🔒 Privacy Policy', href: '/src/pages/privacy/privacy.html', class: 'bg-purple-500 hover:bg-purple-600' },
+            { text: '💾 Backup Guide', href: '/src/pages/backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
+            { text: '🛠️ Maintenance', href: '/src/pages/maintenance/maintenance.html', class: 'bg-purple-600 hover:bg-purple-700' },
+            { text: '🗃️ Database Config', href: '/src/pages/database-config/database-config.html', class: 'bg-cyan-600 hover:bg-cyan-700' },
+            { text: '📋 Changelog', href: '/src/pages/changelog/changelog.html', class: 'bg-amber-500 hover:bg-amber-600' }
+        ],
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'Wire Cut Records'
     });
 }
 
-// Enhanced Calculator Import Functions
+/ Enhanced Calculator Import Functions
 async function showImportCalculatorModal() {
     const modal = document.getElementById('importCalculatorModal');
     const modalContent = document.getElementById('importModalContent');
@@ -2644,17 +2648,17 @@ async function showImportCalculatorModal() {
         return;
     }
 
-    // Show modal with animation
+    / Show modal with animation
     modal.classList.remove('hidden');
     setTimeout(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
         modalContent.classList.add('scale-100', 'opacity-100');
     }, 10);
 
-    // Populate dropdowns with history
+    / Populate dropdowns with history
     await populateCalculatorDropdowns();
 
-    // Setup modal event listeners
+    / Setup modal event listeners
     setupImportModalEventListeners();
 }
 
@@ -2668,42 +2672,42 @@ async function populateCalculatorDropdowns() {
     }
 
     try {
-        // Clear existing options
-        markDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+        / Clear existing options
+        markDropdown.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
         const markLoadingOpt = document.createElement('option');
         markLoadingOpt.value = '';
         markLoadingOpt.textContent = 'Loading...';
         markDropdown.appendChild(markLoadingOpt);
 
-        stopDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+        stopDropdown.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
         const stopLoadingOpt = document.createElement('option');
         stopLoadingOpt.value = '';
         stopLoadingOpt.textContent = 'Loading...';
         stopDropdown.appendChild(stopLoadingOpt);
 
-        // Check if database is available
+        / Check if database is available
         if (!window.eecolDB || !(await window.eecolDB.isReady())) {
             markLoadingOpt.textContent = 'Database not available';
             stopLoadingOpt.textContent = 'Database not available';
             return;
         }
 
-        // Fetch last 5 records from markConverter store
+        / Fetch last 5 records from markConverter store
         const markRecords = await window.eecolDB.getAll('markConverter');
         const sortedMarkRecords = markRecords
             .filter(record => record.startMark && record.endMark && record.unit)
             .sort((a, b) => b.timestamp - a.timestamp)
             .slice(0, 5);
 
-        // Fetch last 5 records from stopmarkConverter store
+        / Fetch last 5 records from stopmarkConverter store
         const stopRecords = await window.eecolDB.getAll('stopmarkConverter');
         const sortedStopRecords = stopRecords
             .filter(record => record.startMark && record.endMark && record.unit)
             .sort((a, b) => b.timestamp - a.timestamp)
             .slice(0, 5);
 
-        // Populate Mark Calculator dropdown
-        markDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+        / Populate Mark Calculator dropdown
+        markDropdown.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
         const markDefaultOpt = document.createElement('option');
         markDefaultOpt.value = '';
         markDefaultOpt.textContent = 'Select a saved calculation...';
@@ -2731,8 +2735,8 @@ async function populateCalculatorDropdowns() {
             });
         }
 
-        // Populate Stop Calculator dropdown
-        stopDropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+        / Populate Stop Calculator dropdown
+        stopDropdown.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
         const stopDefaultOpt = document.createElement('option');
         stopDefaultOpt.value = '';
         stopDefaultOpt.textContent = 'Select a saved calculation...';
@@ -2762,13 +2766,13 @@ async function populateCalculatorDropdowns() {
 
     } catch (error) {
         console.error('Error populating calculator dropdowns:', error);
-        markDropdown.replaceChildren(); // BOLT OPTIMIZATION
+        markDropdown.replaceChildren(); / BOLT OPTIMIZATION
         const errOpt = document.createElement('option');
         errOpt.value = '';
         errOpt.textContent = 'Error loading history';
         markDropdown.appendChild(errOpt);
 
-        stopDropdown.replaceChildren(); // BOLT OPTIMIZATION
+        stopDropdown.replaceChildren(); / BOLT OPTIMIZATION
         const errOptStop = document.createElement('option');
         errOptStop.value = '';
         errOptStop.textContent = 'Error loading history';
@@ -2777,19 +2781,19 @@ async function populateCalculatorDropdowns() {
 }
 
 function setupImportModalEventListeners() {
-    // Close modal button
+    / Close modal button
     const closeBtn = document.getElementById('closeImportModalBtn');
     if (closeBtn) {
         closeBtn.addEventListener('click', hideImportModal);
     }
 
-    // Modal backdrop click to close
+    / Modal backdrop click to close
     const backdrop = document.getElementById('importModalBackdrop');
     if (backdrop) {
         backdrop.addEventListener('click', hideImportModal);
     }
 
-    // Import from Mark Calculator button
+    / Import from Mark Calculator button
     const importMarkBtn = document.getElementById('importFromMarkCalculatorBtn');
     if (importMarkBtn) {
         importMarkBtn.addEventListener('click', () => {
@@ -2803,7 +2807,7 @@ function setupImportModalEventListeners() {
         });
     }
 
-    // Import from Stop Calculator button
+    / Import from Stop Calculator button
     const importStopBtn = document.getElementById('importFromStopCalculatorBtn');
     if (importStopBtn) {
         importStopBtn.addEventListener('click', () => {
@@ -2817,7 +2821,7 @@ function setupImportModalEventListeners() {
         });
     }
 
-    // Enable/disable import buttons based on selection
+    / Enable/disable import buttons based on selection
     const markDropdown = document.getElementById('markCalculatorDropdown');
     const stopDropdown = document.getElementById('stopCalculatorDropdown');
 
@@ -2835,7 +2839,7 @@ function setupImportModalEventListeners() {
         });
     }
 
-    // Initially disable import buttons
+    / Initially disable import buttons
     if (importMarkBtn) importMarkBtn.disabled = true;
     if (importStopBtn) importStopBtn.disabled = true;
 }
@@ -2847,19 +2851,19 @@ async function importFromCalculator(calculatorType, selectedOption) {
         const startMark = parseFloat(selectedOption.getAttribute('data-start'));
         const endMark = parseFloat(selectedOption.getAttribute('data-end'));
 
-        // Update form fields
+        / Update form fields
         document.getElementById('startingMark').value = startMark.toString();
         document.getElementById('endingMark').value = endMark.toString();
 
-        // Update unit dropdowns based on the imported record's unit
+        / Update unit dropdowns based on the imported record's unit
         const unitDisplay = unit === 'ft' ? 'ft' : 'm';
         document.getElementById('startingMarkUnit').value = unitDisplay;
         document.getElementById('endingMarkUnit').value = unitDisplay;
 
-        // Close modal
+        / Close modal
         hideImportModal();
 
-        // Show success message
+        / Show success message
         const calculatorName = calculatorType === 'markCalculator' ? 'Mark Calculator' : 'Stop Calculator';
         await showAlert(`Marks imported from ${calculatorName}. Units set to ${unit === 'ft' ? 'Feet (ft)' : 'Meters (m)'}.`, 'Import Successful');
 
@@ -2883,9 +2887,9 @@ function hideImportModal() {
     }, 200);
 }
 
-// ====================================================================
-// WIRE CUT LIST FUNCTIONS
-// ====================================================================
+/ ====================================================================
+/ WIRE CUT LIST FUNCTIONS
+/ ====================================================================
 
 async function initWireCutList() {
     const toggleBtn = document.getElementById('toggleWireList');
@@ -2913,18 +2917,18 @@ async function initWireCutList() {
     if (addBtn) addBtn.addEventListener('click', () => showWireListItemModal());
     if (refreshBtn) refreshBtn.addEventListener('click', loadWireCutList);
 
-    // Initialize Pastel Presets
+    / Initialize Pastel Presets
     const pastelPresets = document.getElementById('pastelPresets');
     if (pastelPresets) {
         const softColors = [
-            '#eff6ff', // Soft Blue
-            '#ecfdf5', // Soft Green
-            '#fffbeb', // Soft Yellow
-            '#fef2f2', // Soft Red
-            '#f5f3ff', // Soft Purple
-            '#faf5ff', // Soft Pink
-            '#f0fdf4', // Soft Emerald
-            '#fff7ed'  // Soft Orange
+            '#eff6ff', / Soft Blue
+            '#ecfdf5', / Soft Green
+            '#fffbeb', / Soft Yellow
+            '#fef2f2', / Soft Red
+            '#f5f3ff', / Soft Purple
+            '#faf5ff', / Soft Pink
+            '#f0fdf4', / Soft Emerald
+            '#fff7ed'  / Soft Orange
         ];
 
         softColors.forEach(color => {
@@ -2941,7 +2945,7 @@ async function initWireCutList() {
         });
     }
 
-    // Custom color picker fallback (still available but advised softness)
+    / Custom color picker fallback (still available but advised softness)
     const ctxColorPicker = document.getElementById('ctxColorPicker');
     if (ctxColorPicker) {
         ctxColorPicker.addEventListener('input', (e) => {
@@ -2953,7 +2957,7 @@ async function initWireCutList() {
     if (statusFilter) statusFilter.addEventListener('change', renderWireCutList);
     if (searchInput) searchInput.addEventListener('input', renderWireCutList);
 
-    // Modal input listeners for auto-capitalization
+    / Modal input listeners for auto-capitalization
     ['wireListOrder', 'wireListCustomer', 'wireListWireType'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -2963,7 +2967,7 @@ async function initWireCutList() {
         }
     });
 
-    // Modal events
+    / Modal events
     const cancelBtn = document.getElementById('cancelWireListItemBtn');
     const saveBtn = document.getElementById('saveWireListItemBtn');
     const backdrop = document.getElementById('wireModalBackdrop');
@@ -2972,7 +2976,7 @@ async function initWireCutList() {
     if (saveBtn) saveBtn.addEventListener('click', saveWireListItem);
     if (backdrop) backdrop.addEventListener('click', hideWireListItemModal);
 
-    // Removal reason modal events
+    / Removal reason modal events
     const cancelRemBtn = document.getElementById('cancelRemovalBtn');
     const confirmRemBtn = document.getElementById('confirmRemovalBtn');
     const remBackdrop = document.getElementById('removalModalBackdrop');
@@ -2981,7 +2985,7 @@ async function initWireCutList() {
     if (confirmRemBtn) confirmRemBtn.addEventListener('click', saveRemovalWithReason);
     if (remBackdrop) remBackdrop.addEventListener('click', hideRemovalReasonModal);
 
-    // Context menu events
+    / Context menu events
     document.addEventListener('click', hideWireListContextMenu);
     document.getElementById('ctxEdit').addEventListener('click', () => {
         if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
@@ -3001,7 +3005,7 @@ async function initWireCutList() {
         }
     });
 
-    // Drag and drop events for the container
+    / Drag and drop events for the container
     const container = document.getElementById('wireCutListItems');
     container.addEventListener('dragover', e => {
         e.preventDefault();
@@ -3019,7 +3023,7 @@ async function initWireCutList() {
         await saveWireListOrder();
     });
 
-    // Load initial data
+    / Load initial data
     await loadWireCutList();
 }
 
@@ -3040,13 +3044,13 @@ function renderWireCutList() {
     const filter = document.getElementById('wireListStatusFilter').value;
     const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
 
-    container.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    container.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
 
     const filtered = wireCutList.filter(item => {
-        // Status filter
+        / Status filter
         if (filter !== 'all' && item.status !== filter) return false;
 
-        // Search filter
+        / Search filter
         if (searchTerm) {
             const searchFields = [
                 item.orderNumber,
@@ -3095,7 +3099,7 @@ function renderWireCutList() {
             card.style.borderColor = 'rgba(0,0,0,0.1)';
         }
 
-        // Secure rendering using createElement and textContent
+        / Secure rendering using createElement and textContent
         const headerRow = document.createElement('div');
         headerRow.className = 'flex justify-between items-start border-b border-black/10 pb-1 mb-1 font-bold text-[10px] uppercase';
 
@@ -3108,7 +3112,7 @@ function renderWireCutList() {
         const bodyRow = document.createElement('div');
         bodyRow.className = 'flex gap-2';
 
-        // Left Column (Details)
+        / Left Column (Details)
         const detailsCol = document.createElement('div');
         detailsCol.className = 'w-1/3';
 
@@ -3158,12 +3162,12 @@ function renderWireCutList() {
         detailsCol.appendChild(meta);
         detailsCol.appendChild(highlightBox);
 
-        // Middle Column (Order Comments)
+        / Middle Column (Order Comments)
         const orderCommentsCol = document.createElement('div');
         orderCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
         orderCommentsCol.textContent = item.orderComments || '';
 
-        // Right Column (Shipper Comments)
+        / Right Column (Shipper Comments)
         const shipperCommentsCol = document.createElement('div');
         shipperCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
         shipperCommentsCol.textContent = item.shipperComments || '';
@@ -3175,7 +3179,7 @@ function renderWireCutList() {
         card.appendChild(headerRow);
         card.appendChild(bodyRow);
 
-        // Removal Reason (if exists)
+        / Removal Reason (if exists)
         if (item.status === 'removed' && item.removalReason) {
             const reasonDiv = document.createElement('div');
             reasonDiv.className = 'mt-1 p-1 bg-red-100/50 border border-red-200 rounded text-[9px] italic';
@@ -3183,7 +3187,7 @@ function renderWireCutList() {
             card.appendChild(reasonDiv);
         }
 
-        // Action Buttons (only for active items)
+        / Action Buttons (only for active items)
         if (item.status === 'active') {
             const actionsRow = document.createElement('div');
             actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
@@ -3220,7 +3224,7 @@ function renderWireCutList() {
 
         itemDiv.appendChild(card);
 
-        // Events
+        / Events
         itemDiv.addEventListener('contextmenu', e => {
             e.preventDefault();
             showWireListContextMenu(e, item.id);
@@ -3342,7 +3346,7 @@ async function deleteWireListItem(id) {
 }
 
 async function setActiveWireListItem(id) {
-    // Clear active status from all items
+    / Clear active status from all items
     wireCutList.forEach(item => {
         item.isActive = false;
     });
@@ -3391,7 +3395,7 @@ async function completeWireListItem(id, silent = false) {
 }
 
 function showRemovalReasonModal(id) {
-    currentContextMenuId = id; // Reuse this variable to track target ID
+    currentContextMenuId = id; / Reuse this variable to track target ID
     const modal = document.getElementById('removalReasonModal');
     const modalContent = document.getElementById('removalModalContent');
     const textarea = document.getElementById('removalReasonText');
@@ -3443,7 +3447,7 @@ async function saveRemovalWithReason() {
 }
 
 async function autoFillCuttingForm(id) {
-    // Check if there is already a pending autofill
+    / Check if there is already a pending autofill
     if (pendingAutoFillId && pendingAutoFillId !== id) {
         const confirmOverwrite = await showConfirm(
             "You have an unfinished autofill entry. Overwrite with new item?",
@@ -3455,7 +3459,7 @@ async function autoFillCuttingForm(id) {
     const item = wireCutList.find(i => i.id === id);
     if (!item) return;
 
-    // Mapping wire list fields to cutting record fields
+    / Mapping wire list fields to cutting record fields
     const fields = {
         'orderNumber': item.orderNumber || '',
         'customerName': item.customerName || '',
@@ -3463,22 +3467,22 @@ async function autoFillCuttingForm(id) {
         'cutLength': item.lengthZ || ''
     };
 
-    // Populate the fields
+    / Populate the fields
     for (const [id, value] of Object.entries(fields)) {
         const el = document.getElementById(id);
         if (el) {
             el.value = value;
-            // Force uppercase for relevant fields immediately
+            / Force uppercase for relevant fields immediately
             if (['orderNumber', 'customerName', 'wireId'].includes(id)) {
                 el.value = el.value.toUpperCase();
             }
-            // Trigger input events for validation/dependent logic
+            / Trigger input events for validation/dependent logic
             el.dispatchEvent(new Event('input', { bubbles: true }));
             el.dispatchEvent(new Event('change', { bubbles: true }));
         }
     }
 
-    // Handle Reel Size integration
+    / Handle Reel Size integration
     const coilOrReelSelect = document.getElementById('coilOrReel');
     const reelSizeInput = document.getElementById('reelSize');
 
@@ -3488,25 +3492,25 @@ async function autoFillCuttingForm(id) {
         reelSizeInput.value = item.reelSize;
         reelSizeInput.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (coilOrReelSelect) {
-        // Default to coil if no reel size is specified in list
+        / Default to coil if no reel size is specified in list
         coilOrReelSelect.value = 'coil';
         coilOrReelSelect.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form
+    / Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form
     const batchMode = document.getElementById('batchEntryMode');
     if (batchMode && batchMode.checked) {
         batchMode.checked = false;
         batchMode.dispatchEvent(new Event('change'));
     }
 
-    // Track this ID for automatic completion after record save
+    / Track this ID for automatic completion after record save
     pendingAutoFillId = id;
 
-    // Visual feedback
+    / Visual feedback
     await showAlert(`Autofilled cut details for Order #${item.orderNumber}`, 'AutoFill Success');
 
-    // Scroll to the form
+    / Scroll to the form
     document.getElementById('recordsPage').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -3533,7 +3537,7 @@ function showWireListContextMenu(e, id) {
     menu.style.left = `${e.pageX}px`;
     menu.classList.remove('hidden');
 
-    // Set color picker to current color
+    / Set color picker to current color
     const item = wireCutList.find(i => i.id === id);
     if (item && item.color) {
         document.getElementById('ctxColorPicker').value = item.color;
@@ -3591,14 +3595,14 @@ async function saveWireListOrder() {
         await window.eecolDB.bulkPut('wireCutList', itemsToUpdate, false);
     }
 
-    // Refresh local list
+    / Refresh local list
     const records = await window.eecolDB.getAll('wireCutList');
     wireCutList = records.sort((a, b) => (a.position || 0) - (b.position || 0));
 }
 
-// ====================================================================
-// REEL ESTIMATOR IMPORT MODAL FUNCTIONS
-// ====================================================================
+/ ====================================================================
+/ REEL ESTIMATOR IMPORT MODAL FUNCTIONS
+/ ====================================================================
 
 async function showImportReelModal() {
     const modal = document.getElementById('importReelModal');
@@ -3609,17 +3613,17 @@ async function showImportReelModal() {
         return;
     }
 
-    // Show modal with animation
+    / Show modal with animation
     modal.classList.remove('hidden');
     setTimeout(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
         modalContent.classList.add('scale-100', 'opacity-100');
     }, 10);
 
-    // Populate dropdown with saved reel configurations
+    / Populate dropdown with saved reel configurations
     await populateFlangeDropdown();
 
-    // Setup modal event listeners
+    / Setup modal event listeners
     setupReelModalEventListeners();
 }
 
@@ -3632,30 +3636,30 @@ async function populateFlangeDropdown() {
     }
 
     try {
-        // Clear existing options
-        dropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+        / Clear existing options
+        dropdown.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
         const loadingOpt = document.createElement('option');
         loadingOpt.value = '';
         loadingOpt.textContent = 'Loading...';
         dropdown.appendChild(loadingOpt);
 
-        // Check if database is available
+        / Check if database is available
         if (!window.eecolDB || !(await window.eecolDB.isReady())) {
             loadingOpt.textContent = 'Database not available';
             return;
         }
 
-        // Fetch all reel capacity estimator configurations
+        / Fetch all reel capacity estimator configurations
         const reelConfigurations = await window.eecolDB.getAll('reelcapacityEstimator');
 
-        // Sort by timestamp (newest first) and take last 5
+        / Sort by timestamp (newest first) and take last 5
         const sortedConfigurations = reelConfigurations
             .filter(config => config.flangeDiameter && config.flangeDiameter.value && config.flangeDiameter.unit)
             .sort((a, b) => b.timestamp - a.timestamp)
             .slice(0, 5);
 
-        // Populate dropdown
-        dropdown.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+        / Populate dropdown
+        dropdown.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
         const defaultOpt = document.createElement('option');
         defaultOpt.value = '';
         defaultOpt.textContent = 'Select a saved flange size...';
@@ -3685,7 +3689,7 @@ async function populateFlangeDropdown() {
 
     } catch (error) {
         console.error('Error populating flange dropdown:', error);
-        dropdown.replaceChildren(); // BOLT OPTIMIZATION
+        dropdown.replaceChildren(); / BOLT OPTIMIZATION
         const errOpt = document.createElement('option');
         errOpt.value = '';
         errOpt.textContent = 'Error loading configurations';
@@ -3694,19 +3698,19 @@ async function populateFlangeDropdown() {
 }
 
 function setupReelModalEventListeners() {
-    // Close modal button
+    / Close modal button
     const closeBtn = document.getElementById('closeReelModalBtn');
     if (closeBtn) {
         closeBtn.addEventListener('click', hideReelModal);
     }
 
-    // Modal backdrop click to close
+    / Modal backdrop click to close
     const backdrop = document.getElementById('reelModalBackdrop');
     if (backdrop) {
         backdrop.addEventListener('click', hideReelModal);
     }
 
-    // Import flange button
+    / Import flange button
     const importBtn = document.getElementById('importFlangeBtn');
     if (importBtn) {
         importBtn.addEventListener('click', () => {
@@ -3720,7 +3724,7 @@ function setupReelModalEventListeners() {
         });
     }
 
-    // Enable/disable import button based on selection
+    / Enable/disable import button based on selection
     const dropdown = document.getElementById('flangeSizeDropdown');
     if (dropdown) {
         dropdown.addEventListener('change', () => {
@@ -3729,7 +3733,7 @@ function setupReelModalEventListeners() {
         });
     }
 
-    // Initially disable import button
+    / Initially disable import button
     if (importBtn) importBtn.disabled = true;
 }
 
@@ -3738,7 +3742,7 @@ async function importFlangeSize(selectedOption) {
         const flangeValue = parseFloat(selectedOption.getAttribute('data-value'));
         const flangeUnit = selectedOption.getAttribute('data-unit');
 
-        // Convert to inches for the reel size field
+        / Convert to inches for the reel size field
         let convertedValue = flangeValue;
         if (flangeUnit !== 'in') {
             if (flangeUnit === 'cm') convertedValue = flangeValue / 2.54;
@@ -3746,15 +3750,15 @@ async function importFlangeSize(selectedOption) {
             else if (flangeUnit === 'ft') convertedValue = flangeValue * 12;
         }
 
-        // Set coil/reel to 'reel' and populate the reel size
+        / Set coil/reel to 'reel' and populate the reel size
         document.getElementById('coilOrReel').value = 'reel';
         document.getElementById('coilOrReel').dispatchEvent(new Event('change'));
         document.getElementById('reelSize').value = Math.round(convertedValue);
 
-        // Close modal
+        / Close modal
         hideReelModal();
 
-        // Show success message
+        / Show success message
         await showAlert(`Flange diameter imported: ${Math.round(convertedValue)} inches`, 'Import Successful');
 
     } catch (error) {
