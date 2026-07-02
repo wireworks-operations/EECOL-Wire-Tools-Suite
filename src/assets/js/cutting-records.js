@@ -1044,11 +1044,18 @@ function restoreBatchState(state) {
     const batchCutList = document.getElementById('batchCutList');
     batchCutList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
+    /**
+     * BOLT OPTIMIZATION: High-performance list rendering
+     * Uses a DocumentFragment to batch DOM insertions, minimizing layout thrashing.
+     */
+    const fragment = document.createDocumentFragment();
+
     state.forEach(entryData => {
         const newEntry = createBatchCutEntry(entryData);
-        batchCutList.appendChild(newEntry);
+        fragment.appendChild(newEntry);
     });
 
+    batchCutList.appendChild(fragment);
     updateButtonStates();
 }
 
@@ -1110,7 +1117,7 @@ function editRecord(id) {
 }
 
 function getFilteredRecords() {
-    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+    const searchTerm = document.getElementById('searchInput').value.trim().toUpperCase();
     const filterField = document.getElementById('filterByField').value;
     const dateFromValue = document.getElementById('dateFrom').value;
     const dateToValue = document.getElementById('dateTo').value;
@@ -1119,8 +1126,9 @@ function getFilteredRecords() {
 
     /**
      * BOLT OPTIMIZATION: High-performance filtering
-     * Avoids creating a 'fieldsToSearch' object for every single record in the loop.
-     * Uses direct property access and short-circuiting for O(N) efficiency without object overhead.
+     * - Uses string-based date comparison boundaries (numeric timestamps).
+     * - Caches search term once to avoid repeated .toUpperCase() on input.
+     * - Uses type-safe and case-insensitive checks on fields with O(N) efficiency.
      */
     return cutRecords.filter(record => {
         // Date filtering
@@ -1132,14 +1140,14 @@ function getFilteredRecords() {
         // Search filtering by specific field
         if (filterField !== 'all') {
             const val = record[filterField];
-            return val && val.toLowerCase().includes(searchTerm);
+            return val && val.toString().toUpperCase().includes(searchTerm);
         }
 
         // Search filtering across 'all' fields - optimized short-circuiting
-        return (record.wireId && record.wireId.toLowerCase().includes(searchTerm)) ||
-               (record.orderNumber && record.orderNumber.toLowerCase().includes(searchTerm)) ||
-               (record.cutterName && record.cutterName.toLowerCase().includes(searchTerm)) ||
-               (record.customerName && record.customerName.toLowerCase().includes(searchTerm));
+        return (record.wireId && record.wireId.toString().toUpperCase().includes(searchTerm)) ||
+               (record.orderNumber && record.orderNumber.toString().toUpperCase().includes(searchTerm)) ||
+               (record.cutterName && record.cutterName.toString().toUpperCase().includes(searchTerm)) ||
+               (record.customerName && record.customerName.toString().toUpperCase().includes(searchTerm));
     });
 }
 
@@ -1208,6 +1216,13 @@ function renderCutRecords() {
     const recordsToShow = Math.min(displayedRecordsCount + recordsPerPage, filteredRecords.length);
     displayedRecordsCount = recordsToShow;
     displayedRecordsElement.textContent = displayedRecordsCount;
+
+    /**
+     * BOLT OPTIMIZATION: High-performance list rendering
+     * Uses a DocumentFragment to batch DOM insertions, minimizing layout thrashing
+     * and reducing the number of reflows/repaints when rendering large lists.
+     */
+    const fragment = document.createDocumentFragment();
 
     filteredRecords.slice(0, displayedRecordsCount).forEach(record => {
         const recordDiv = document.createElement('div');
@@ -1349,7 +1364,7 @@ function renderCutRecords() {
         actionsDiv.appendChild(cutInSystemButton);
         recordDiv.appendChild(actionsDiv);
 
-        cutHistoryList.appendChild(recordDiv);
+        fragment.appendChild(recordDiv);
     });
 
     // Add "Load More" button if there are more records
@@ -1361,8 +1376,10 @@ function renderCutRecords() {
         moreBtn.className = 'px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition duration-200';
         moreBtn.textContent = `Load More Records (${filteredRecords.length - displayedRecordsCount} remaining)`;
         moreDiv.appendChild(moreBtn);
-        cutHistoryList.appendChild(moreDiv);
+        fragment.appendChild(moreDiv);
     }
+
+    cutHistoryList.appendChild(fragment);
 
     // BOLT: Removed redundant updateStats() call from render loop.
     // Statistics are now only recalculated upon data mutation.
@@ -3054,6 +3071,13 @@ function renderWireCutList() {
         return;
     }
 
+    /**
+     * BOLT OPTIMIZATION: High-performance list rendering
+     * Uses a DocumentFragment to batch DOM insertions, minimizing layout thrashing
+     * and reducing the number of reflows/repaints when rendering large lists.
+     */
+    const fragment = document.createDocumentFragment();
+
     filtered.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'wire-list-item';
@@ -3211,8 +3235,10 @@ function renderWireCutList() {
             itemDiv.classList.remove('dragging');
         });
 
-        container.appendChild(itemDiv);
+        fragment.appendChild(itemDiv);
     });
+
+    container.appendChild(fragment);
 }
 
 function showWireListItemModal(id = null) {
@@ -3540,9 +3566,16 @@ async function saveWireListOrder() {
     const items = [...container.querySelectorAll('.wire-list-item')];
     const itemsToUpdate = [];
 
+    /**
+     * BOLT OPTIMIZATION: O(N) Reordering
+     * Uses a Map for O(1) lookup during position updates, reducing overall complexity
+     * from O(N^2) to O(N). This ensures near-instant reordering even for long lists.
+     */
+    const itemMap = new Map(wireCutList.map(item => [item.id, item]));
+
     for (let i = 0; i < items.length; i++) {
         const id = items[i].dataset.id;
-        const item = wireCutList.find(item => item.id === id);
+        const item = itemMap.get(id);
         if (item) {
             item.position = i;
             itemsToUpdate.push(item);
