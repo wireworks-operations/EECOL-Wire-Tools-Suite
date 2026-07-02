@@ -1,12 +1,12 @@
-// Maintenance notification logic
+/ Maintenance notification logic
 document.addEventListener('DOMContentLoaded', function () {
     const notification = document.getElementById('maintenance-notification');
     const statusIcon = document.getElementById('status-icon');
     const notificationText = document.getElementById('notification-text');
 
-    // Function to update maintenance notification
+    / Function to update maintenance notification
     async function updateMaintenanceNotification() {
-        // Wait for database to be ready
+        / Wait for database to be ready
         if (window.eecolDB) {
             try {
                 await window.eecolDB.ready;
@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 checkCompletionStatus(data.completedAt);
             } catch (error) {
                 console.error('Error reading from IndexedDB:', error);
-                // Fallback to old localStorage if new DB fails
+                / Fallback to old localStorage if new DB fails
                 checkLocalStorageFallback();
             }
         } else {
-            // Fallback to localStorage if database not available
+            / Fallback to localStorage if database not available
             checkLocalStorageFallback();
         }
     }
@@ -54,15 +54,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const completedAt = new Date(completedAtISO);
         const now = new Date();
 
-        // Define the start of the current maintenance cycle (11 PM cutoff)
+        / Define the start of the current maintenance cycle (11 PM cutoff)
         let cycleStart = new Date(now);
-        cycleStart.setHours(23, 0, 0, 0); // Today at 11:00 PM
+        cycleStart.setHours(23, 0, 0, 0); / Today at 11:00 PM
 
-        // If it's currently before 11 PM, the cycle started yesterday at 11 PM
+        / If it's currently before 11 PM, the cycle started yesterday at 11 PM
         if (now.getHours() < 23) {
             cycleStart.setDate(cycleStart.getDate() - 1);
         } else {
-            // If it's after 11 PM, the cycle started today at 11 PM (which is what we set initially)
+            / If it's after 11 PM, the cycle started today at 11 PM (which is what we set initially)
         }
 
         if (completedAt > cycleStart) {
@@ -86,10 +86,10 @@ document.addEventListener('DOMContentLoaded', function () {
         notificationText.textContent = text;
     }
 
-    // Initial load
+    / Initial load
     updateMaintenanceNotification();
 
-    // Refresh when page becomes visible (user navigates back)
+    / Refresh when page becomes visible (user navigates back)
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
             updateMaintenanceNotification();
@@ -97,35 +97,38 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Initialize mobile menu for this page
+/ Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '💡 Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '🔒 Privacy Policy', href: '../privacy/privacy.html', class: 'bg-purple-500 hover:bg-purple-600' },
-            { text: '💾 Backup Guide', href: '../backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
-            { text: '🛠️ Maintenance', href: '../maintenance/maintenance.html', class: 'bg-purple-600 hover:bg-purple-700' },
-            { text: '🗃️ Database Config', href: '../database-config/database-config.html', class: 'bg-cyan-600 hover:bg-cyan-700' },
-            { text: '📋 Changelog', href: '../changelog/changelog.html', class: 'bg-amber-500 hover:bg-amber-600' }
+            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: '📊 Wire Cut Records', href: '/src/pages/cutting-records/cutting-records.html', class: 'bg-[#0058B3] hover:bg-[#004a99]' },
+            { text: '📦 Inventory Records', href: '/src/pages/inventory-records/inventory-records.html', class: 'bg-[#0058B3] hover:bg-[#004a99]' },
+            { text: '💡 Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '🔒 Privacy Policy', href: '/src/pages/privacy/privacy.html', class: 'bg-purple-500 hover:bg-purple-600' },
+            { text: '💾 Backup Guide', href: '/src/pages/backup/backup.html', class: 'bg-green-500 hover:bg-green-600' },
+            { text: '🛠️ Maintenance', href: '/src/pages/maintenance/maintenance.html', class: 'bg-purple-600 hover:bg-purple-700' },
+            { text: '🗃️ Database Config', href: '/src/pages/database-config/database-config.html', class: 'bg-cyan-600 hover:bg-cyan-700' },
+            { text: '📋 Changelog', href: '/src/pages/changelog/changelog.html', class: 'bg-amber-500 hover:bg-amber-600' }
         ],
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Wire Tools'
     });
 }
 
-// IndexedDB initialization
+/ IndexedDB initialization
 document.addEventListener('DOMContentLoaded', async function () {
     try {
-        // Initialize IndexedDB (new system) - using singleton pattern
+        / Initialize IndexedDB (new system) - using singleton pattern
         if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
-            // Make DB available globally for other scripts using singleton
+            / Make DB available globally for other scripts using singleton
             window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
 
             console.log('IndexedDB initialized successfully for EECOL Tools Suite');
 
-            // Run migration from localStorage if needed
+            / Run migration from localStorage if needed
             const hasExistingData = localStorage.getItem('cutRecords') ||
                 localStorage.getItem('inventoryItems') ||
                 localStorage.getItem('machineMaintenanceChecklist');
@@ -141,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     } catch (error) {
         console.error('Failed to initialize databases:', error);
-        // Fall back to localStorage only mode
+        / Fall back to localStorage only mode
         console.log('Running in localStorage-only mode');
     }
 });

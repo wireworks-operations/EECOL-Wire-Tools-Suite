@@ -3,7 +3,7 @@
  * Real-time analytics combining inventory and cutting data
  */
 
-// Global variables
+/ Global variables
 let inventoryItems = [];
 let cutRecords = [];
 
@@ -32,7 +32,7 @@ let cuttingPerformanceChart = null;
  * Stores all pre-calculated statistics to avoid redundant O(N) iterations.
  */
 let calculatedMetrics = {
-    // Inventory
+    / Inventory
     totalInventoryItems: 0,
     approvedCount: 0,
     deniedCount: 0,
@@ -45,7 +45,7 @@ let calculatedMetrics = {
     valueDistribution: { high: 0, standard: 0 },
     inventoryApprovalRateChange: '+0%',
 
-    // Cutting
+    / Cutting
     totalCuts: 0,
     totalLengthCut: 0,
     cutsToday: 0,
@@ -54,31 +54,31 @@ let calculatedMetrics = {
     cutsLastWeek: 0,
     performance: { fullPicks: 0, systemCuts: 0 },
 
-    // Combined/Advanced
-    productCounts: {}, // Combined inventory productCode and cutting wireId
+    / Combined/Advanced
+    productCounts: {}, / Combined inventory productCode and cutting wireId
     customerCounts: {},
     wireTypeCounts: {},
-    activityTimeline: [0, 0, 0, 0, 0, 0, 0], // Last 7 days
+    activityTimeline: [0, 0, 0, 0, 0, 0, 0], / Last 7 days
     topProduct: 'None',
     topCustomer: '-',
     topCustomerOrders: '-',
-    recentINAItems: [] // BOLT: Pre-collected in single pass
+    recentINAItems: [] / BOLT: Pre-collected in single pass
 };
 
-// Chart.js initialization with CDN fallback
+/ Chart.js initialization with CDN fallback
 function loadChartJS() {
     return new Promise((resolve, reject) => {
-        // Try local Chart.js first (offline support)
+        / Try local Chart.js first (offline support)
         const localScript = document.createElement('script');
-        localScript.src = '../../utils/chart.js';
+        localScript.src = '/src/pages/utils/chart.js';
         localScript.onload = () => {
             resolve('local');
         };
         localScript.onerror = () => {
             console.warn('Local Chart.js failed, trying CDN...');
-            // Fallback to CDN (Pinned to 4.4.1 for SRI)
+            / Fallback to CDN (Pinned to 4.4.1 for SRI)
             const cdnScript = document.createElement('script');
-            cdnScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1';
+            cdnScript.src = 'https:/cdn.jsdelivr.net/npm/chart.js@4.4.1';
             cdnScript.integrity = 'sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4';
             cdnScript.crossOrigin = 'anonymous';
             cdnScript.onload = () => {
@@ -98,15 +98,15 @@ function loadChartJS() {
     });
 }
 
-// Initialize all components
+/ Initialize all components
 document.addEventListener('DOMContentLoaded', async function() {
 
-    // Initialize IndexedDB first
+    / Initialize IndexedDB first
     if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
         window.eecolDB = EECOLIndexedDB.getInstance();
         await window.eecolDB.ready;
 
-        // Run migration from localStorage if needed
+        / Run migration from localStorage if needed
         const hasExistingData = localStorage.getItem('cutRecords') ||
                                localStorage.getItem('inventoryItems') ||
                                localStorage.getItem('machineMaintenanceChecklist');
@@ -119,27 +119,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     try {
-        // Wait for Chart.js to load
+        / Wait for Chart.js to load
         await loadChartJS();
 
-        // Initialize data loading
+        / Initialize data loading
         await loadLiveData();
         initAutoRefresh();
 
-        // Initialize all charts
+        / Initialize all charts
         await initializeAllCharts();
 
 
     } catch (error) {
         console.error('❌ Failed to initialize live dashboard:', error);
-        // Fallback mode with no charts
+        / Fallback mode with no charts
         await loadLiveData();
         initAutoRefresh();
         console.warn('Running in fallback mode without charts');
     }
 });
 
-// IndexedDB-based data loading for both inventory and cutting records
+/ IndexedDB-based data loading for both inventory and cutting records
 async function loadLiveData() {
     try {
         if (window.eecolDB && await window.eecolDB.isReady()) {
@@ -169,10 +169,10 @@ async function loadLiveData() {
     }
 }
 
-// Fallback localStorage loading
+/ Fallback localStorage loading
 function loadFromLocalStorage() {
     try {
-        // Load inventory items
+        / Load inventory items
         const inventoryStored = localStorage.getItem('inventoryItems');
         if (inventoryStored) {
             const items = JSON.parse(inventoryStored);
@@ -186,7 +186,7 @@ function loadFromLocalStorage() {
             inventoryItems = [];
         }
 
-        // Load cutting records
+        / Load cutting records
         const cuttingStored = localStorage.getItem('cutRecords');
         if (cuttingStored) {
             const cuts = JSON.parse(cuttingStored);
@@ -212,21 +212,21 @@ function loadFromLocalStorage() {
     }
 }
 
-// Auto-refresh mechanism
+/ Auto-refresh mechanism
 function initAutoRefresh() {
 
-    // Listen for storage changes
+    / Listen for storage changes
     window.addEventListener('storage', function(e) {
         if (e.key === 'eecolDBChange' || e.key === null) {
             loadLiveData();
         }
     });
 
-    // Periodic refresh check
+    / Periodic refresh check
     setInterval(function() {
         try {
             if (window.eecolDB && window.eecolDB.isReady()) {
-                // Check if data has changed
+                / Check if data has changed
                 Promise.all([
                     window.eecolDB.count('inventoryRecords'),
                     window.eecolDB.count('cuttingRecords')
@@ -237,13 +237,13 @@ function initAutoRefresh() {
                         loadLiveData();
                     }
                 }).catch(() => {
-                    // Silently handle errors in periodic checks
+                    / Silently handle errors in periodic checks
                 });
             }
         } catch (e) {
-            // Silently handle errors in periodic checks
+            / Silently handle errors in periodic checks
         }
-    }, 30000); // Check every 30 seconds
+    }, 30000); / Check every 30 seconds
 }
 
 /**
@@ -292,7 +292,7 @@ function calculateMetrics() {
     const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = now - (14 * 24 * 60 * 60 * 1000);
 
-    // Pre-calculate activity timeline start-of-day timestamps
+    / Pre-calculate activity timeline start-of-day timestamps
     const dayStarts = [];
     for (let i = 0; i < 7; i++) {
         const tempDate = new Date(todayStart);
@@ -300,17 +300,17 @@ function calculateMetrics() {
         dayStarts.push(tempDate.getTime());
     }
 
-    // Weekly inventory approval rate counters
+    / Weekly inventory approval rate counters
     let currentWeekInvProcessed = 0;
     let currentWeekInvApproved = 0;
     let previousWeekInvProcessed = 0;
     let previousWeekInvApproved = 0;
 
-    // Single pass for inventory
+    / Single pass for inventory
     for (const item of inventoryItems) {
         const ts = item.timestamp;
 
-        // Approval status
+        / Approval status
         if (item.approved === true) {
             calculatedMetrics.approvedCount++;
             calculatedMetrics.totalProcessed++;
@@ -321,7 +321,7 @@ function calculateMetrics() {
             calculatedMetrics.pendingCount++;
         }
 
-        // Value
+        / Value
         const val = item.totalValue || 0;
         calculatedMetrics.inventoryValue += val;
         if (val >= 50) {
@@ -330,7 +330,7 @@ function calculateMetrics() {
             calculatedMetrics.valueDistribution.standard++;
         }
 
-        // Recency & Weekly change tracking
+        / Recency & Weekly change tracking
         if (ts >= todayStart) {
             calculatedMetrics.todayInventoryCount++;
         }
@@ -347,11 +347,11 @@ function calculateMetrics() {
             }
         }
 
-        // Products
+        / Products
         const code = item.productCode || 'Unknown';
         calculatedMetrics.productCounts[code] = (calculatedMetrics.productCounts[code] || 0) + 1;
 
-        // Quality
+        / Quality
         const reason = (item.reason || '').toLowerCase();
         if (reason.includes('damaged')) {
             calculatedMetrics.quality.damaged++;
@@ -361,22 +361,22 @@ function calculateMetrics() {
             calculatedMetrics.quality.normal++;
         }
 
-        // BOLT: Collect top 5 INA items during metrics pass
+        / BOLT: Collect top 5 INA items during metrics pass
         if (calculatedMetrics.recentINAItems.length < 5 && item.inaNumber && item.inaNumber.trim() !== '') {
             calculatedMetrics.recentINAItems.push(item);
         }
     }
 
-    // Single pass for cutting records
+    / Single pass for cutting records
     for (const record of cutRecords) {
         const ts = record.timestamp;
 
-        // Basic metrics
+        / Basic metrics
         calculatedMetrics.totalLengthCut += (record.cutLength || 0);
         if (record.isFullPick === true) calculatedMetrics.performance.fullPicks++;
         if (record.isSystemCut === true) calculatedMetrics.performance.systemCuts++;
 
-        // Recency & Timeline
+        / Recency & Timeline
         if (ts >= todayStart) {
             calculatedMetrics.cutsToday++;
         }
@@ -387,7 +387,7 @@ function calculateMetrics() {
             calculatedMetrics.cutsLastWeek++;
         }
 
-        // Activity Timeline bucket using pre-calculated day starts
+        / Activity Timeline bucket using pre-calculated day starts
         for (let i = 6; i >= 0; i--) {
             if (ts >= dayStarts[i]) {
                 calculatedMetrics.activityTimeline[i]++;
@@ -395,19 +395,19 @@ function calculateMetrics() {
             }
         }
 
-        // Combined Product Counts
+        / Combined Product Counts
         const wireId = record.wireId || 'Unknown';
         calculatedMetrics.productCounts[wireId] = (calculatedMetrics.productCounts[wireId] || 0) + 1;
 
-        // Wire Type Counts
+        / Wire Type Counts
         calculatedMetrics.wireTypeCounts[wireId] = (calculatedMetrics.wireTypeCounts[wireId] || 0) + 1;
 
-        // Customer Counts
+        / Customer Counts
         const customer = record.customerName || 'Unknown';
         calculatedMetrics.customerCounts[customer] = (calculatedMetrics.customerCounts[customer] || 0) + 1;
     }
 
-    // Post-processing for tops and rates
+    / Post-processing for tops and rates
     if (Object.keys(calculatedMetrics.productCounts).length > 0) {
         calculatedMetrics.topProduct = Object.keys(calculatedMetrics.productCounts).reduce((a, b) =>
             calculatedMetrics.productCounts[a] > calculatedMetrics.productCounts[b] ? a : b, 'None');
@@ -421,13 +421,13 @@ function calculateMetrics() {
         calculatedMetrics.topCustomerOrders = count > 1 ? `${count} cuts` : `${count} cut`;
     }
 
-    // Inventory approval rate change
+    / Inventory approval rate change
     const currentRate = currentWeekInvProcessed > 0 ? (currentWeekInvApproved / currentWeekInvProcessed) * 100 : 0;
     const previousRate = previousWeekInvProcessed > 0 ? (previousWeekInvApproved / previousWeekInvProcessed) * 100 : 0;
     calculatedMetrics.inventoryApprovalRateChange = calculateChange(currentRate, previousRate);
 }
 
-// Initialize all charts
+/ Initialize all charts
 async function initializeAllCharts() {
     createApprovalChart();
     createProductChart();
@@ -435,7 +435,7 @@ async function initializeAllCharts() {
     createQualityChart();
     createValueChart();
 
-    // New cutting charts
+    / New cutting charts
     createTopCustomersChart();
     createWireTypeChart();
     createCuttingPerformanceChart();
@@ -443,7 +443,7 @@ async function initializeAllCharts() {
     updateAllCharts();
 }
 
-// Update key metrics dashboard
+/ Update key metrics dashboard
 function updateDashboard() {
     const m = calculatedMetrics;
 
@@ -453,7 +453,7 @@ function updateDashboard() {
     const recentActivityCount = m.recentCutsCount + m.recentInventoryCount;
     const cutsChange = calculateChange(m.cutsThisWeek, m.cutsLastWeek);
 
-    // Update DOM with pre-calculated data
+    / Update DOM with pre-calculated data
     const totalItemsEl = document.getElementById('dashboardTotalItems');
     if (totalItemsEl) totalItemsEl.textContent = m.totalInventoryItems + m.totalCuts;
 
@@ -490,7 +490,7 @@ function updateDashboard() {
     const cutsTodayEl = document.getElementById('dashboardCutsToday');
     if (cutsTodayEl) cutsTodayEl.textContent = cutsChange + ' this week';
 
-    // Inventory section metrics
+    / Inventory section metrics
     const inventoryApprovalRateChangeEl = document.getElementById('inventoryApprovalRateChange');
     if (inventoryApprovalRateChangeEl) inventoryApprovalRateChangeEl.textContent = m.inventoryApprovalRateChange + ' vs last week';
 
@@ -500,7 +500,7 @@ function updateDashboard() {
     const inventoryQualityPercentEl = document.getElementById('inventoryQualityPercent');
     if (inventoryQualityPercentEl) inventoryQualityPercentEl.textContent = qualityPercent + '% Normal';
 
-    // Cutting section metrics
+    / Cutting section metrics
     const cuttingTotalCutsEl = document.getElementById('cuttingTotalCuts');
     if (cuttingTotalCutsEl) cuttingTotalCutsEl.textContent = m.totalCuts;
     const cuttingCutsTodayEl = document.getElementById('cuttingCutsToday');
@@ -513,12 +513,12 @@ function updateDashboard() {
     if (cuttingWeeklyChangeEl) cuttingWeeklyChangeEl.textContent = cutsChange;
 }
 
-// Update all charts with current data
+/ Update all charts with current data
 function updateAllCharts() {
     const now = new Date().toLocaleTimeString();
     const timestamp = 'Updated: ' + now;
 
-    // Update timestamps
+    / Update timestamps
     const timestamps = [
         'approvalChartTimestamp', 'productChartTimestamp', 'activityChartTimestamp',
         'qualityChartTimestamp', 'valueChartTimestamp', 'topCustomersChartTimestamp',
@@ -540,7 +540,7 @@ function updateAllCharts() {
     updateINAItems();
 }
 
-// New chart creation functions
+/ New chart creation functions
 function createTopCustomersChart() {
     if (!topCustomersChart) {
         const ctx = document.getElementById('topCustomersChart').getContext('2d');
@@ -660,7 +660,7 @@ function createCuttingPerformanceChart() {
     }
 }
 
-// Chart creation functions
+/ Chart creation functions
 function createApprovalChart() {
     if (!approvalChart) {
         const ctx = document.getElementById('approvalChart').getContext('2d');
@@ -742,7 +742,7 @@ function createActivityChart() {
     if (!activityChart) {
         const ctx = document.getElementById('activityChart').getContext('2d');
 
-        // Generate last 7 days labels
+        / Generate last 7 days labels
         const labels = [];
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
@@ -855,7 +855,7 @@ function createValueChart() {
     }
 }
 
-// BOLT OPTIMIZATION: Refactored chart update functions to use calculatedMetrics
+/ BOLT OPTIMIZATION: Refactored chart update functions to use calculatedMetrics
 function updateApprovalChart() {
     if (!approvalChart) return;
     const m = calculatedMetrics;
@@ -971,7 +971,7 @@ function updateINAItems() {
     });
 }
 
-// Utility function
+/ Utility function
 function calculateChange(current, previous) {
     if (previous === 0) {
         return current > 0 ? '+∞%' : '+0%';
@@ -981,7 +981,7 @@ function calculateChange(current, previous) {
     return sign + change.toFixed(1) + '%';
 }
 
-// Keyboard shortcuts and global functions
+/ Keyboard shortcuts and global functions
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.key === 'r') {
         e.preventDefault();
@@ -989,20 +989,20 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Expose refresh function globally
+/ Expose refresh function globally
 if (typeof window !== 'undefined') {
     window.refreshLiveDashboard = loadLiveData;
 }
 
-// Initialize mobile menu for this page
+/ Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '✂️ Cutting Records', href: '../cutting-records/cutting-records.html', class: 'bg-orange-600 hover:bg-orange-700' },
-            { text: '📦 Inventory Records', href: '../inventory-records/inventory-records.html', class: 'bg-purple-600 hover:bg-purple-700' }
+            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '✂️ Cutting Records', href: '/src/pages/cutting-records/cutting-records.html', class: 'bg-orange-600 hover:bg-orange-700' },
+            { text: '📦 Inventory Records', href: '/src/pages/inventory-records/inventory-records.html', class: 'bg-purple-600 hover:bg-purple-700' }
 
         ],
         version: 'v0.8.0.5',

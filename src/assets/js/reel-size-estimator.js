@@ -1,11 +1,11 @@
-// ====================================================================
-// EECOL Reel Size Estimator Tool - v0.8.1
-// Adapted from reel-selector.html for EECOL Wire Tools Suite
-// ====================================================================
+/ ====================================================================
+/ EECOL Reel Size Estimator Tool - v0.8.1
+/ Adapted from reel-selector.html for EECOL Wire Tools Suite
+/ ====================================================================
 
-// ====================================================================
-// CONSTANTS & UTILITY FUNCTIONS
-// ====================================================================
+/ ====================================================================
+/ CONSTANTS & UTILITY FUNCTIONS
+/ ====================================================================
 
 const METERS_TO_FEET = 3.280839895;
 const FEET_TO_METERS = 0.3048;
@@ -13,7 +13,7 @@ const INCHES_TO_METERS = 0.0254;
 const MM_TO_METERS = 0.001;
 const CM_TO_METERS = 0.01;
 const PI = Math.PI;
-const DEAD_WRAPS = 2; // Number of dead wraps at the core
+const DEAD_WRAPS = 2; / Number of dead wraps at the core
 
 /* Unit conversion functions */
 function metersToFeet(m) { return m * METERS_TO_FEET; }
@@ -40,9 +40,9 @@ function degreesToRadians(degrees) {
     return degrees * (PI / 180);
 }
 
-// ====================================================================
-// STANDARD REEL DATABASE - Industry Standard Reel Sizes
-// ====================================================================
+/ ====================================================================
+/ STANDARD REEL DATABASE - Industry Standard Reel Sizes
+/ ====================================================================
 
 const STANDARD_REELS = [
     {name: "Small Spool", core: 12/39.37, flange: 24/39.37, width: 24/39.37, category: "prototype"},
@@ -60,11 +60,11 @@ const STANDARD_REELS = [
     {name: "54/96 Reel", core: 54/39.37, flange: 96/39.37, width: 54/39.37, category: "bulk"}
 ];
 
-// ====================================================================
-// DOM ELEMENTS & INPUT MANAGEMENT
-// ====================================================================
+/ ====================================================================
+/ DOM ELEMENTS & INPUT MANAGEMENT
+/ ====================================================================
 
-// Input elements
+/ Input elements
 const calculateReelSizeBtn = document.getElementById('calculateReelSizeBtn');
 const safetyStandardSelect = document.getElementById('safetyStandard');
 const freeboardInput = document.getElementById('freeboard');
@@ -73,19 +73,19 @@ const wireDiameterInput = document.getElementById('wireDiameter');
 const wireDiameterUnitSelect = document.getElementById('wireDiameterUnit');
 const freeboardStatusSpan = document.getElementById('freeboardStatus');
 
-// Output elements
+/ Output elements
 const theoreticalDimensionsCard = document.getElementById('theoreticalDimensionsCard');
 const recommendedReelsCard = document.getElementById('recommendedReelsCard');
 const recommendedReelsList = document.getElementById('recommendedReelsList');
 const reelSizeResultContainer = document.getElementById('reelSizeResultContainer');
 
-// Error handling
+/ Error handling
 const errorBox = document.getElementById('errorBox');
 const errorMessageDisplay = document.getElementById('errorMessage');
 
-// ====================================================================
-// SAFETY STANDARD MANAGEMENT (Mirrored from reel-estimator)
-// ====================================================================
+/ ====================================================================
+/ SAFETY STANDARD MANAGEMENT (Mirrored from reel-estimator)
+/ ====================================================================
 
 function updateFreeboardInput(triggerCalc = true) {
     const standard = safetyStandardSelect.value;
@@ -145,24 +145,24 @@ function updateFreeboardInput(triggerCalc = true) {
         freeboardUnitSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
     }
 
-    // Only trigger calculation if requested (avoids recursive calls)
+    / Only trigger calculation if requested (avoids recursive calls)
     if (triggerCalc) {
-        // Not used in this tool as calculation is manual
+        / Not used in this tool as calculation is manual
     }
 }
 
-// Initialize safety standard management
+/ Initialize safety standard management
 function initializeSafetyStandards() {
     safetyStandardSelect.addEventListener('change', () => updateFreeboardInput(false));
     updateFreeboardInput(false);
 }
 
-// ====================================================================
-// WIRE DIAMETER PRESET MANAGEMENT (From reel-estimator)
-// ====================================================================
+/ ====================================================================
+/ WIRE DIAMETER PRESET MANAGEMENT (From reel-estimator)
+/ ====================================================================
 
 function initializeWireDiameterPresets() {
-    // Wire Diameter Preset Event Listeners
+    / Wire Diameter Preset Event Listeners
     const wireDiameterPresetInch = document.getElementById('wireDiameterPresetInch');
     if (wireDiameterPresetInch) {
         wireDiameterPresetInch.addEventListener('change', function(e) {
@@ -188,9 +188,9 @@ function initializeWireDiameterPresets() {
     }
 }
 
-// ====================================================================
-// CALCULATION FUNCTIONS (Adapted from reel-selector)
-// ====================================================================
+/ ====================================================================
+/ CALCULATION FUNCTIONS (Adapted from reel-selector)
+/ ====================================================================
 
 /**
  * Calculate theoretical reel dimensions needed for target length
@@ -201,19 +201,19 @@ function initializeWireDiameterPresets() {
  * Fixes a bug where core_m was undefined (should be coreDiameter_m).
  */
 function calculateTheoreticalReel(cableDiameter_m, targetLength_m, freeboard_m, efficiency) {
-    // Rough estimate of layers needed
+    / Rough estimate of layers needed
     const baseCapacityPerLayer = Math.PI * (cableDiameter_m * 100) / 2;
     const roughLayers = Math.ceil(targetLength_m / (baseCapacityPerLayer * efficiency * 1000));
 
-    // Estimate dimensions
-    const coreDiameter_m = Math.max(cableDiameter_m * 10, 0.3); // Minimum practical core
+    / Estimate dimensions
+    const coreDiameter_m = Math.max(cableDiameter_m * 10, 0.3); / Minimum practical core
     const avgLayerAddition = cableDiameter_m * roughLayers;
     const flangeDiameter_m = coreDiameter_m + avgLayerAddition + 2 * freeboard_m;
 
-    // Limit traverse width to practical size
+    / Limit traverse width to practical size
     const traverseWidth_m = Math.min(targetLength_m / (Math.PI * flangeDiameter_m * efficiency / cableDiameter_m / 1000), 2.0);
 
-    // BOLT: Precise calculation using sum of arithmetic progression
+    / BOLT: Precise calculation using sum of arithmetic progression
     const segmentsPerLayer = Math.floor(traverseWidth_m / cableDiameter_m);
     const k = segmentsPerLayer * Math.PI * efficiency;
 
@@ -225,14 +225,14 @@ function calculateTheoreticalReel(cableDiameter_m, targetLength_m, freeboard_m, 
     const L_dead = getLen(DEAD_WRAPS, coreDiameter_m, cableDiameter_m);
     const target = (targetLength_m * 1.1) + L_dead;
 
-    // Solve quad: d*N^2 + D_core*N - (target/k) = 0
+    / Solve quad: d*N^2 + D_core*N - (target/k) = 0
     const a = cableDiameter_m;
     const b = coreDiameter_m;
     const c = -target / k;
 
     let layers = Math.ceil((-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a));
     if (layers < 0 || isNaN(layers)) layers = 0;
-    if (layers > 50) layers = 50; // Safety cap
+    if (layers > 50) layers = 50; / Safety cap
 
     const totalCapacity = Math.max(0, getLen(layers, coreDiameter_m, cableDiameter_m) - L_dead);
 
@@ -258,9 +258,9 @@ function calculateReelCapacity(reel, cableDiameter_m, freeboard_m, efficiency) {
 
     const maxDiameter_m = reel.flange - 2 * freeboard_m;
 
-    // Calculate how many layers fit (N) to match original iterative logic
+    / Calculate how many layers fit (N) to match original iterative logic
     let layers = Math.max(0, Math.ceil((maxDiameter_m - core_m) / (2 * cableDiameter_m)));
-    if (layers > 100) layers = 100; // Safety cap
+    if (layers > 100) layers = 100; / Safety cap
 
     /**
      * BOLT: Sum of arithmetic progression for layer lengths
@@ -273,7 +273,7 @@ function calculateReelCapacity(reel, cableDiameter_m, freeboard_m, efficiency) {
 
     const totalCapacity = Math.max(0, getLen(layers) - getLen(Math.min(layers, DEAD_WRAPS)));
 
-    // Return reel data with calculated capacity
+    / Return reel data with calculated capacity
     const result = {};
     for (var prop in reel) {
         if (reel.hasOwnProperty(prop)) {
@@ -292,13 +292,13 @@ function calculateReelCapacity(reel, cableDiameter_m, freeboard_m, efficiency) {
 function findStandardReels(targetLength_m, cableDiameter_m, freeboard_m, efficiency) {
     const reelsWithCapacity = [];
 
-    // Calculate capacity for each standard reel
+    / Calculate capacity for each standard reel
     for (let i = 0; i < STANDARD_REELS.length; i++) {
         const reelWithCapacity = calculateReelCapacity(STANDARD_REELS[i], cableDiameter_m, freeboard_m, efficiency);
         reelsWithCapacity.push(reelWithCapacity);
     }
 
-    // Filter to only reels that can hold the target length
+    / Filter to only reels that can hold the target length
     const matchingReels = [];
     for (let j = 0; j < reelsWithCapacity.length; j++) {
         if (reelsWithCapacity[j].capacity_m >= targetLength_m) {
@@ -306,7 +306,7 @@ function findStandardReels(targetLength_m, cableDiameter_m, freeboard_m, efficie
         }
     }
 
-    // Sort by utilization closest to 85% (optimal utilization)
+    / Sort by utilization closest to 85% (optimal utilization)
     for (let m = 0; m < matchingReels.length - 1; m++) {
         for (let n = 0; n < matchingReels.length - 1 - m; n++) {
             const aUtil = matchingReels[n].capacity_m > 0 ? (targetLength_m / matchingReels[n].capacity_m) : 0;
@@ -320,7 +320,7 @@ function findStandardReels(targetLength_m, cableDiameter_m, freeboard_m, efficie
         }
     }
 
-    // Return top 3 matches
+    / Return top 3 matches
     const topMatches = [];
     const maxResults = Math.min(3, matchingReels.length);
     for (let k = 0; k < maxResults; k++) {
@@ -337,9 +337,9 @@ function findStandardReels(targetLength_m, cableDiameter_m, freeboard_m, efficie
     return topMatches;
 }
 
-// ====================================================================
-// UI UPDATE FUNCTIONS
-// ====================================================================
+/ ====================================================================
+/ UI UPDATE FUNCTIONS
+/ ====================================================================
 
 /**
  * Clear all results and reset display
@@ -347,7 +347,7 @@ function findStandardReels(targetLength_m, cableDiameter_m, freeboard_m, efficie
 function clearResults() {
     theoreticalDimensionsCard.classList.add('hidden');
     recommendedReelsCard.classList.add('hidden');
-    recommendedReelsList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    recommendedReelsList.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
     errorBox.classList.add('hidden');
 }
 
@@ -372,7 +372,7 @@ function displayTheoreticalDimensions(theoreticalReel, targetLength_m) {
     const target_ft = metersToFeet(targetLength_m);
     const capacity_ft = metersToFeet(theoreticalReel.capacity_m);
 
-    // Update display elements
+    / Update display elements
     document.getElementById('theoreticalFlangeDiameter').textContent = formatDimension(theoreticalReel.flangeDiameter_m);
     document.getElementById('theoreticalCoreDiameter').textContent = formatDimension(theoreticalReel.coreDiameter_m);
     document.getElementById('theoreticalTraverseWidth').textContent = formatDimension(theoreticalReel.traverseWidth_m);
@@ -380,7 +380,7 @@ function displayTheoreticalDimensions(theoreticalReel, targetLength_m) {
 
     document.getElementById('theoreticalCapacity').textContent = `${theoreticalReel.capacity_m.toFixed(0)} m (${capacity_ft.toFixed(0)} ft)`;
 
-    // Show the card
+    / Show the card
     theoreticalDimensionsCard.classList.remove('hidden');
 }
 
@@ -389,7 +389,7 @@ function displayTheoreticalDimensions(theoreticalReel, targetLength_m) {
  */
 function displayRecommendedReels(recommendedReels, targetLength_m) {
     const target_ft = metersToFeet(targetLength_m);
-    recommendedReelsList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    recommendedReelsList.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
 
     recommendedReels.forEach((reel, index) => {
         const df_in = reel.flange / INCHES_TO_METERS;
@@ -466,9 +466,9 @@ function displayRecommendedReels(recommendedReels, targetLength_m) {
     recommendedReelsCard.classList.remove('hidden');
 }
 
-// ====================================================================
-// MAIN CALCULATION FUNCTION
-// ====================================================================
+/ ====================================================================
+/ MAIN CALCULATION FUNCTION
+/ ====================================================================
 
 function findReelOptions(showErrors = false) {
     if (showErrors) {
@@ -478,7 +478,7 @@ function findReelOptions(showErrors = false) {
 
     clearResults();
 
-    // Get input values
+    / Get input values
     const d = parseFloat(document.getElementById('wireDiameter').value);
     const dUnit = document.getElementById('wireDiameterUnit').value;
     const targetLength = parseFloat(document.getElementById('targetLength').value);
@@ -487,7 +487,7 @@ function findReelOptions(showErrors = false) {
     const freeboardUnit = document.getElementById('freeboardUnit').value;
     const efficiency = parseFloat(document.getElementById('windingEfficiency').value);
 
-    // Input validation
+    / Input validation
     if (isNaN(d) || isNaN(targetLength) || isNaN(freeboard) || d <= 0 || targetLength <= 0 || freeboard < 0) {
         if (showErrors) {
             errorMessageDisplay.textContent = 'Please enter valid positive values for wire diameter, target length, and freeboard.';
@@ -498,16 +498,16 @@ function findReelOptions(showErrors = false) {
     }
 
     try {
-        // Convert to metric for calculations
+        / Convert to metric for calculations
         const d_m = toMeters(d, dUnit);
         const target_m = toMeters(targetLength, targetLengthUnit);
         const F_m = toMeters(freeboard, freeboardUnit);
 
-        // Calculate theoretical and standard reel options
+        / Calculate theoretical and standard reel options
         const theoreticalReel = calculateTheoreticalReel(d_m, target_m, F_m, efficiency);
         const standardMatches = findStandardReels(target_m, d_m, F_m, efficiency);
 
-        // Display results
+        / Display results
         displayTheoreticalDimensions(theoreticalReel, target_m);
         displayRecommendedReels(standardMatches, target_m);
 
@@ -523,9 +523,9 @@ function findReelOptions(showErrors = false) {
     }
 }
 
-// ====================================================================
-// PRINT FUNCTIONALITY
-// ====================================================================
+/ ====================================================================
+/ PRINT FUNCTIONALITY
+/ ====================================================================
 
 /**
  * IDB SENTINEL: Internal helper to safely escape strings for HTML insertion.
@@ -544,11 +544,11 @@ function _esc(v) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
-        .replace(/\//g, '&#x2F;');
+        .replace(/\/g, '&#x2F;');
 }
 
 function printReelSizeResults() {
-    // Collect result data for printing
+    / Collect result data for printing
     const theoreticalVisible = !theoreticalDimensionsCard.classList.contains('hidden');
     const recommendedVisible = !recommendedReelsCard.classList.contains('hidden');
 
@@ -566,7 +566,7 @@ function printReelSizeResults() {
     }
 
     if (recommendedVisible) {
-        // Get data from the rendered cards
+        / Get data from the rendered cards
         const reelCards = recommendedReelsList.querySelectorAll('.bg-green-50');
         reelCards.forEach(card => {
             const title = card.querySelector('h5').textContent;
@@ -673,42 +673,42 @@ function printReelSizeResults() {
     }
 }
 
-// ====================================================================
-// INITIALIZATION
-// ====================================================================
+/ ====================================================================
+/ INITIALIZATION
+/ ====================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize safety standards and wire diameter presets
+    / Initialize safety standards and wire diameter presets
     initializeSafetyStandards();
     initializeWireDiameterPresets();
 
-    // Reset results on page load
+    / Reset results on page load
     clearResults();
 
-    // Set up calculate button
+    / Set up calculate button
     if (calculateReelSizeBtn) {
         calculateReelSizeBtn.addEventListener('click', () => findReelOptions(true));
     }
 
-    // Set up print button
+    / Set up print button
     const printBtn = document.getElementById('printResultsBtn');
     if (printBtn) {
         printBtn.addEventListener('click', printReelSizeResults);
     }
 });
 
-// ============================================================================
-// MOBILE MENU INITIALIZATION FOR REEL SIZE ESTIMATOR PAGE
-// ============================================================================
+/ ============================================================================
+/ MOBILE MENU INITIALIZATION FOR REEL SIZE ESTIMATOR PAGE
+/ ============================================================================
 
-// Initialize mobile menu for this page
+/ Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '📏 Capacity Estimator', href: '../reel-capacity-estimator/reel-capacity-estimator.html', class: 'bg-emerald-600 hover:bg-emerald-700' }
+            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '📏 Capacity Estimator', href: '/src/pages/reel-capacity-estimator/reel-capacity-estimator.html', class: 'bg-emerald-600 hover:bg-emerald-700' }
         ],
         version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
