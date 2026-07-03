@@ -1,6 +1,6 @@
-/ Machine Maintenance Checklist Multi-Page - EECOL Wire Tools Suite
+// Machine Maintenance Checklist Multi-Page - EECOL Wire Tools Suite
 
-/ Shared data functions for cross-page compatibility
+// Shared data functions for cross-page compatibility
 function saveSharedChecklistData(inspectorName, inspectionDate, comments) {
     const sharedData = {
         inspectorName: inspectorName || '',
@@ -9,7 +9,7 @@ function saveSharedChecklistData(inspectorName, inspectionDate, comments) {
         sharedAt: new Date().toISOString()
     };
 
-    / Save to both IndexedDB and localStorage for maximum compatibility
+    // Save to both IndexedDB and localStorage for maximum compatibility
     if (window.eecolDB) {
         window.eecolDB.update('maintenanceLogs', { id: 'shared_checklist_data', ...sharedData });
     }
@@ -23,7 +23,7 @@ function loadSharedChecklistData() {
                 if (data && data.sharedAt) {
                     resolve(data);
                 } else {
-                    / Try localStorage fallback
+                    // Try localStorage fallback
                     const localData = localStorage.getItem('maintenanceSharedData');
                     if (localData) {
                         try {
@@ -37,7 +37,7 @@ function loadSharedChecklistData() {
                 }
             }).catch(() => resolve(null));
         } else {
-            / localStorage only
+            // localStorage only
             const localData = localStorage.getItem('maintenanceSharedData');
             if (localData) {
                 try {
@@ -53,7 +53,7 @@ function loadSharedChecklistData() {
 }
 
 
-/ Maintenance checklist data
+// Maintenance checklist data
 const machines = [
     'Manual Hand Coiler',
     'Green Electric Hand Coiler',
@@ -79,12 +79,12 @@ const maintenanceItems = [
     'PPE Ready & Available'
 ];
 
-/ Initialize checklists
+// Initialize checklists
 function initializeChecklists() {
     const skipLists = {
-        1: [1,2,3,4,5,6,7], / Manual Hand Coiler skips these item indices
-        2: [3,4,5,7],       / Green Electric Hand Coiler skips
-        3: [3,4,5]          / Blue Electric Hand Coiler skips
+        1: [1,2,3,4,5,6,7], // Manual Hand Coiler skips these item indices
+        2: [3,4,5,7],       // Green Electric Hand Coiler skips
+        3: [3,4,5]          // Blue Electric Hand Coiler skips
     };
 
     for (let i = 1; i <= 6; i++) {
@@ -124,57 +124,57 @@ function initializeChecklists() {
         });
     }
 
-    / Add checkbox event listeners
+    // Add checkbox event listeners
     document.querySelectorAll('.ok-checkbox, .not-ok-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', handleCheckboxChange);
     });
 }
 
-/ Handle checkbox behavior (only one per row can be selected)
+// Handle checkbox behavior (only one per row can be selected)
 function handleCheckboxChange(event) {
     const checkbox = event.target;
     const machine = checkbox.dataset.machine;
     const item = checkbox.dataset.item;
     const isOk = checkbox.classList.contains('ok-checkbox');
 
-    / Uncheck the other checkbox in this row
+    // Uncheck the other checkbox in this row
     const tbody = document.getElementById(`checklist-${machine}`);
     const otherCheckbox = tbody.querySelector(`input[data-item="${item}"]:not(.${checkbox.className.replace(' ', '.')})`);
     if (otherCheckbox) {
         otherCheckbox.checked = false;
     }
 
-    / Auto-save on change
+    // Auto-save on change
     saveCurrentSession();
 }
 
-/ Validate checklist completion - all machines must have their data filled
+// Validate checklist completion - all machines must have their data filled
 async function validateChecklist() {
     const today = new Date().toISOString().split('T')[0];
 
     for (let i = 1; i <= 6; i++) {
-        / Check inspected by
+        // Check inspected by
         const inspectedBy = document.getElementById(`inspectedBy-${i}`).value.trim();
         if (!inspectedBy) {
             await showAlert(`Please enter "Inspected By" for ${machines[i-1]}.`, "Validation Error");
             return false;
         }
 
-        / Check date
+        // Check date
         const inspectionDate = document.getElementById(`inspectionDate-${i}`).value;
         if (inspectionDate !== today) {
             await showAlert(`Inspection date for ${machines[i-1]} must be set to today.`, "Validation Error");
             return false;
         }
 
-        / Check all required checkboxes are filled for this machine
+        // Check all required checkboxes are filled for this machine
         const skipIndexes = (function() {
             const skips = { 1: [1,2,3,4,5,6,7], 2: [3,4,5,7], 3: [3,4,5] };
             return skips[i] || [];
         })();
 
         for (let itemIndex = 0; itemIndex < maintenanceItems.length; itemIndex++) {
-            / Skip items based on machine-specific skip list
+            // Skip items based on machine-specific skip list
             if (skipIndexes.includes(itemIndex)) continue;
 
             const okCheckbox = document.querySelector(`.ok-checkbox[data-machine="${i}"][data-item="${itemIndex}"]`);
@@ -197,17 +197,17 @@ async function validateChecklist() {
     return true;
 }
 
-/ Save current session (work-in-progress) to temporary storage
+// Save current session (work-in-progress) to temporary storage
 function saveCurrentSession() {
     const state = {};
-    state.savedAt = new Date().toISOString(); / Timestamp for current session
+    state.savedAt = new Date().toISOString(); // Timestamp for current session
 
-    / For multi-page format, use first machine's data for shared fields
+    // For multi-page format, use first machine's data for shared fields
     const firstMachineInspectedBy = document.getElementById('inspectedBy-1').value || '';
     const firstMachineInspectionDate = document.getElementById('inspectionDate-1').value || '';
     const firstMachineComments = document.getElementById('comments-1').value || '';
 
-    / Also save shared data for cross-page compatibility
+    // Also save shared data for cross-page compatibility
     saveSharedChecklistData(firstMachineInspectedBy, firstMachineInspectionDate, firstMachineComments);
 
     for (let i = 1; i <= 6; i++) {
@@ -228,50 +228,50 @@ function saveCurrentSession() {
         });
     }
 
-    / Save to IndexedDB
+    // Save to IndexedDB
     if (window.eecolDB) {
         window.eecolDB.update('maintenanceLogs', { id: 'current_session', ...state }).then(() => {
 
         }).catch(error => {
             console.error('Failed to save current session to database:', error);
-            / Fallback to localStorage
+            // Fallback to localStorage
             localStorage.setItem('maintenanceCurrentSession', JSON.stringify(state));
         });
     } else {
-        / Fallback to localStorage
+        // Fallback to localStorage
         localStorage.setItem('maintenanceCurrentSession', JSON.stringify(state));
     }
 }
 
-/ Restore current session (work-in-progress) from temporary storage
+// Restore current session (work-in-progress) from temporary storage
 function restoreCurrentSession() {
     if (window.eecolDB) {
         window.eecolDB.get('maintenanceLogs', 'current_session').then(data => {
             if (data && data.savedAt) {
                 loadDataIntoForm(data);
-                setTodaysDate(); / Force date to today
+                setTodaysDate(); // Force date to today
             }
         }).catch(() => {
-            / Fallback to localStorage
+            // Fallback to localStorage
             const state = localStorage.getItem('maintenanceCurrentSession');
             if (state) {
                 try {
                     const data = JSON.parse(state);
                     loadDataIntoForm(data);
-                    setTodaysDate(); / Force date to today
+                    setTodaysDate(); // Force date to today
                 } catch (e) {
                     console.error('Error loading current session from localStorage:', e);
                 }
             }
         });
     } else {
-        / Fallback to localStorage
+        // Fallback to localStorage
         const state = localStorage.getItem('maintenanceCurrentSession');
         if (state) {
             try {
                 const data = JSON.parse(state);
                 loadDataIntoForm(data);
-                setTodaysDate(); / Force date to today
+                setTodaysDate(); // Force date to today
             } catch (e) {
                 console.error('Error loading current session from localStorage:', e);
             }
@@ -279,13 +279,13 @@ function restoreCurrentSession() {
     }
 }
 
-/ Clear current session from temporary storage
+// Clear current session from temporary storage
 function clearCurrentSession() {
     if (window.eecolDB) {
         window.eecolDB.delete('maintenanceLogs', 'current_session').then(() => {
         }).catch(error => {
             console.error('Failed to clear current session from database:', error);
-            / Fallback
+            // Fallback
             localStorage.removeItem('maintenanceCurrentSession');
         });
     } else {
@@ -293,12 +293,12 @@ function clearCurrentSession() {
     }
 }
 
-/ Save checklist state to database
+// Save checklist state to database
 function saveChecklistState() {
     const state = {};
-    state.completedAt = new Date().toISOString(); / Timestamp completion
+    state.completedAt = new Date().toISOString(); // Timestamp completion
 
-    / Define variables from first machine's data (fix undefined variable bug)
+    // Define variables from first machine's data (fix undefined variable bug)
     const firstMachineInspectedBy = document.getElementById('inspectedBy-1')?.value || '';
     const firstMachineInspectionDate = document.getElementById('inspectionDate-1')?.value || '';
     const firstMachineComments = document.getElementById('comments-1')?.value || '';
@@ -321,11 +321,11 @@ function saveChecklistState() {
         });
     }
 
-    / Save to IndexedDB
+    // Save to IndexedDB
     if (window.eecolDB) {
-        const dateKey = new Date().toISOString().split('T')[0]; / Use date as key
+        const dateKey = new Date().toISOString().split('T')[0]; // Use date as key
         window.eecolDB.update('maintenanceLogs', { id: dateKey, ...state }).then(() => {
-            / Also update the daily check with complete inspector info for alert system compatibility
+            // Also update the daily check with complete inspector info for alert system compatibility
             window.eecolDB.update('maintenanceLogs', {
                 id: 'daily_check',
                 completedAt: state.completedAt,
@@ -333,18 +333,18 @@ function saveChecklistState() {
                 inspectionDate: firstMachineInspectionDate,
                 comments: firstMachineComments
             }).catch(() => {
-                / Ignore daily_check errors
+                // Ignore daily_check errors
             });
-            / Clear current session after completion
+            // Clear current session after completion
             clearCurrentSession();
-            / Also clear any shared data after successful completion
+            // Also clear any shared data after successful completion
             if (window.eecolDB) {
                 window.eecolDB.delete('maintenanceLogs', 'shared_checklist_data').catch(() => {});
             }
             localStorage.removeItem('maintenanceSharedData');
         }).catch(error => {
             console.error('Failed to save to database:', error);
-            / Fallback to localStorage
+            // Fallback to localStorage
             localStorage.setItem('machineMaintenanceChecklist', JSON.stringify(state));
             localStorage.setItem('daily_check', JSON.stringify({
                 completedAt: state.completedAt,
@@ -356,7 +356,7 @@ function saveChecklistState() {
             localStorage.removeItem('maintenanceSharedData');
         });
     } else {
-        / Fallback to localStorage
+        // Fallback to localStorage
         localStorage.setItem('machineMaintenanceChecklist', JSON.stringify(state));
         localStorage.setItem('daily_check', JSON.stringify({
             completedAt: state.completedAt,
@@ -369,7 +369,7 @@ function saveChecklistState() {
     }
 }
 
-/ Load checklist state for today
+// Load checklist state for today
 function loadChecklistState() {
     if (window.eecolDB) {
         const today = new Date().toISOString().split('T')[0];
@@ -378,14 +378,14 @@ function loadChecklistState() {
                 return;
             }
             loadDataIntoForm(data);
-            / Disable complete button since already completed today
+            // Disable complete button since already completed today
             const completeBtn = document.getElementById('completeBtn');
             completeBtn.disabled = true;
             completeBtn.textContent = '✅ Completed Today';
             completeBtn.classList.add('bg-gray-400');
             completeBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
         }).catch((error) => {
-            / Fallback to localStorage
+            // Fallback to localStorage
             const state = localStorage.getItem('machineMaintenanceChecklist');
             if (!state) {
                 return;
@@ -411,7 +411,7 @@ function loadChecklistState() {
             }
         });
     } else {
-        / Fallback to localStorage
+        // Fallback to localStorage
         const state = localStorage.getItem('machineMaintenanceChecklist');
         if (!state) {
             return;
@@ -420,7 +420,7 @@ function loadChecklistState() {
         try {
             const data = JSON.parse(state);
 
-            / Check if completed
+            // Check if completed
             if (!data.completedAt) {
                 return;
             }
@@ -428,14 +428,14 @@ function loadChecklistState() {
             const completedDate = new Date(data.completedAt).toISOString().split('T')[0];
             const today = new Date().toISOString().split('T')[0];
 
-            / Load data only if completed for today
+            // Load data only if completed for today
             if (completedDate !== today) {
                 return;
             }
 
             loadDataIntoForm(data);
 
-            / Disable complete button since already completed today
+            // Disable complete button since already completed today
             const completeBtn = document.getElementById('completeBtn');
             completeBtn.disabled = true;
             completeBtn.textContent = '✅ Completed Today';
@@ -455,7 +455,7 @@ function loadDataIntoForm(data) {
             document.getElementById(`inspectionDate-${i}`).value = machineData.inspectionDate || '';
             document.getElementById(`comments-${i}`).value = machineData.comments || '';
 
-            / Try to load checkbox states
+            // Try to load checkbox states
             if (machineData.checks && Array.isArray(machineData.checks)) {
                 machineData.checks.forEach((check, itemIndex) => {
                     const okCheckbox = document.querySelector(`.ok-checkbox[data-machine="${i}"][data-item="${itemIndex}"]`);
@@ -471,11 +471,11 @@ function loadDataIntoForm(data) {
     }
 }
 
-/ Load shared data into multi-page form fields (cross-page compatibility)
+// Load shared data into multi-page form fields (cross-page compatibility)
 function loadSharedDataIntoMultiPageForm() {
     loadSharedChecklistData().then(sharedData => {
         if (sharedData) {
-            / Load shared data into all machine fields for consistency
+            // Load shared data into all machine fields for consistency
             for (let i = 1; i <= 6; i++) {
                 if (document.getElementById(`inspectedBy-${i}`)) {
                     document.getElementById(`inspectedBy-${i}`).value = sharedData.inspectorName || '';
@@ -488,7 +488,7 @@ function loadSharedDataIntoMultiPageForm() {
                 }
             }
 
-            / Force date to today
+            // Force date to today
             setTodaysDate();
         }
     }).catch(error => {
@@ -496,10 +496,10 @@ function loadSharedDataIntoMultiPageForm() {
     });
 }
 
-/ Sync multi-page form changes to shared data in real-time
+// Sync multi-page form changes to shared data in real-time
 function setupMultiPageFieldSync() {
     for (let i = 1; i <= 6; i++) {
-        / Sync name field changes
+        // Sync name field changes
         const nameField = document.getElementById(`inspectedBy-${i}`);
         if (nameField) {
             nameField.addEventListener('input', function() {
@@ -507,7 +507,7 @@ function setupMultiPageFieldSync() {
             });
         }
 
-        / Sync date field changes
+        // Sync date field changes
         const dateField = document.getElementById(`inspectionDate-${i}`);
         if (dateField) {
             dateField.addEventListener('input', function() {
@@ -515,7 +515,7 @@ function setupMultiPageFieldSync() {
             });
         }
 
-        / Sync comments field changes
+        // Sync comments field changes
         const commentsField = document.getElementById(`comments-${i}`);
         if (commentsField) {
             commentsField.addEventListener('input', function() {
@@ -525,25 +525,25 @@ function setupMultiPageFieldSync() {
     }
 }
 
-/ Sync first machine's data to shared storage (real-time)
+// Sync first machine's data to shared storage (real-time)
 function syncFirstMachineDataToShared() {
     const firstMachineName = document.getElementById('inspectedBy-1')?.value || '';
     const firstMachineDate = document.getElementById('inspectionDate-1')?.value || '';
     const firstMachineComments = document.getElementById('comments-1')?.value || '';
 
-    / Only sync if we have data to share
+    // Only sync if we have data to share
     if (firstMachineName || firstMachineDate || firstMachineComments) {
         saveSharedChecklistData(firstMachineName, firstMachineDate, firstMachineComments);
     }
 }
 
-/ Load historical record by date with migration capability
+// Load historical record by date with migration capability
 async function loadHistoricalRecord(date) {
     try {
         let data = await window.eecolDB.get('maintenanceLogs', date);
         let dataSource = 'IndexedDB';
 
-        / If no data in IndexedDB, try localStorage fallback
+        // If no data in IndexedDB, try localStorage fallback
         if (!data || !data.completedAt) {
             const localStorageKey = `machineMaintenanceChecklist_${date}`;
             const localStorageData = localStorage.getItem(localStorageKey);
@@ -553,7 +553,7 @@ async function loadHistoricalRecord(date) {
                     data = JSON.parse(localStorageData);
                     dataSource = 'localStorage (migrating)';
 
-                    / Migrate to IndexedDB
+                    // Migrate to IndexedDB
                     await window.eecolDB.update('maintenanceLogs', { id: date, ...data });
                 } catch (parseError) {
                     console.error('Error parsing localStorage data:', parseError);
@@ -562,10 +562,10 @@ async function loadHistoricalRecord(date) {
         }
 
         if (data && data.completedAt) {
-            / Save current session before switching to historical view
+            // Save current session before switching to historical view
             saveCurrentSession();
             loadDataIntoForm(data);
-            / Make form read-only and add return to current session button
+            // Make form read-only and add return to current session button
             makeFormReadOnlyForHistorical(true);
             const today = new Date().toISOString().split('T')[0];
             const message = date === today
@@ -582,19 +582,19 @@ async function loadHistoricalRecord(date) {
 }
 
 function makeFormReadOnly(readOnly = true) {
-    / Disable inputs
+    // Disable inputs
     for (let i = 1; i <= 6; i++) {
         document.getElementById(`inspectedBy-${i}`).disabled = readOnly;
         document.getElementById(`inspectionDate-${i}`).disabled = readOnly;
         document.getElementById(`comments-${i}`).disabled = readOnly;
     }
 
-    / Disable checkboxes
+    // Disable checkboxes
     document.querySelectorAll('.ok-checkbox, .not-ok-checkbox').forEach(checkbox => {
         checkbox.disabled = readOnly;
     });
 
-    / Update complete button
+    // Update complete button
     const completeBtn = document.getElementById('completeBtn');
     if (readOnly) {
         completeBtn.disabled = true;
@@ -605,19 +605,19 @@ function makeFormReadOnly(readOnly = true) {
 }
 
 function makeFormReadOnlyForHistorical(readOnly = true) {
-    / Make form read-only similar to makeFormReadOnly
+    // Make form read-only similar to makeFormReadOnly
     for (let i = 1; i <= 6; i++) {
         document.getElementById(`inspectedBy-${i}`).disabled = readOnly;
         document.getElementById(`inspectionDate-${i}`).disabled = readOnly;
         document.getElementById(`comments-${i}`).disabled = readOnly;
     }
 
-    / Disable checkboxes
+    // Disable checkboxes
     document.querySelectorAll('.ok-checkbox, .not-ok-checkbox').forEach(checkbox => {
         checkbox.disabled = readOnly;
     });
 
-    / Update complete button to be a "Return to Current Session" button
+    // Update complete button to be a "Return to Current Session" button
     const completeBtn = document.getElementById('completeBtn');
     if (readOnly) {
         completeBtn.disabled = false;
@@ -625,33 +625,33 @@ function makeFormReadOnlyForHistorical(readOnly = true) {
         completeBtn.classList.remove('bg-gray-400', 'bg-green-600', 'hover:bg-green-700');
         completeBtn.classList.add('bg-orange-600', 'hover:bg-orange-700');
 
-        / Remove existing event listener and add new one for returning to current session
+        // Remove existing event listener and add new one for returning to current session
         completeBtn.removeEventListener('click', completeBtn._completeHandler);
         completeBtn.addEventListener('click', returnToCurrentSession);
     }
 }
 
 async function returnToCurrentSession() {
-    / Restore current session
+    // Restore current session
     restoreCurrentSession();
 
-    / Clear read-only state
+    // Clear read-only state
     makeFormReadOnly(false);
 
-    / Restore complete button functionality
+    // Restore complete button functionality
     const completeBtn = document.getElementById('completeBtn');
     completeBtn.textContent = '✅ Complete';
     completeBtn.classList.remove('bg-orange-600', 'hover:bg-orange-700');
     completeBtn.classList.add('bg-green-600', 'hover:bg-green-700');
 
-    / Remove return to current session listener and restore complete functionality
+    // Remove return to current session listener and restore complete functionality
     completeBtn.removeEventListener('click', returnToCurrentSession);
     setupCompleteFunctionality();
 
     await showAlert('Returned to current session. Your previous work has been restored.');
 }
 
-/ Set today's date in inspection date fields
+// Set today's date in inspection date fields
 function setTodaysDate() {
     const today = new Date().toISOString().split('T')[0];
     for (let i = 1; i <= 6; i++) {
@@ -662,25 +662,25 @@ function setTodaysDate() {
     }
 }
 
-/ Complete functionality
+// Complete functionality
 async function setupCompleteFunctionality() {
     const completeHandler = async () => {
         if (await validateChecklist()) {
-            / Disable button immediately to prevent multiple clicks
+            // Disable button immediately to prevent multiple clicks
             const completeBtn = document.getElementById('completeBtn');
             completeBtn.disabled = true;
             completeBtn.textContent = '⏳ Saving...';
 
             try {
-                await saveChecklistState(); / Wait for save to complete
+                await saveChecklistState(); // Wait for save to complete
 
-                / Refresh current view to ensure it's showing the completed state
-                await loadChecklistState(); / Reload to handle completion state properly
+                // Refresh current view to ensure it's showing the completed state
+                await loadChecklistState(); // Reload to handle completion state properly
 
                 await showAlert('Maintenance checklist completed successfully! All fields are now read-only.', 'Success');
             } catch (error) {
                 console.error('Error completing checklist:', error);
-                / Re-enable button on error
+                // Re-enable button on error
                 completeBtn.disabled = false;
                 completeBtn.textContent = '✅ Complete';
                 await showAlert('Error saving checklist. Please try again.', 'Error');
@@ -690,11 +690,11 @@ async function setupCompleteFunctionality() {
 
     const completeBtn = document.getElementById('completeBtn');
     completeBtn.addEventListener('click', completeHandler);
-    / Store handler reference for potential removal
+    // Store handler reference for potential removal
     completeBtn._completeHandler = completeHandler;
 }
 
-/ View Past Log functionality
+// View Past Log functionality
 async function setupViewPastLogFunctionality() {
     document.getElementById('viewPastLogBtn').addEventListener('click', async () => {
         const selectedDate = await showDateInputModal('View Past Maintenance Log');
@@ -704,20 +704,20 @@ async function setupViewPastLogFunctionality() {
     });
 }
 
-/ Print functionality
+// Print functionality
 function setupPrintFunctionality() {
     document.getElementById('printBtn').addEventListener('click', () => {
         if (window.printMachineMaintenanceChecklistMultiPage) {
             window.printMachineMaintenanceChecklistMultiPage();
         } else {
-            window.print(); / fallback
+            window.print(); // fallback
         }
     });
 }
 
-/ Setup auto-save for text inputs
+// Setup auto-save for text inputs
 function setupAutoSave() {
-    / Simple debounce to prevent excessive writes
+    // Simple debounce to prevent excessive writes
     let timeout;
     const debouncedSave = () => {
         clearTimeout(timeout);
@@ -742,12 +742,12 @@ function setupAutoSave() {
     }
 }
 
-/ Initialize everything
+// Initialize everything
 document.addEventListener('DOMContentLoaded', async function() {
-    / Initialize modal system
+    // Initialize modal system
     if (window.initModalSystem) window.initModalSystem();
 
-    / Initialize database if not already done (important for maintenance checklist pages)
+    // Initialize database if not already done (important for maintenance checklist pages)
     if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
         try {
             window.eecolDB = EECOLIndexedDB.getInstance();
@@ -758,14 +758,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     initializeChecklists();
-    setupAutoSave(); / Initialize auto-save listeners
+    setupAutoSave(); // Initialize auto-save listeners
     loadChecklistState();
-    restoreCurrentSession(); / Restore any saved current work session
+    restoreCurrentSession(); // Restore any saved current work session
 
-    / Load shared data for cross-page compatibility
+    // Load shared data for cross-page compatibility
     loadSharedDataIntoMultiPageForm();
 
-    / Setup real-time field synchronization
+    // Setup real-time field synchronization
     setupMultiPageFieldSync();
 
     setTodaysDate();
@@ -774,14 +774,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupViewPastLogFunctionality();
 });
 
-/ Initialize mobile menu
+// Initialize mobile menu
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '📋 Main Checklist', href: '/src/pages/machine-maintenance-checklist/machine-maintenance-checklist.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '📋 Main Checklist', href: '../machine-maintenance-checklist/machine-maintenance-checklist.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: '📅 View Past Log', action: 'click', selector: '#viewPastLogBtn', class: 'bg-blue-500 hover:bg-blue-600' },
             { text: '🖨️ Print Checklist', action: 'click', selector: '#printBtn', class: 'bg-blue-700 hover:bg-blue-800' },
             { text: '✅ Complete', action: 'click', selector: '#completeBtn', class: 'bg-green-600 hover:bg-green-700' }

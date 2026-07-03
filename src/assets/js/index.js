@@ -1,12 +1,12 @@
-/ Maintenance notification logic
+// Maintenance notification logic
 document.addEventListener('DOMContentLoaded', function () {
     const notification = document.getElementById('maintenance-notification');
     const statusIcon = document.getElementById('status-icon');
     const notificationText = document.getElementById('notification-text');
 
-    / Function to update maintenance notification
+    // Function to update maintenance notification
     async function updateMaintenanceNotification() {
-        / Wait for database to be ready
+        // Wait for database to be ready
         if (window.eecolDB) {
             try {
                 await window.eecolDB.ready;
@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 checkCompletionStatus(data.completedAt);
             } catch (error) {
                 console.error('Error reading from IndexedDB:', error);
-                / Fallback to old localStorage if new DB fails
+                // Fallback to old localStorage if new DB fails
                 checkLocalStorageFallback();
             }
         } else {
-            / Fallback to localStorage if database not available
+            // Fallback to localStorage if database not available
             checkLocalStorageFallback();
         }
     }
@@ -54,15 +54,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const completedAt = new Date(completedAtISO);
         const now = new Date();
 
-        / Define the start of the current maintenance cycle (11 PM cutoff)
+        // Define the start of the current maintenance cycle (11 PM cutoff)
         let cycleStart = new Date(now);
-        cycleStart.setHours(23, 0, 0, 0); / Today at 11:00 PM
+        cycleStart.setHours(23, 0, 0, 0); // Today at 11:00 PM
 
-        / If it's currently before 11 PM, the cycle started yesterday at 11 PM
+        // If it's currently before 11 PM, the cycle started yesterday at 11 PM
         if (now.getHours() < 23) {
             cycleStart.setDate(cycleStart.getDate() - 1);
         } else {
-            / If it's after 11 PM, the cycle started today at 11 PM (which is what we set initially)
+            // If it's after 11 PM, the cycle started today at 11 PM (which is what we set initially)
         }
 
         if (completedAt > cycleStart) {
@@ -86,10 +86,10 @@ document.addEventListener('DOMContentLoaded', function () {
         notificationText.textContent = text;
     }
 
-    / Initial load
+    // Initial load
     updateMaintenanceNotification();
 
-    / Refresh when page becomes visible (user navigates back)
+    // Refresh when page becomes visible (user navigates back)
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
             updateMaintenanceNotification();
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
@@ -117,18 +117,18 @@ if (typeof initMobileMenu === 'function') {
     });
 }
 
-/ IndexedDB initialization
+// IndexedDB initialization
 document.addEventListener('DOMContentLoaded', async function () {
     try {
-        / Initialize IndexedDB (new system) - using singleton pattern
+        // Initialize IndexedDB (new system) - using singleton pattern
         if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
-            / Make DB available globally for other scripts using singleton
+            // Make DB available globally for other scripts using singleton
             window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
 
             console.log('IndexedDB initialized successfully for EECOL Tools Suite');
 
-            / Run migration from localStorage if needed
+            // Run migration from localStorage if needed
             const hasExistingData = localStorage.getItem('cutRecords') ||
                 localStorage.getItem('inventoryItems') ||
                 localStorage.getItem('machineMaintenanceChecklist');
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     } catch (error) {
         console.error('Failed to initialize databases:', error);
-        / Fall back to localStorage only mode
+        // Fall back to localStorage only mode
         console.log('Running in localStorage-only mode');
     }
 });
