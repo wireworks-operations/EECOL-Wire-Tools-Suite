@@ -34,7 +34,7 @@ function loadChartJS() {
     return new Promise((resolve, reject) => {
         // Try local Chart.js first (offline support)
         const localScript = document.createElement('script');
-        localScript.src = '/src/pages/utils/chart.js';
+        localScript.src = '../../utils/chart.js';
         localScript.onload = () => {
             console.log('Chart.js loaded from local file');
             resolve('local');
@@ -43,7 +43,7 @@ function loadChartJS() {
             console.warn('Local Chart.js failed, trying CDN...');
             // Fallback to CDN (Pinned to 4.4.1 for SRI)
             const cdnScript = document.createElement('script');
-            cdnScript.src = 'https:/cdn.jsdelivr.net/npm/chart.js@4.4.1';
+            cdnScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1';
             cdnScript.integrity = 'sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4';
             cdnScript.crossOrigin = 'anonymous';
             cdnScript.onload = () => {
@@ -942,9 +942,9 @@ if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '📦 Inventory Records', href: '/src/pages/inventory-records/inventory-records.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '📊 Live Statistics', href: '/src/pages/live-statistics/live-statistics.html', class: 'bg-teal-600 hover:bg-teal-700' }
+            { text: '📦 Inventory Records', href: '../inventory-records/inventory-records.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '📊 Live Statistics', href: '../live-statistics/live-statistics.html', class: 'bg-teal-600 hover:bg-teal-700' }
         ],
         version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',

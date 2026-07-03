@@ -9,7 +9,7 @@ import {
     getIndustryStandardCableTypes,
     getAvailableCableDesignations as getIndustryStandardCableDesignations,
     CABLE_CONSTRUCTION_DATA
-} from '/src/pages/core/modules/industry-standards.js';
+} from '../../core/modules/industry-standards.js';
 
 // Import EECOL/Wesco specific product data
 import {
@@ -17,7 +17,7 @@ import {
     getEecolWescoProductsByType,
     getEecolWescoProductDetails,
     getOrganizedEecolWescoProducts
-} from '/src/pages/core/modules/wesco-eecol-products.js';
+} from '../../core/modules/wesco-eecol-products.js';
 
         // ====================================================================
         // CONSTANTS & UTILITY FUNCTIONS
@@ -531,21 +531,26 @@ import {
             const startX = (svgWidth - scaledW) / 2;
             const startY = (svgHeight - scaledDf) / 2;
 
-            const svg = document.createElementNS("http:/www.w3.org/2000/svg", "svg");
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             svg.setAttribute("width", svgWidth);
             svg.setAttribute("height", svgHeight);
             svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
 
             // Define arrow marker
+<<<<<<< HEAD
             const defs = document.createElementNS("http:/www.w3.org/2000/svg", "defs");
             const marker = document.createElementNS("http:/www.w3.org/2000/svg", "marker");
+=======
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+>>>>>>> origin/main
             marker.setAttribute("id", "arrowhead");
             marker.setAttribute("markerWidth", "10");
             marker.setAttribute("markerHeight", "7");
             marker.setAttribute("refX", "9");
             marker.setAttribute("refY", "3.5");
             marker.setAttribute("orient", "auto");
-            const polygon = document.createElementNS("http:/www.w3.org/2000/svg", "polygon");
+            const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
             polygon.setAttribute("points", "10 0, 0 3.5, 10 7");
             polygon.setAttribute("fill", "#000");
             marker.appendChild(polygon);
@@ -554,7 +559,7 @@ import {
 
             const coreY = startY + (scaledDf - scaledDc) / 2;
 
-            const coreRect = document.createElementNS("http:/www.w3.org/2000/svg", "rect");
+            const coreRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             coreRect.setAttribute("x", startX);
             coreRect.setAttribute("y", coreY);
             coreRect.setAttribute("width", scaledW);
@@ -568,7 +573,7 @@ import {
                 const layerY = coreY - (i + 1) * scaledd;
                 if (layerY < startY + scaledF) break;
 
-                const layerRect = document.createElementNS("http:/www.w3.org/2000/svg", "rect");
+                const layerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 layerRect.setAttribute("x", startX);
                 layerRect.setAttribute("y", layerY);
                 layerRect.setAttribute("width", scaledW);
@@ -580,7 +585,7 @@ import {
                 svg.appendChild(layerRect);
             }
 
-            const leftFlange = document.createElementNS("http:/www.w3.org/2000/svg", "rect");
+            const leftFlange = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             leftFlange.setAttribute("x", startX - 5);
             leftFlange.setAttribute("y", startY);
             leftFlange.setAttribute("width", "5");
@@ -588,7 +593,7 @@ import {
             leftFlange.setAttribute("fill", "#333");
             svg.appendChild(leftFlange);
 
-            const rightFlange = document.createElementNS("http:/www.w3.org/2000/svg", "rect");
+            const rightFlange = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             rightFlange.setAttribute("x", startX + scaledW);
             rightFlange.setAttribute("y", startY);
             rightFlange.setAttribute("width", "5");
@@ -597,7 +602,7 @@ import {
             svg.appendChild(rightFlange);
 
             const freeboardLineY = startY + scaledF;
-            const freeboardLine = document.createElementNS("http:/www.w3.org/2000/svg", "line");
+            const freeboardLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
             freeboardLine.setAttribute("x1", startX - 5);
             freeboardLine.setAttribute("y1", freeboardLineY);
             freeboardLine.setAttribute("x2", startX + scaledW + 5);
@@ -607,7 +612,7 @@ import {
             freeboardLine.setAttribute("stroke-dasharray", "3,3");
             svg.appendChild(freeboardLine);
 
-            const freeboardText = document.createElementNS("http:/www.w3.org/2000/svg", "text");
+            const freeboardText = document.createElementNS("http://www.w3.org/2000/svg", "text");
             freeboardText.setAttribute("x", startX + scaledW + 10);
             freeboardText.setAttribute("y", freeboardLineY + 5);
             freeboardText.setAttribute("font-size", "10");
@@ -795,7 +800,11 @@ function handleReelConfigurationChange(event) {
 // Add event listeners for configuration selector
 document.addEventListener('DOMContentLoaded', async () => {
     // Wait for database initialization
+<<<<<<< HEAD
     /await initializeDatabase();
+=======
+    //await initializeDatabase();
+>>>>>>> origin/main
 
     // Initialize reel configurations loading
     await loadReelConfigurations();
@@ -1828,9 +1837,9 @@ if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '📐 Size Estimator', href: '/src/pages/reel-size-estimator/reel-size-estimator.html', class: 'bg-amber-600 hover:bg-amber-700' }
+            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '📐 Size Estimator', href: '../reel-size-estimator/reel-size-estimator.html', class: 'bg-amber-600 hover:bg-amber-700' }
         ],
         version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',

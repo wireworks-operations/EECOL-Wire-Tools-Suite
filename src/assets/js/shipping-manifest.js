@@ -180,7 +180,7 @@ async function initializeIndexedDB() {
         if (typeof EECOLIndexedDB === 'undefined') {
             // Try to load it dynamically
             const script = document.createElement('script');
-            script.src = '/src/pages/core/database/indexeddb.js';
+            script.src = '../../core/database/indexeddb.js';
             script.onload = () => console.log('✅ IndexedDB loaded for shipping manifest');
             script.onerror = () => console.warn('⚠️ Could not load IndexedDB for shipping manifest');
             document.head.appendChild(script);
@@ -334,10 +334,10 @@ orderNumberInput.addEventListener('input', function(e) {
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         menuItems: [
-            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '⚠️ Hazard Sheets', href: '/src/pages/shipping-manifest/shipping-manifest.html#hazardSheetsBtn', class: 'bg-yellow-500 hover:bg-yellow-600' },
-            { text: '🏷️ Reel Labels', href: '/src/pages/reel-labels/reel-labels.html', class: 'bg-green-600 hover:bg-green-700' }
+            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '⚠️ Hazard Sheets', href: '../shipping-manifest/shipping-manifest.html#hazardSheetsBtn', class: 'bg-yellow-500 hover:bg-yellow-600' },
+            { text: '🏷️ Reel Labels', href: '../reel-labels/reel-labels.html', class: 'bg-green-600 hover:bg-green-700' }
         ],
         version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',

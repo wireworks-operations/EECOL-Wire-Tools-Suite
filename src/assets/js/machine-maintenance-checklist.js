@@ -171,8 +171,13 @@ async function validateChecklist() {
     // Check all required checkboxes are filled
     const skipLists = {
         1: [1,2,3,4,5,6,7], // Manual Hand Coiler skips these item indices
+<<<<<<< HEAD
         2: [3,4,5,7],       / Green Electric Hand Coiler skips
         3: [3,4,5]          / Blue Electric Hand Coiler skips
+=======
+        2: [3,4,5,7],       // Green Electric Hand Coiler skips
+        3: [3,4,5]          // Blue Electric Hand Coiler skips
+>>>>>>> origin/main
     };
 
     for (let machine = 1; machine <= 6; machine++) {
@@ -711,9 +716,9 @@ if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '📋 Alternate Checklist', href: '/src/pages/machine-maintenance-checklist/machine-maintenance-checklist-multi.html', class: 'bg-teal-600 hover:bg-teal-700' },
+            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '📋 Alternate Checklist', href: '../machine-maintenance-checklist/machine-maintenance-checklist-multi.html', class: 'bg-teal-600 hover:bg-teal-700' },
             { text: '📅 View Past Log', action: 'click', selector: '#viewPastLogBtn', class: 'bg-blue-500 hover:bg-blue-600' },
             { text: '🖨️ Print Checklist', action: 'click', selector: '#printBtn', class: 'bg-blue-700 hover:bg-blue-800' },
             { text: '✅ Complete', action: 'click', selector: '#completeBtn', class: 'bg-green-600 hover:bg-green-700' }

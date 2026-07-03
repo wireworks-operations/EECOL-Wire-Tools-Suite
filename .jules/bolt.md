@@ -43,7 +43,3 @@
 ## 2026-05-18 - Safe UI Search Robustness and Batched Rendering
 **Learning:** Even with an IndexedDB normalization layer, UI search filters should maintain explicit `.toString().toUpperCase()` on record fields within search loops to ensure robustness against legacy data or manual entries. Additionally, replacing iterative `appendChild` with `DocumentFragment` reduces layout thrashing from O(N) to O(1) during large list renders.
 **Action:** Use `DocumentFragment` for list rendering and cache the search term's uppercase version once while maintaining type-safe checks in filter loops.
-
-## 2026-05-22 - O(N) Reordering via Map-based Lookups
-**Learning:** Replacing an O(N) search (`Array.find`) inside an O(N) loop with a `Map` for O(1) lookups during list reordering significantly improves scalability. In a test with 2000 items, this reduced reorder duration by ~60% (from 43ms to 17ms), ensuring that drag-and-drop operations remain smooth even as the local IndexedDB dataset grows.
-**Action:** Always use a Map-based lookup when updating multiple records in a collection based on their IDs within a loop.

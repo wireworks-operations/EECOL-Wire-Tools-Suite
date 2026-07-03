@@ -53,7 +53,7 @@ function _sanitizeUrl(url) {
 function initMobileMenu(options = {}) {
     const {
         menuItems = [],
-        version = 'v0.8.0.5',
+        version = 'v0.8.0.4',
         credits = 'Made With ❤️ By: Lucas and Cline 🤖',
         title = 'EECOL Wire Tools'
     } = options;
@@ -105,15 +105,14 @@ function _resolvePath(href) {
         }
     }
 
-    if (!rootPath) {
-        // Fallback to relative path if root cannot be determined
-        return href;
+    if (!rootPath) return href;
+
+    // If href starts with /, it's intended to be root-relative within the project
+    if (href.startsWith('/')) {
+        return rootPath + href.substring(1);
     }
 
-    // Standardize href: remove leading slash if present
-    const cleanHref = href.startsWith('/') ? href.substring(1) : href;
-
-    return rootPath + cleanHref;
+    return href;
 }
 
 /**

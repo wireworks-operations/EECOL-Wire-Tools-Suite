@@ -706,9 +706,9 @@ if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '📏 Capacity Estimator', href: '/src/pages/reel-capacity-estimator/reel-capacity-estimator.html', class: 'bg-emerald-600 hover:bg-emerald-700' }
+            { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '📏 Capacity Estimator', href: '../reel-capacity-estimator/reel-capacity-estimator.html', class: 'bg-emerald-600 hover:bg-emerald-700' }
         ],
         version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',

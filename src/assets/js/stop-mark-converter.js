@@ -274,10 +274,10 @@ if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '/src/pages/src/pages/src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/src/pages/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
+            { text: '🏠 Home', href: '../../../src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../../../src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
         ],
-        version: 'v0.8.0.5',
+        version: 'v0.8.0.0',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Wire Stop Mark'
     });
