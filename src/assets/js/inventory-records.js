@@ -3,34 +3,34 @@
  * IndexedDB implementation for inventory data persistence
  */
 
-/ Diagnostic function to test database connectivity
+// Diagnostic function to test database connectivity
 async function testDatabaseConnection() {
     try {
-        / Check if EECOLIndexedDB is available
+        // Check if EECOLIndexedDB is available
         if (typeof EECOLIndexedDB === 'undefined') {
             console.error('❌ EECOLIndexedDB class not found');
             return { success: false, error: 'EECOLIndexedDB class not available' };
         }
 
-        / Check if database instance exists
+        // Check if database instance exists
         if (!window.eecolDB) {
             console.error('❌ Database instance not found');
             return { success: false, error: 'Database instance not initialized' };
         }
 
-        / Check if database is ready
+        // Check if database is ready
         const isReady = await window.eecolDB.isReady();
         if (!isReady) {
             console.error('❌ Database not ready');
             return { success: false, error: 'Database not ready' };
         }
 
-        / Test basic operations
+        // Test basic operations
 
-        / Test getting all records
+        // Test getting all records
         const records = await window.eecolDB.getAll('inventoryRecords');
 
-        / Test adding a temporary record
+        // Test adding a temporary record
         const testRecord = {
             id: 'test-' + Date.now(),
             wireType: 'TEST',
@@ -45,16 +45,16 @@ async function testDatabaseConnection() {
 
         const addResult = await window.eecolDB.add('inventoryRecords', testRecord);
 
-        / Verify the record was added
+        // Verify the record was added
         const verifyRecord = await window.eecolDB.get('inventoryRecords', testRecord.id);
         if (verifyRecord) {
-            / Clean up test record
+            // Clean up test record
             await window.eecolDB.delete('inventoryRecords', testRecord.id);
         } else {
             console.error('❌ Test record verification failed');
         }
 
-        / Test settings store
+        // Test settings store
         const testSetting = { name: 'testSetting', value: 'testValue' };
         await window.eecolDB.update('settings', testSetting);
         const retrievedSetting = await window.eecolDB.get('settings', 'testSetting');
@@ -80,12 +80,12 @@ async function testDatabaseConnection() {
     }
 }
 
-/ Make diagnostic function available globally for debugging
+// Make diagnostic function available globally for debugging
 if (typeof window !== 'undefined') {
     window.testDatabaseConnection = testDatabaseConnection;
 }
 
-/ Global variables
+// Global variables
 let inventoryItems = [];
 
 /**
@@ -126,22 +126,22 @@ let itemsPerPage = 25;
 let isLoading = false;
 let currentSortField = 'timestamp';
 let lastDeltaExport = null;
-/ Undo/Redo system
+// Undo/Redo system
 let operationHistory = [];
 let undoStack = [];
-let isUndoRedoOperation = false; / Flag to prevent history recording during undo/redo
+let isUndoRedoOperation = false; // Flag to prevent history recording during undo/redo
 
-/ IndexedDB-based data loading and saving functions
+// IndexedDB-based data loading and saving functions
 async function loadInventoryItems() {
     try {
-        / Load from IndexedDB
+        // Load from IndexedDB
         if (window.eecolDB && await window.eecolDB.isReady()) {
             const records = await window.eecolDB.getAll('inventoryRecords');
 
             if (records && records.length > 0) {
-                / Sanitize and validate loaded data
+                // Sanitize and validate loaded data
                 inventoryItems = records.map((item, index) => {
-                    / Ensure timestamps are numbers, not strings
+                    // Ensure timestamps are numbers, not strings
                     if (item.timestamp && typeof item.timestamp === 'string') {
                         item.timestamp = parseInt(item.timestamp) || Date.now();
                     }
@@ -155,12 +155,12 @@ async function loadInventoryItems() {
                         item.updatedAt = parseInt(item.updatedAt) || Date.now();
                     }
 
-                    / Ensure reviewed field exists
+                    // Ensure reviewed field exists
                     if (item.reviewed === undefined) {
                         item.reviewed = false;
                     }
 
-                    / Ensure reviewedTimestamp exists for reviewed items
+                    // Ensure reviewedTimestamp exists for reviewed items
                     if (item.reviewed && !item.reviewedTimestamp) {
                         item.reviewedTimestamp = item.timestamp || Date.now();
                     }
@@ -183,7 +183,7 @@ async function loadInventoryItems() {
             }
         }
 
-        / Fresh database starts empty
+        // Fresh database starts empty
         inventoryItems = [];
         displayedItemsCount = 0;
         renderInventoryItems();
@@ -218,7 +218,7 @@ async function saveInventoryItemToDB(item) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             const result = await window.eecolDB.add('inventoryRecords', item);
 
-            / Verify the save worked
+            // Verify the save worked
             const verification = await window.eecolDB.get('inventoryRecords', item.id);
             if (!verification) {
                 console.error("❌ Save verification failed for record:", item.id);
@@ -249,7 +249,7 @@ async function updateInventoryItemInDB(item) {
 }
 
 function validateInputs() {
-    / Check required fields
+    // Check required fields
     const personName = document.getElementById('personName').value.trim();
     if (!personName) {
         showError("Name is required.");
@@ -274,7 +274,7 @@ function validateInputs() {
         return false;
     }
 
-    / Check that both current and actual length are provided and valid
+    // Check that both current and actual length are provided and valid
     const currentLength = document.getElementById('currentLength').value.trim();
     const actualLength = document.getElementById('actualLength').value.trim();
 
@@ -288,14 +288,14 @@ function validateInputs() {
         return false;
     }
 
-    / Check that note field is provided
+    // Check that note field is provided
     const note = document.getElementById('note').value;
     if (!note) {
         showError("Note is required.");
         return false;
     }
 
-    / If custom note is selected, ensure custom text is provided
+    // If custom note is selected, ensure custom text is provided
     if (note === 'custom') {
         const customNoteText = document.getElementById('noteCustom').value.trim();
         if (!customNoteText) {
@@ -341,14 +341,14 @@ function hideError() {
 }
 
 function clearForm() {
-    / Clear all form fields
+    // Clear all form fields
     document.getElementById('inventoryDate').value = '';
     document.getElementById('personName').value = '';
     document.getElementById('reason').value = '';
-    handleReasonChange(); / Reset the reason dropdown UI
+    handleReasonChange(); // Reset the reason dropdown UI
     document.getElementById('reasonCustom').value = '';
     document.getElementById('note').value = '';
-    handleNoteChange(); / Reset the note dropdown UI
+    handleNoteChange(); // Reset the note dropdown UI
     document.getElementById('noteCustom').value = '';
     document.getElementById('productCode').value = '';
     document.getElementById('coilCode').value = '';
@@ -370,16 +370,16 @@ function clearForm() {
     hideError();
 }
 
-/ Helper function to record an operation for undo
+// Helper function to record an operation for undo
 function recordOperation(operation) {
-    / Only record if not currently in undo/redo operation
+    // Only record if not currently in undo/redo operation
     if (!isUndoRedoOperation) {
         operationHistory.push(operation);
         updateUndoRedoButtons();
     }
 }
 
-/ Function to update undo/redo button states
+// Function to update undo/redo button states
 function updateUndoRedoButtons() {
     const undoBtn = document.getElementById('undoBtn');
     const redoBtn = document.getElementById('redoBtn');
@@ -397,7 +397,7 @@ function updateUndoRedoButtons() {
     }
 }
 
-/ Undo the last operation
+// Undo the last operation
 async function undoLastOperation() {
     if (operationHistory.length === 0) return;
 
@@ -406,36 +406,36 @@ async function undoLastOperation() {
     const lastOperation = operationHistory.pop();
     undoStack.push(lastOperation);
 
-    / Reverse the operation
+    // Reverse the operation
     if (lastOperation.type === 'add') {
-        / Undo add: remove the added item
+        // Undo add: remove the added item
         inventoryItems = inventoryItems.filter(item => item.id !== lastOperation.id);
     } else if (lastOperation.type === 'delete') {
-        / Undo delete: restore the deleted item
+        // Undo delete: restore the deleted item
         inventoryItems.push(lastOperation.deletedItem);
     } else if (lastOperation.type === 'edit') {
-        / Undo edit: restore the original item
+        // Undo edit: restore the original item
         const index = inventoryItems.findIndex(item => item.id === lastOperation.id);
         if (index !== -1) {
             inventoryItems[index] = { ...lastOperation.originalItem };
         }
     }
 
-    / Ensure items remain sorted after restoration
+    // Ensure items remain sorted after restoration
     inventoryItems.sort((a, b) => b.timestamp - a.timestamp);
 
-    / Update database
+    // Update database
     await saveInventoryStateToDB();
 
     displayedItemsCount = 0;
     renderInventoryItems();
-    updateStats(); / Update stats after undo/redo
+    updateStats(); // Update stats after undo/redo
     updateUndoRedoButtons();
 
     isUndoRedoOperation = false;
 }
 
-/ Redo the last undone operation
+// Redo the last undone operation
 async function redoLastOperation() {
     if (undoStack.length === 0) return;
 
@@ -444,19 +444,19 @@ async function redoLastOperation() {
     const lastUndoneOperation = undoStack.pop();
     operationHistory.push(lastUndoneOperation);
 
-    / Reapply the operation
+    // Reapply the operation
     if (lastUndoneOperation.type === 'add') {
-        / Redo add: add back the full item data stored in the operation
+        // Redo add: add back the full item data stored in the operation
         if (lastUndoneOperation.fullItem) {
             inventoryItems.push(lastUndoneOperation.fullItem);
         } else {
             await showAlert('Full item data not available for redo operation. Please add the item again.', 'Redo Error');
         }
     } else if (lastUndoneOperation.type === 'delete') {
-        / Redo delete: delete the item again
+        // Redo delete: delete the item again
         inventoryItems = inventoryItems.filter(item => item.id !== lastUndoneOperation.id);
     } else if (lastUndoneOperation.type === 'edit') {
-        / Redo edit: restore the edited item
+        // Redo edit: restore the edited item
         if (lastUndoneOperation.newItem) {
             const index = inventoryItems.findIndex(item => item.id === lastUndoneOperation.id);
             if (index !== -1) {
@@ -471,12 +471,12 @@ async function redoLastOperation() {
 
     inventoryItems.sort((a, b) => b.timestamp - a.timestamp);
 
-    / Update database
+    // Update database
     await saveInventoryStateToDB();
 
     displayedItemsCount = 0;
     renderInventoryItems();
-    updateStats(); / Update stats after redo
+    updateStats(); // Update stats after redo
     updateUndoRedoButtons();
 
     isUndoRedoOperation = false;
@@ -492,7 +492,7 @@ async function saveInventoryItem() {
     const inventoryDate = document.getElementById('inventoryDate').value || new Date().toISOString().split('T')[0];
     const personName = document.getElementById('personName').value.trim().toUpperCase();
 
-    / Handle the reason field logic
+    // Handle the reason field logic
     let reason = '';
     const reasonSelect = document.getElementById('reason');
     const customReasonInput = document.getElementById('reasonCustom');
@@ -502,7 +502,7 @@ async function saveInventoryItem() {
         reason = reasonSelect.value;
     }
 
-    / Handle the note field logic
+    // Handle the note field logic
     let note = '';
     const noteSelect = document.getElementById('note');
     const customNoteInput = document.getElementById('noteCustom');
@@ -567,13 +567,13 @@ async function saveInventoryItem() {
         id: editingId || crypto.randomUUID(),
     };
 
-    / Store editing ID before clearing for scrolling
+    // Store editing ID before clearing for scrolling
     const wasEditingId = editingId;
     let operation = null;
 
     try {
         if (editingId) {
-            / Store the original item before editing for undo
+            // Store the original item before editing for undo
             const originalItem = inventoryItems.find(i => i.id === editingId);
             inventoryItems = inventoryItems.map(i => i.id === editingId ? item : i);
             await updateInventoryItemInDB(item);
@@ -587,16 +587,16 @@ async function saveInventoryItem() {
 
         inventoryItems.sort((a, b) => b.timestamp - a.timestamp);
 
-        / Record operation for undo
+        // Record operation for undo
         if (operation) {
             recordOperation(operation);
         }
 
         displayedItemsCount = 0;
         renderInventoryItems();
-        updateStats(); / Update stats after save
+        updateStats(); // Update stats after save
 
-        / Scroll to edited item if we were editing
+        // Scroll to edited item if we were editing
         if (wasEditingId) {
             setTimeout(() => {
                 const editedItemElement = document.querySelector(`button[onclick*="editItem('${wasEditingId}')"]`);
@@ -624,14 +624,14 @@ async function deleteInventoryItem(id) {
     try {
         await deleteInventoryItemFromDB(id);
 
-        / Record operation for undo
+        // Record operation for undo
         recordOperation({ type: 'delete', id, deletedItem: { ...deletedItem } });
 
         displayedItemsCount = 0;
         renderInventoryItems();
-        updateStats(); / Update stats after delete
+        updateStats(); // Update stats after delete
     } catch (error) {
-        / Restore item on error
+        // Restore item on error
         if (deletedItem) inventoryItems.push(deletedItem);
         console.error('Error deleting inventory item:', error);
         await showAlert(`Failed to delete inventory item: ${error.message}`, 'Delete Error');
@@ -645,11 +645,11 @@ async function editInventoryItem(id) {
         return;
     }
 
-    / Populate all the new fields when editing
+    // Populate all the new fields when editing
     document.getElementById('inventoryDate').value = item.inventoryDate || '';
     document.getElementById('personName').value = item.personName || '';
 
-    / Handle reason field for editing - check if it's a predefined option or custom
+    // Handle reason field for editing - check if it's a predefined option or custom
     const reasonSelect = document.getElementById('reason');
     const customReasonInput = document.getElementById('reasonCustom');
     if (item.reason === 'discrepancy') {
@@ -657,7 +657,7 @@ async function editInventoryItem(id) {
         customReasonInput.style.display = 'none';
         customReasonInput.value = '';
     } else if (item.reason) {
-        / Any other reason goes to custom
+        // Any other reason goes to custom
         reasonSelect.value = 'custom';
         customReasonInput.style.display = 'block';
         customReasonInput.value = item.reason;
@@ -667,7 +667,7 @@ async function editInventoryItem(id) {
         customReasonInput.value = '';
     }
 
-    / Handle note field for editing
+    // Handle note field for editing
     const noteSelect = document.getElementById('note');
     const customNoteInput = document.getElementById('noteCustom');
     if (item.note === 'tail end' || item.note === 'damaged') {
@@ -675,7 +675,7 @@ async function editInventoryItem(id) {
         customNoteInput.style.display = 'none';
         customNoteInput.value = '';
     } else if (item.note) {
-        / Any other note goes to custom
+        // Any other note goes to custom
         noteSelect.value = 'custom';
         customNoteInput.style.display = 'block';
         customNoteInput.value = item.note;
@@ -729,24 +729,24 @@ function getFilteredInventoryItems() {
      * - Uses type-safe and case-insensitive checks on fields.
      */
     let filtered = inventoryItems.filter(item => {
-        / Date filtering (lexicographical comparison for YYYY-MM-DD)
+        // Date filtering (lexicographical comparison for YYYY-MM-DD)
         if (dateFrom || dateTo) {
             const itemDate = item.inventoryDate;
             if (itemDate) {
-                / Take only the date part to ensure "2023-10-27T14:00" is included when dateTo is "2023-10-27"
+                // Take only the date part to ensure "2023-10-27T14:00" is included when dateTo is "2023-10-27"
                 const itemDatePart = itemDate.length > 10 ? itemDate.substring(0, 10) : itemDate;
                 if (dateFrom && itemDatePart < dateFrom) return false;
                 if (dateTo && itemDatePart > dateTo) return false;
             }
         }
 
-        / Text search filtering
+        // Text search filtering
         if (searchTerm) {
             if (filterField !== 'all') {
                 const val = item[filterField];
                 if (!val || !val.toString().toUpperCase().includes(searchTerm)) return false;
             } else {
-                / Search 'all' fields with optimized short-circuiting
+                // Search 'all' fields with optimized short-circuiting
                 const match = (item.productCode && item.productCode.toString().toUpperCase().includes(searchTerm)) ||
                             (item.personName && item.personName.toString().toUpperCase().includes(searchTerm)) ||
                             (item.lineCode && item.lineCode.toString().toUpperCase().includes(searchTerm)) ||
@@ -755,7 +755,7 @@ function getFilteredInventoryItems() {
             }
         }
 
-        / Damaged/Tailends filtering
+        // Damaged/Tailends filtering
         if (filterValue !== 'all') {
             const reason = (item.reason || '').toLowerCase();
             if (filterValue === 'damaged') {
@@ -768,7 +768,7 @@ function getFilteredInventoryItems() {
         return true;
     });
 
-    / Sorting
+    // Sorting
     const sortField = document.getElementById('sortByField').value;
     if (sortField === 'personName') {
         filtered.sort((a, b) => {
@@ -793,17 +793,17 @@ function getFilteredInventoryItems() {
             return da < db ? 1 : (da > db ? -1 : 0);
         });
     } else {
-        / Default: timestamp sort
-        / Base array `inventoryItems` is always kept sorted by timestamp descending
-        / in all mutation paths (load, add, edit, undo, redo, import).
-        / Array.prototype.filter() is stable and preserves this order.
+        // Default: timestamp sort
+        // Base array `inventoryItems` is always kept sorted by timestamp descending
+        // in all mutation paths (load, add, edit, undo, redo, import).
+        // Array.prototype.filter() is stable and preserves this order.
     }
 
     return filtered;
 }
 
 function formatDateMMDDYYYY(dateString) {
-    / Convert YYYY-MM-DD to MM/DD/YYYY
+    // Convert YYYY-MM-DD to MM/DD/YYYY
     if (!dateString || dateString === 'N/A') return 'N/A';
     const parts = dateString.split('-');
     if (parts.length === 3) {
@@ -813,17 +813,17 @@ function formatDateMMDDYYYY(dateString) {
 }
 
 function formatTimestampToMMDDYYYY(timestamp) {
-    / Safely convert a timestamp (number) to MM/DD/YYYY format
+    // Safely convert a timestamp (number) to MM/DD/YYYY format
     if (!timestamp || isNaN(timestamp)) return 'N/A';
 
     try {
-        / Ensure timestamp is a valid number
+        // Ensure timestamp is a valid number
         const timestampNum = typeof timestamp === 'string' ? parseInt(timestamp) : timestamp;
         if (isNaN(timestampNum) || timestampNum <= 0) return 'N/A';
 
-        / Create date and format to YYYY-MM-DD string
+        // Create date and format to YYYY-MM-DD string
         const date = new Date(timestampNum);
-        if (isNaN(date.getTime())) return 'N/A'; / Invalid date
+        if (isNaN(date.getTime())) return 'N/A'; // Invalid date
 
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -845,7 +845,7 @@ function renderInventoryItems() {
 
     totalItemsElement.textContent = filteredItems.length;
 
-    / BOLT OPTIMIZATION: Faster list clearing using replaceChildren()
+    // BOLT OPTIMIZATION: Faster list clearing using replaceChildren()
     inventoryList.replaceChildren();
 
     if (filteredItems.length === 0) {
@@ -1070,11 +1070,11 @@ async function updateInventoryApprovalStatus(id, status) {
     try {
         await updateInventoryItemInDB(inventoryItems[itemIndex]);
 
-        / Re-render the grid to update approval text colors as well
+        // Re-render the grid to update approval text colors as well
         displayedItemsCount = 0;
         renderInventoryItems();
 
-        updateStats(); / Update stats after approval change
+        updateStats(); // Update stats after approval change
     } catch (error) {
         console.error('Error updating approval status:', error);
         await showAlert('Failed to update approval status. Please try again.', 'Update Error');
@@ -1088,9 +1088,9 @@ async function updateINAdate(id) {
     const currentINAdate = inventoryItems[itemIndex].inaDate || '';
     const newINAdate = await showDatePrompt('Select new INA Date:', currentINAdate, 'Update INA Date');
 
-    if (newINAdate === null) return; / User cancelled
+    if (newINAdate === null) return; // User cancelled
 
-    / Store original item for undo
+    // Store original item for undo
     const originalItem = { ...inventoryItems[itemIndex] };
 
     inventoryItems[itemIndex].inaDate = newINAdate;
@@ -1099,7 +1099,7 @@ async function updateINAdate(id) {
     try {
         await updateInventoryItemInDB(inventoryItems[itemIndex]);
 
-        / Record operation for undo
+        // Record operation for undo
         recordOperation({
             type: 'edit',
             id: id,
@@ -1112,12 +1112,12 @@ async function updateINAdate(id) {
     } catch (error) {
         console.error('Error updating INA date:', error);
         await showAlert('Failed to update INA date. Please try again.', 'Update Error');
-        / Revert local change on error
+        // Revert local change on error
         inventoryItems[itemIndex] = originalItem;
     }
 }
 
-/ Export functions
+// Export functions
 /**
  * IDB SENTINEL: Secure CSV escaping utility
  * Mitigates CSV Injection (Excel Formula Injection) and ensures proper RFC 4180 escaping.
@@ -1128,12 +1128,12 @@ function escapeCSVValue(value) {
     if (value === null || value === undefined) return '';
     let stringValue = value.toString();
 
-    / Mitigate CSV Injection by prefixing values starting with =, +, -, or @
+    // Mitigate CSV Injection by prefixing values starting with =, +, -, or @
     if (['=', '+', '-', '@'].some(char => stringValue.startsWith(char))) {
         stringValue = "'" + stringValue;
     }
 
-    / Standard RFC 4180 double-quote escaping
+    // Standard RFC 4180 double-quote escaping
     if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('\r')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
     }
@@ -1181,7 +1181,7 @@ async function exportToCSV() {
     a.click();
     URL.revokeObjectURL(url);
 
-    / Update export status
+    // Update export status
     if (window.eecolDB && window.eecolDB.isReady()) {
         await window.eecolDB.update('settings', { name: 'lastCsvExport', value: now.toISOString() });
     }
@@ -1238,7 +1238,7 @@ async function exportDeltaToCSV() {
     a.click();
     URL.revokeObjectURL(url);
 
-    / Update lastDeltaExport
+    // Update lastDeltaExport
     lastDeltaExport = now;
     updateExportStatus();
 
@@ -1252,7 +1252,7 @@ async function clearAllItems() {
         displayedItemsCount = 0;
         await clearAllInventoryItemsFromDB();
         renderInventoryItems();
-        updateStats(); / Update stats after clearing
+        updateStats(); // Update stats after clearing
         await showAlert('All inventory items have been cleared.', 'Items Cleared');
     }
 }
@@ -1279,7 +1279,7 @@ async function exportJSONBackup() {
     a.click();
     URL.revokeObjectURL(url);
 
-    / Update export status
+    // Update export status
     if (window.eecolDB && window.eecolDB.isReady()) {
         await window.eecolDB.update('settings', { name: 'lastJsonExport', value: new Date().toISOString() });
     }
@@ -1297,7 +1297,7 @@ async function importJSONBackup(event) {
         try {
             const backupData = JSON.parse(e.target?.result);
 
-            / Validate backup structure
+            // Validate backup structure
             if (!backupData.records || !Array.isArray(backupData.records)) {
                 await showAlert('Invalid backup file format. Missing records array.', 'Invalid Backup');
                 return;
@@ -1307,12 +1307,12 @@ async function importJSONBackup(event) {
             const backupVersion = backupData.version || 'unknown';
             const exportDate = backupData.exportDate ? new Date(backupData.exportDate).toLocaleDateString() : 'unknown';
 
-            / Show import options
+            // Show import options
             const merge = await showConfirm(`JSON Backup Import:\n\nBackup Details:\n- Version: ${backupVersion}\n- Export Date: ${exportDate}\n- Records: ${importRecords.length}\n- Current Records: ${inventoryItems.length}\n\nChoose:\nOK = Merge with existing data\nCancel = Replace all existing data`, 'Import Options');
 
             inventoryItems = merge ? [...inventoryItems, ...importRecords] : importRecords;
 
-            / Clean up records (ensure IDs, etc.)
+            // Clean up records (ensure IDs, etc.)
             inventoryItems.forEach(record => {
                 if (!record.id) {
                     record.id = crypto.randomUUID();
@@ -1321,11 +1321,11 @@ async function importJSONBackup(event) {
 
             inventoryItems.sort((a, b) => b.timestamp - a.timestamp);
 
-            / Save to database using atomic bulk operation
+            // Save to database using atomic bulk operation
             if (window.eecolDB && await window.eecolDB.isReady()) {
                 await window.eecolDB.bulkPut('inventoryRecords', inventoryItems, true);
             } else {
-                / Fallback for older browsers or failed init
+                // Fallback for older browsers or failed init
                 await clearAllInventoryItemsFromDB();
                 for (const record of inventoryItems) {
                     await saveInventoryItemToDB(record);
@@ -1334,17 +1334,17 @@ async function importJSONBackup(event) {
 
             displayedItemsCount = 0;
             renderInventoryItems();
-            updateStats(); / Update stats after import
+            updateStats(); // Update stats after import
 
             await showAlert(`JSON import successful!\n${merge ? 'Merged' : 'Replaced'} with ${importRecords.length} inventory records.\nTotal records: ${inventoryItems.length}`, 'Import Successful');
 
-            / Reset file input to allow re-selection of same file
+            // Reset file input to allow re-selection of same file
             event.target.value = '';
 
         } catch (error) {
             await showAlert(`Error importing JSON backup: ${error.message}\n\nPlease ensure this is a valid EECOL JSON backup file.`, 'Import Error');
 
-            / Reset file input even on error to allow retry
+            // Reset file input even on error to allow retry
             event.target.value = '';
         }
     };
@@ -1353,9 +1353,9 @@ async function importJSONBackup(event) {
 
 
 
-/ Event listeners and initialization
+// Event listeners and initialization
 document.addEventListener('DOMContentLoaded', async function() {
-    / Initialize database if not already done (important for pages that don't load index.js)
+    // Initialize database if not already done (important for pages that don't load index.js)
     if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
         try {
             window.eecolDB = EECOLIndexedDB.getInstance();
@@ -1367,7 +1367,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    / Toggle stats visibility
+    // Toggle stats visibility
     document.getElementById('toggleStats').addEventListener('click', function() {
         const content = document.getElementById('statsContent');
         const toggle = document.getElementById('statsToggle');
@@ -1388,7 +1388,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    / Data Management Controls toggle functionality
+    // Data Management Controls toggle functionality
     const toggleDataControls = document.getElementById('toggleDataControls');
     const dataControlsSection = document.getElementById('dataControlsSection');
     if (toggleDataControls && dataControlsSection) {
@@ -1401,7 +1401,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    / Sync Controls toggle functionality
+    // Sync Controls toggle functionality
     const toggleSyncControls = document.getElementById('toggleSyncControls');
     const syncControlsSection = document.getElementById('syncControlsSection');
     if (toggleSyncControls && syncControlsSection) {
@@ -1414,7 +1414,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    / Input validation for line code and person name - auto uppercase
+    // Input validation for line code and person name - auto uppercase
     const lineCodeInput = document.getElementById('lineCode');
     if (lineCodeInput) {
         lineCodeInput.addEventListener('input', function(e) {
@@ -1429,7 +1429,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    / Auto uppercase for custom reason and note inputs
+    // Auto uppercase for custom reason and note inputs
     const reasonCustomInput = document.getElementById('reasonCustom');
     if (reasonCustomInput) {
         reasonCustomInput.addEventListener('input', function(e) {
@@ -1444,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    / Search and filter event listeners
+    // Search and filter event listeners
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         /**
@@ -1493,7 +1493,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const clearFilters = document.getElementById('clearFilters');
     if (clearFilters) {
         clearFilters.addEventListener('click', () => {
-            / Clear filters
+            // Clear filters
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = '';
             const filterByField = document.getElementById('filterByField');
@@ -1504,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (dateFrom) dateFrom.value = '';
             const dateTo = document.getElementById('dateTo');
             if (dateTo) dateTo.value = '';
-            / Clear damaged/tailends filter by not selecting any radio button
+            // Clear damaged/tailends filter by not selecting any radio button
             const filterRadios = document.querySelectorAll('input[name="filterDamaged"]');
             filterRadios.forEach(radio => radio.checked = false);
 
@@ -1521,7 +1521,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 
-    / Button event listeners
+    // Button event listeners
     const recordBtn = document.getElementById('recordBtn');
     if (recordBtn) recordBtn.addEventListener('click', saveInventoryItem);
     const undoBtn = document.getElementById('undoBtn');
@@ -1544,7 +1544,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllItems);
 
-    / Make approval checkboxes mutually exclusive
+    // Make approval checkboxes mutually exclusive
     document.getElementById('approvedCB').addEventListener('change', function() {
         if (this.checked) {
             document.getElementById('notApprovedCB').checked = false;
@@ -1557,14 +1557,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    / Load records on page load
+    // Load records on page load
     loadInventoryItems().then(() => {
-        updateStats(); / Initial stats calculation after load
+        updateStats(); // Initial stats calculation after load
     }).catch((error) => {
         console.error('❌ loadInventoryItems() failed on page load:', error);
     });
 
-    / Initially hide stats
+    // Initially hide stats
     const statsContent = document.getElementById('statsContent');
     const statsToggle = document.getElementById('statsToggle');
 
@@ -1575,20 +1575,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('❌ Failed to find stats elements:', { statsContent: !!statsContent, statsToggle: !!statsToggle });
     }
 
-    / Initialize modal system if needed
+    // Initialize modal system if needed
     if (typeof initModalSystem === 'function') {
         initModalSystem();
     }
 });
 
-/ Missing functions referenced in HTML
+// Missing functions referenced in HTML
 function printRecords() {
-    / Basic print functionality for inventory records
+    // Basic print functionality for inventory records
     window.print();
 }
 
 
-/ Additional missing database functions
+// Additional missing database functions
 async function deleteInventoryItemFromDB(id) {
     try {
         if (window.eecolDB && await window.eecolDB.isReady()) {
@@ -1620,10 +1620,10 @@ async function updateExportStatus() {
         const jsonSpan = document.getElementById('lastJsonExport');
         if (!jsonSpan) return;
 
-        / Get current time
+        // Get current time
         const now = Date.now();
 
-        / Get export timestamps from IndexedDB settings
+        // Get export timestamps from IndexedDB settings
         let lastJsonExport = null;
 
         if (window.eecolDB && await window.eecolDB.isReady()) {
@@ -1633,20 +1633,20 @@ async function updateExportStatus() {
             }
         }
 
-        jsonSpan.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+        jsonSpan.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
-        / Update JSON export status
+        // Update JSON export status
         if (lastJsonExport) {
             const daysSinceJsonExport = Math.floor((now - lastJsonExport) / (1000 * 60 * 60 * 24));
             if (daysSinceJsonExport < 3) {
-                / Recent export - show plain text with green styling
+                // Recent export - show plain text with green styling
                 const span = document.createElement('span');
                 span.style.color = '#10b981';
                 span.style.fontWeight = '600';
                 span.textContent = `Last exported ${daysSinceJsonExport === 0 ? 'today' : daysSinceJsonExport + ' days ago'}`;
                 jsonSpan.appendChild(span);
             } else {
-                / Stale export - show clickable link
+                // Stale export - show clickable link
                 const exportDate = new Date(lastJsonExport).toLocaleDateString();
                 const a = document.createElement('a');
                 a.href = '#';
@@ -1658,7 +1658,7 @@ async function updateExportStatus() {
                 jsonSpan.appendChild(a);
             }
         } else {
-            / Never exported - show clickable link
+            // Never exported - show clickable link
             const a = document.createElement('a');
             a.href = '#';
             a.onclick = (e) => { e.preventDefault(); exportJSONBackup(); };
@@ -1698,7 +1698,7 @@ function updateStats() {
 
     const avgLength = totalItems > 0 ? totalLength / totalItems : 0;
 
-    / Update DOM elements
+    // Update DOM elements
     const totalItemsEl = document.getElementById('totalItems');
     const totalLengthEl = document.getElementById('totalLength');
     const damagedItemsEl = document.getElementById('damagedItems');
@@ -1716,14 +1716,14 @@ function updateStats() {
 
 
 
-/ Adjust management functions
+// Adjust management functions
 async function toggleApproval(id) {
     const itemIndex = inventoryItems.findIndex(i => i.id === id);
     if (itemIndex === -1) return;
 
     const currentApproved = inventoryItems[itemIndex].approved;
 
-    / Toggle between true and false only (no null for toggle)
+    // Toggle between true and false only (no null for toggle)
     const newApproved = currentApproved === true ? false : true;
 
     await updateInventoryApprovalStatus(id, newApproved);
@@ -1738,21 +1738,21 @@ async function toggleAdjust(id) {
     inventoryItems[itemIndex].updatedAt = Date.now();
 
     try {
-        / Save to IndexedDB
+        // Save to IndexedDB
         await updateInventoryItemInDB(inventoryItems[itemIndex]);
 
-        / Re-render the grid to update adjust displays
+        // Re-render the grid to update adjust displays
         displayedItemsCount = 0;
         renderInventoryItems();
 
-        updateStats(); / Update stats after adjust change
+        updateStats(); // Update stats after adjust change
     } catch (error) {
         console.error('Error updating adjust status:', error);
         await showAlert('Failed to update adjust status. Please try again.', 'Update Error');
     }
 }
 
-/ Review management functions - one-way toggle like Cut In System button
+// Review management functions - one-way toggle like Cut In System button
 async function markAsReviewed(id) {
     const itemIndex = inventoryItems.findIndex(i => i.id === id);
     if (itemIndex === -1) {
@@ -1762,14 +1762,14 @@ async function markAsReviewed(id) {
 
     const item = inventoryItems[itemIndex];
 
-    / Only allow toggling from false to true (one-way)
+    // Only allow toggling from false to true (one-way)
     if (item.reviewed === true) {
-        return; / Already set, do nothing
+        return; // Already set, do nothing
     }
 
     const now = Date.now();
 
-    / Store original state for error recovery
+    // Store original state for error recovery
     const originalReviewed = item.reviewed;
     const originalTimestamp = item.reviewedTimestamp;
 
@@ -1778,30 +1778,30 @@ async function markAsReviewed(id) {
     inventoryItems[itemIndex].updatedAt = now;
 
     try {
-        / Update in database
+        // Update in database
         await updateInventoryItemInDB(inventoryItems[itemIndex]);
 
-        / Update the review status display
+        // Update the review status display
         const reviewStatusDiv = document.getElementById(`review-status-${id}`);
         if (reviewStatusDiv) {
             reviewStatusDiv.textContent = 'Reviewed';
             reviewStatusDiv.className = reviewStatusDiv.className.replace('text-gray-500', 'text-green-600');
         }
 
-        / Update the button - make it permanent/unclickable like Cut In System
+        // Update the button - make it permanent/unclickable like Cut In System
         const button = document.querySelector(`button[onclick="markAsReviewed('${id}')"]`);
         if (button) {
             button.className = button.className.replace('bg-gray-500 hover:bg-gray-600', 'bg-green-600 hover:bg-green-700');
             const reviewDate = formatTimestampToMMDDYYYY(now);
             button.textContent = `✓ Reviewed (${reviewDate})`;
             button.setAttribute('title', `Marked as reviewed on ${reviewDate}`);
-            button.disabled = true; / Disable button permanently
-            button.onclick = null; / Remove onclick handler
+            button.disabled = true; // Disable button permanently
+            button.onclick = null; // Remove onclick handler
         }
 
-        updateStats(); / Update stats after review status change
+        updateStats(); // Update stats after review status change
 
-        / Show success alert like Cut In System button
+        // Show success alert like Cut In System button
         await showAlert(`Inventory item marked as "Reviewed" at ${new Date(now).toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -1811,7 +1811,7 @@ async function markAsReviewed(id) {
     } catch (error) {
         console.error('❌ Error updating review status:', error);
 
-        / Revert local changes on error
+        // Revert local changes on error
         inventoryItems[itemIndex].reviewed = originalReviewed;
         inventoryItems[itemIndex].reviewedTimestamp = originalTimestamp;
 
@@ -1821,7 +1821,7 @@ async function markAsReviewed(id) {
 
 
 
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
@@ -1842,9 +1842,9 @@ if (typeof initMobileMenu === 'function') {
     });
 }
 
-/ Global function exports for HTML onclick handlers
+// Global function exports for HTML onclick handlers
 if (typeof window !== 'undefined') {
-    / Core functions - Main operations
+    // Core functions - Main operations
     window.saveInventoryItem = saveInventoryItem;
     window.handleReasonChange = handleReasonChange;
     window.editItem = editInventoryItem;

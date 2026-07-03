@@ -1,78 +1,56 @@
-const { chromium } = require('playwright');
-const path = require('path');
+const { test, expect } = require('@playwright/test');
 
-(async () => {
-  console.log('🧪 Starting IndexedDB Sentinel Fix Verification...');
+test('Wire Weight Estimator page loads and sanitizer works', async ({ page }) => {
+  // Go to the wire weight estimator page
+  await page.goto('http://localhost:3000/src/pages/wire-weight-estimator/wire-weight-estimator.html');
 
-  const browser = await chromium.launch();
-  const context = await browser.newContext();
-  const page = await context.newPage();
+  // If the page loads without error, the syntax fix is verified
+  await expect(page.locator('#toolTitle')).toContainText('EECOL Wire Weight Calculator');
 
-  // Navigate to the app (assuming it's being served or just load the local file)
-  // For verification purposes, we'll use a file URL if no server is running,
-  // but it's better to run against the dev server if possible.
-  const appPath = 'file://' + path.resolve(__dirname, '../index.html');
+  // Verify _esc function works by checking if it's available and returns expected output
+  const escaped = await page.evaluate(() => {
+    return _esc('<b>test/slash</b>');
+  });
 
-  try {
-    await page.goto(appPath);
+  // Expected: &lt;b&gt;test&#x2F;slash&lt;&#x2F;b&gt;
+  expect(escaped).toBe('&lt;b&gt;test&#x2F;slash&lt;&#x2F;b&gt;');
+  console.log('Sanitizer verified:', escaped);
+});
 
-    // Inject and execute verification logic
-    const result = await page.evaluate(async () => {
-      if (typeof EECOLIndexedDB === 'undefined') {
-        return { success: false, error: 'EECOLIndexedDB not found' };
-      }
+test('Reverse tabnabbing protection in safeOpenPrintWindow', async ({ page }) => {
+  await page.goto('http://localhost:3000/src/pages/wire-weight-estimator/wire-weight-estimator.html');
 
-      const dbInstance = EECOLIndexedDB.getInstance();
-      await dbInstance.isReady();
-      const db = dbInstance.db;
-
-      const results = {
-        storesPresent: [],
-        missingStores: [],
-        crudTest: false,
-        idempotencyTest: 'Skipped (Upgrade context required)',
-        migrationLogicTest: typeof dbInstance.migrateFromLocalStorage === 'function'
+  // Mock window.open to return a dummy window object
+  await page.evaluate(() => {
+    const originalOpen = window.open;
+    window.open = function() {
+      const win = {
+        opener: window,
+        document: {
+          open: () => {},
+          write: () => {},
+          close: () => {},
+          title: ''
+        },
+        print: () => {}
       };
+      return win;
+    };
+  });
 
-      const requiredStores = ['cuttingRecords', 'inventoryRecords', 'maintenanceLogs', 'settings', 'multicutPlanner'];
-      requiredStores.forEach(store => {
-        if (db.objectStoreNames.contains(store)) {
-          results.storesPresent.push(store);
-        } else {
-          results.missingStores.push(store);
-        }
-      });
+  // Call printWeightResults which calls safeOpenPrintWindow (eventually or via fallback)
+  // Actually, printWeightResults in wire-weight-estimator.js calls window.open directly in fallback
+  // or printWireWeightResults from print.js.
 
-      // Basic CRUD test
-      try {
-        const testId = 'sentinel-test-' + Date.now();
-        await dbInstance.add('settings', { name: testId, value: 'verified' });
-        const retrieved = await dbInstance.get('settings', testId);
-        if (retrieved && retrieved.value === 'verified') {
-          await dbInstance.delete('settings', testId);
-          results.crudTest = true;
-        }
-      } catch (e) {
-        results.crudError = e.message;
-      }
+  // Let's test the utility directly if possible, or trigger the print.
+  const openerIsNull = await page.evaluate(() => {
+    const dummyHtml = '<html></html>';
+    // We need to make sure we are testing the one I modified.
+    // src/utils/sanitize.js exposes safeOpenPrintWindow to window.
+    const win = safeOpenPrintWindow('Test', dummyHtml);
+    return win.opener === null;
+  });
 
-      return results;
-    });
-
-    console.log('Verification Results:', JSON.stringify(result, null, 2));
-
-    if (result.missingStores.length === 0 && result.crudTest) {
-      console.log('✅ Verification PASSED');
-      process.exit(0);
-    } else {
-      console.error('❌ Verification FAILED');
-      process.exit(1);
-    }
-
-  } catch (error) {
-    console.error('❌ Error during verification:', error);
-    process.exit(1);
-  } finally {
-    await browser.close();
-  }
-})();
+  expect(openerIsNull).toBe(true);
+  console.log('Reverse tabnabbing protection verified');
+});

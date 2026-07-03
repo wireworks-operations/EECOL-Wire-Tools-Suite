@@ -30,7 +30,7 @@ const standardDateFormat = new Intl.DateTimeFormat(undefined, {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-    / Initialize DB
+    // Initialize DB
     if (typeof EECOLIndexedDB === 'undefined') {
         console.error('❌ EECOLIndexedDB class not found');
         return;
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initModalSystem();
 
-    / DOM Elements
+    // DOM Elements
     const exportDbBtn = document.getElementById('exportDbBtn');
     const importDbBtn = document.getElementById('importDbBtn');
     const deleteDbBtn = document.getElementById('deleteDbBtn');
@@ -61,9 +61,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const deleteSelectedWireCutListBtn = document.getElementById('deleteSelectedWireCutList');
     const deleteSelectedReelcapacityEstimatorBtn = document.getElementById('deleteSelectedReelcapacityEstimator');
 
-    / Load and render records
+    // Load and render records
     const formatRecord = (storeName, record) => {
-        / BOLT: Ensure we pass a Date object to the formatter for type safety (handles strings/numbers)
+        // BOLT: Ensure we pass a Date object to the formatter for type safety (handles strings/numbers)
         const timestamp = standardDateFormat.format(new Date(record.timestamp));
         switch (storeName) {
             case 'markConverter':
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const renderRecords = async (storeName, listElement) => {
         const records = await db.getAll(storeName);
-        listElement.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+        listElement.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         if (records.length === 0) {
             const emptyP = document.createElement('p');
             emptyP.className = 'text-gray-500';
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    / Statistics calculation functions
+    // Statistics calculation functions
     const calculateStatistics = async () => {
         try {
             const stats = {
@@ -139,13 +139,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 largestStore: { name: 'None', count: 0 }
             };
 
-            / Get all stores and calculate statistics
+            // Get all stores and calculate statistics
             for (const [storeName, storeConfig] of Object.entries(db.stores)) {
-                / IDB SENTINEL: Use count() instead of getAll() for performance and memory efficiency
+                // IDB SENTINEL: Use count() instead of getAll() for performance and memory efficiency
                 const recordCount = await db.count(storeName);
                 stats.totalRecords += recordCount;
 
-                / Count by type
+                // Count by type
                 switch (storeName) {
                     case 'markConverter':
                         stats.markRecords = recordCount;
@@ -167,13 +167,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         break;
                 }
 
-                / Track largest store
+                // Track largest store
                 if (recordCount > stats.largestStore.count) {
                     stats.largestStore = { name: storeName, count: recordCount };
                 }
             }
 
-            / IDB SENTINEL: Use real browser storage metrics if available
+            // IDB SENTINEL: Use real browser storage metrics if available
             const storage = await db.getStorageStatus();
             if (storage && storage.usage > 0) {
                 stats.storageSize = storage.usage;
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 stats.storageSize = stats.totalRecords * 1024;
             }
 
-            / Update UI with statistics
+            // Update UI with statistics
             updateStatisticsDisplay(stats);
 
         } catch (error) {
@@ -190,11 +190,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const updateStatisticsDisplay = (stats) => {
-        / Update main statistics cards
+        // Update main statistics cards
         document.getElementById('totalRecords').textContent = stats.totalRecords.toLocaleString();
         document.getElementById('storageUsed').textContent = formatBytes(stats.storageSize);
 
-        / Update record breakdown
+        // Update record breakdown
         document.getElementById('markRecords').textContent = stats.markRecords;
         document.getElementById('stopmarkRecords').textContent = stats.stopmarkRecords;
         document.getElementById('reelRecords').textContent = stats.reelRecords;
@@ -202,19 +202,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('inventoryRecords').textContent = stats.inventoryRecords;
         document.getElementById('wireCutListRecords').textContent = stats.wireCutListRecords;
 
-        / Update storage analysis
+        // Update storage analysis
         document.getElementById('dbSize').textContent = formatBytes(stats.storageSize);
         document.getElementById('avgRecordSize').textContent =
             stats.totalRecords > 0 ? formatBytes(Math.round(stats.storageSize / stats.totalRecords)) : '0 B';
         document.getElementById('largestStore').textContent =
             stats.largestStore.name !== 'None' ? `${stats.largestStore.name} (${stats.largestStore.count})` : 'None';
 
-        / Update activity (simplified - could be enhanced with actual activity tracking)
+        // Update activity (simplified - could be enhanced with actual activity tracking)
         const lastActivity = localStorage.getItem('eecol-last-db-activity');
         document.getElementById('lastActivity').textContent =
             lastActivity ? new Date(lastActivity).toLocaleString() : 'Never';
 
-        / Update backup count (simplified)
+        // Update backup count (simplified)
         const backupCount = localStorage.getItem('eecol-backup-count') || 0;
         document.getElementById('backupsCreated').textContent = backupCount;
     };
@@ -229,18 +229,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    / Activity tracking helper
+    // Activity tracking helper
     const trackActivity = (action) => {
         localStorage.setItem('eecol-last-db-activity', new Date().toISOString());
         if (action === 'backup') {
             const currentCount = parseInt(localStorage.getItem('eecol-backup-count') || 0);
             localStorage.setItem('eecol-backup-count', currentCount + 1);
         }
-        / Refresh statistics to show updated activity
+        // Refresh statistics to show updated activity
         setTimeout(() => calculateStatistics(), 100);
     };
 
-    / Event Listeners
+    // Event Listeners
     exportDbBtn.addEventListener('click', async () => {
         const allData = {};
         for (const storeName of Object.keys(db.stores)) {
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (confirmed) {
                 for (const storeName of Object.keys(data)) {
                     if (db.stores[storeName] && Array.isArray(data[storeName])) {
-                        / IDB SENTINEL: Use bulkPut for efficient, single-transaction restoration
+                        // IDB SENTINEL: Use bulkPut for efficient, single-transaction restoration
                         await db.bulkPut(storeName, data[storeName], true);
                     }
                 }
@@ -322,9 +322,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    / ===== BULK OPERATIONS FUNCTIONALITY =====
+    // ===== BULK OPERATIONS FUNCTIONALITY =====
 
-    / Bulk operations state management
+    // Bulk operations state management
     const bulkState = {
         markConverter: { selected: new Set(), selectAll: false },
         stopmarkConverter: { selected: new Set(), selectAll: false },
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         reelcapacityEstimator: { selected: new Set(), selectAll: false }
     };
 
-    / Update selected count display
+    // Update selected count display
     const updateSelectedCount = (storeName) => {
         const count = bulkState[storeName].selected.size;
         const countElement = document.getElementById(`selectedCount${storeName.charAt(0).toUpperCase() + storeName.slice(1)}`);
@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             countElement.textContent = `(${count} selected)`;
         }
 
-        / Update button states
+        // Update button states
         const deleteBtn = document.getElementById(`deleteSelected${storeName.charAt(0).toUpperCase() + storeName.slice(1)}`);
         const exportBtn = document.getElementById(`exportSelected${storeName.charAt(0).toUpperCase() + storeName.slice(1)}`);
 
@@ -351,13 +351,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    / Handle individual checkbox changes
+    // Handle individual checkbox changes
     const handleCheckboxChange = (storeName, recordId, checked) => {
         if (checked) {
             bulkState[storeName].selected.add(recordId);
         } else {
             bulkState[storeName].selected.delete(recordId);
-            / Uncheck select all if individual item is unchecked
+            // Uncheck select all if individual item is unchecked
             if (bulkState[storeName].selectAll) {
                 bulkState[storeName].selectAll = false;
                 const selectAllCheckbox = document.getElementById(`selectAll${storeName.charAt(0).toUpperCase() + storeName.slice(1)}`);
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateSelectedCount(storeName);
     };
 
-    / Handle select all functionality
+    // Handle select all functionality
     const handleSelectAll = (storeName, checked) => {
         bulkState[storeName].selectAll = checked;
         const listElement = document.getElementById(`${storeName}List`);
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateSelectedCount(storeName);
     };
 
-    / Bulk delete operation
+    // Bulk delete operation
     const handleBulkDelete = async (storeName) => {
         const selectedIds = Array.from(bulkState[storeName].selected);
         if (selectedIds.length === 0) {
@@ -398,16 +398,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirmed) return;
 
         try {
-            / IDB SENTINEL: Use bulkDelete for efficient, single-transaction removal
+            // IDB SENTINEL: Use bulkDelete for efficient, single-transaction removal
             await db.bulkDelete(storeName, selectedIds);
 
-            / Clear selection
+            // Clear selection
             bulkState[storeName].selected.clear();
             bulkState[storeName].selectAll = false;
             const selectAllCheckbox = document.getElementById(`selectAll${storeName.charAt(0).toUpperCase() + storeName.slice(1)}`);
             if (selectAllCheckbox) selectAllCheckbox.checked = false;
 
-            / Refresh the list
+            // Refresh the list
             await loadAllRecords();
 
             await showAlert(`Successfully deleted ${selectedIds.length} records.`);
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    / Bulk export operation
+    // Bulk export operation
     const handleBulkExport = async (storeName) => {
         const selectedIds = Array.from(bulkState[storeName].selected);
         if (selectedIds.length === 0) {
@@ -454,13 +454,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    / ===== CATEGORY SYSTEM FUNCTIONALITY =====
+    // ===== CATEGORY SYSTEM FUNCTIONALITY =====
 
-    / Category management for reel configurations
+    // Category management for reel configurations
     const categories = ['copper', 'aluminum', 'steel', 'custom'];
     let customCategories = [];
 
-    / Load categories from localStorage
+    // Load categories from localStorage
     const loadCategories = () => {
         const stored = localStorage.getItem('eecol-reel-categories');
         if (stored) {
@@ -469,12 +469,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateCategoryOptions();
     };
 
-    / Save categories to localStorage
+    // Save categories to localStorage
     const saveCategories = () => {
         localStorage.setItem('eecol-reel-categories', JSON.stringify(customCategories));
     };
 
-    / Add new category
+    // Add new category
     const addCategory = (categoryName) => {
         if (!categoryName.trim()) return;
         const normalizedName = categoryName.toLowerCase().trim();
@@ -487,17 +487,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         return false;
     };
 
-    / Update category filter options
+    // Update category filter options
     const updateCategoryOptions = () => {
         const categoryFilter = document.getElementById('reelCategoryFilter');
         if (!categoryFilter) return;
 
-        / Clear existing options except "All Categories"
+        // Clear existing options except "All Categories"
         while (categoryFilter.options.length > 1) {
             categoryFilter.remove(1);
         }
 
-        / Add default categories
+        // Add default categories
         categories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat;
@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             categoryFilter.appendChild(option);
         });
 
-        / Add custom categories
+        // Add custom categories
         customCategories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat;
@@ -514,9 +514,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    / ===== SEARCH AND FILTER FUNCTIONALITY =====
+    // ===== SEARCH AND FILTER FUNCTIONALITY =====
 
-    / Store original records for filtering
+    // Store original records for filtering
     let originalRecords = {
         markConverter: [],
         stopmarkConverter: [],
@@ -524,11 +524,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         reelcapacityEstimator: []
     };
 
-    / Search and filter functions
+    // Search and filter functions
     const filterRecords = (storeName, searchTerm, sortBy) => {
         let records = [...originalRecords[storeName]];
 
-        / Apply search filter
+        // Apply search filter
         if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase();
             records = records.filter(record => {
@@ -537,7 +537,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        / Apply sorting
+        // Apply sorting
         records.sort((a, b) => {
             switch (sortBy) {
                 case 'newest':
@@ -572,19 +572,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         return records;
     };
 
-    / Special filter function for reel configurations with category support
+    // Special filter function for reel configurations with category support
     const filterReelRecords = (searchTerm, sortBy, categoryFilter) => {
         let records = [...originalRecords.reelcapacityEstimator];
 
-        / Apply category filter first
+        // Apply category filter first
         if (categoryFilter) {
             records = records.filter(record => {
-                const recordCategory = record.category || 'custom'; / Default to 'custom' if no category
+                const recordCategory = record.category || 'custom'; // Default to 'custom' if no category
                 return recordCategory.toLowerCase() === categoryFilter.toLowerCase();
             });
         }
 
-        / Apply search filter
+        // Apply search filter
         if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase();
             records = records.filter(record => {
@@ -593,7 +593,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        / Apply sorting
+        // Apply sorting
         records.sort((a, b) => {
             switch (sortBy) {
                 case 'newest':
@@ -621,12 +621,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const sortBy = sortSelect.value;
         const filteredRecords = filterRecords(storeName, searchTerm, sortBy);
 
-        / Update the list display
+        // Update the list display
         renderFilteredRecords(storeName, filteredRecords, listElement);
     };
 
     const renderFilteredRecords = (storeName, records, listElement) => {
-        listElement.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+        listElement.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
         if (records.length === 0) {
             const searchTerm = listElement.closest('.grid').querySelector('input[type="text"]').value;
             const emptyP = document.createElement('p');
@@ -670,27 +670,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    / Load records and store originals for filtering
+    // Load records and store originals for filtering
     const loadAllRecords = async () => {
-        / Load records for each store
+        // Load records for each store
         originalRecords.markConverter = await db.getAll('markConverter');
         originalRecords.stopmarkConverter = await db.getAll('stopmarkConverter');
         originalRecords.wireCutList = await db.getAll('wireCutList');
         originalRecords.reelcapacityEstimator = await db.getAll('reelcapacityEstimator');
 
-        / Render initial (unfiltered) records
+        // Render initial (unfiltered) records
         await renderRecords('markConverter', markConverterList);
         await renderRecords('stopmarkConverter', stopmarkConverterList);
         await renderRecords('wireCutList', wireCutListList);
         await renderRecords('reelcapacityEstimator', reelcapacityEstimatorList);
 
-        / Calculate and display statistics after loading records
+        // Calculate and display statistics after loading records
         await calculateStatistics();
     };
 
-    / ===== SEARCH AND FILTER EVENT LISTENERS =====
+    // ===== SEARCH AND FILTER EVENT LISTENERS =====
 
-    / Mark Converter search and filter
+    // Mark Converter search and filter
     const markSearchInput = document.getElementById('markSearchInput');
     const markSortSelect = document.getElementById('markSortSelect');
     const markClearSearch = document.getElementById('markClearSearch');
@@ -709,7 +709,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateFilteredRecords('markConverter', markConverterList, markSearchInput, markSortSelect);
     });
 
-    / Stop Mark Converter search and filter
+    // Stop Mark Converter search and filter
     const stopmarkSearchInput = document.getElementById('stopmarkSearchInput');
     const stopmarkSortSelect = document.getElementById('stopmarkSortSelect');
     const stopmarkClearSearch = document.getElementById('stopmarkClearSearch');
@@ -728,7 +728,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateFilteredRecords('stopmarkConverter', stopmarkConverterList, stopmarkSearchInput, stopmarkSortSelect);
     });
 
-    / Wire Cut List search and filter
+    // Wire Cut List search and filter
     const wireCutSearchInput = document.getElementById('wireCutSearchInput');
     const wireCutSortSelect = document.getElementById('wireCutSortSelect');
     const wireCutClearSearch = document.getElementById('wireCutClearSearch');
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateFilteredRecords('wireCutList', wireCutListList, wireCutSearchInput, wireCutSortSelect);
     });
 
-    / Reel Capacity Estimator search and filter
+    // Reel Capacity Estimator search and filter
     const reelSearchInput = document.getElementById('reelSearchInput');
     const reelSortSelect = document.getElementById('reelSortSelect');
     const reelCategoryFilter = document.getElementById('reelCategoryFilter');
@@ -772,7 +772,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateReelFilteredRecords();
     });
 
-    / Category management
+    // Category management
     const newCategoryInput = document.getElementById('newCategoryInput');
     const addCategoryBtn = document.getElementById('addCategoryBtn');
 
@@ -792,9 +792,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    / ===== BULK OPERATIONS EVENT LISTENERS =====
+    // ===== BULK OPERATIONS EVENT LISTENERS =====
 
-    / Select All checkboxes
+    // Select All checkboxes
     document.getElementById('selectAllMarkConverter').addEventListener('change', (e) => {
         handleSelectAll('markConverter', e.target.checked);
     });
@@ -811,7 +811,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         handleSelectAll('reelcapacityEstimator', e.target.checked);
     });
 
-    / Bulk operation buttons
+    // Bulk operation buttons
     document.getElementById('deleteSelectedMarkConverter').addEventListener('click', () => {
         handleBulkDelete('markConverter');
     });
@@ -844,7 +844,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         handleBulkExport('reelcapacityEstimator');
     });
 
-    / Handle individual checkbox changes (delegated event listener)
+    // Handle individual checkbox changes (delegated event listener)
     document.addEventListener('change', (e) => {
         if (e.target.type === 'checkbox' && e.target.dataset.id) {
             const listElement = e.target.closest('.overflow-y-auto');
@@ -855,11 +855,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    / Initial Load
-    loadCategories(); / Load categories first
+    // Initial Load
+    loadCategories(); // Load categories first
     await loadAllRecords();
 });
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         menuItems: [
