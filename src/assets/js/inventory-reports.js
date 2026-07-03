@@ -3,7 +3,7 @@
  * Advanced analytics and reporting for inventory management
  */
 
-/ Global variables
+// Global variables
 let inventoryItems = [];
 let cachedReportMetrics = null;
 let cachedTrendsData = null;
@@ -29,21 +29,21 @@ const monthYearFormat = new Intl.DateTimeFormat('en-US', {
 
 const standardDateFormat = new Intl.DateTimeFormat('en-US');
 
-/ Chart.js initialization with CDN fallback
+// Chart.js initialization with CDN fallback
 function loadChartJS() {
     return new Promise((resolve, reject) => {
-        / Try local Chart.js first (offline support)
+        // Try local Chart.js first (offline support)
         const localScript = document.createElement('script');
-        localScript.src = '/src/pages/utils/chart.js';
+        localScript.src = '../../utils/chart.js';
         localScript.onload = () => {
             console.log('Chart.js loaded from local file');
             resolve('local');
         };
         localScript.onerror = () => {
             console.warn('Local Chart.js failed, trying CDN...');
-            / Fallback to CDN (Pinned to 4.4.1 for SRI)
+            // Fallback to CDN (Pinned to 4.4.1 for SRI)
             const cdnScript = document.createElement('script');
-            cdnScript.src = 'https:/cdn.jsdelivr.net/npm/chart.js@4.4.1';
+            cdnScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1';
             cdnScript.integrity = 'sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4';
             cdnScript.crossOrigin = 'anonymous';
             cdnScript.onload = () => {
@@ -64,19 +64,19 @@ function loadChartJS() {
     });
 }
 
-/ Initialize all components
+// Initialize all components
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🔄 Inventory reports page initialization...');
 
     try {
-        / Initialize IndexedDB first
+        // Initialize IndexedDB first
         if (typeof EECOLIndexedDB !== 'undefined' && EECOLIndexedDB.isIndexedDBSupported()) {
             console.log('📦 Initializing IndexedDB for inventory reports...');
             window.eecolDB = EECOLIndexedDB.getInstance();
             await window.eecolDB.ready;
             console.log('✅ IndexedDB initialized successfully for inventory reports');
 
-            / Run migration from localStorage if needed
+            // Run migration from localStorage if needed
             const hasExistingData = localStorage.getItem('cutRecords') ||
                                    localStorage.getItem('inventoryItems') ||
                                    localStorage.getItem('machineMaintenanceChecklist');
@@ -91,32 +91,32 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
 
-        / Wait for Chart.js to load
+        // Wait for Chart.js to load
         await loadChartJS();
         console.log('✅ Chart.js loaded successfully, initializing inventory reports...');
 
-        / Set default date range
+        // Set default date range
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - 30);
         document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
         document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
 
-        / Initialize data loading
+        // Initialize data loading
         await loadInventoryData();
         initAutoRefresh();
 
-        / Set up chart controls
+        // Set up chart controls
         setupChartControls();
 
-        / Set up export functions
+        // Set up export functions
         setupExportFunctions();
 
         console.log('🎉 Inventory reports page initialization complete');
 
     } catch (error) {
         console.error('❌ Failed to initialize inventory reports:', error);
-        / Fallback: try to load without charts or database
+        // Fallback: try to load without charts or database
         console.log('🔄 Running fallback initialization...');
 
         const endDate = new Date();
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-/ Set up chart controls event listeners
+// Set up chart controls event listeners
 function setupChartControls() {
     document.getElementById('chartType').addEventListener('change', (e) => {
         chartType = e.target.value;
@@ -149,7 +149,7 @@ function setupChartControls() {
     document.getElementById('endDate').addEventListener('change', updateCharts);
 }
 
-/ Set up export functions
+// Set up export functions
 function setupExportFunctions() {
     document.getElementById('exportReportBtn').addEventListener('click', exportReport);
     document.getElementById('exportChartsBtn').addEventListener('click', () => {
@@ -158,7 +158,7 @@ function setupExportFunctions() {
     document.getElementById('generatePDFBtn').addEventListener('click', generatePDF);
 }
 
-/ IndexedDB-based data loading functions
+// IndexedDB-based data loading functions
 async function loadInventoryData() {
     try {
         cachedReportMetrics = null;
@@ -184,7 +184,7 @@ async function loadInventoryData() {
                     return item;
                 }).sort((a, b) => b.timestamp - a.timestamp);
 
-                / Update dashboard and charts
+                // Update dashboard and charts
                 updateDashboard();
                 updateCharts();
 
@@ -197,17 +197,17 @@ async function loadInventoryData() {
             }
         } else {
             console.warn('⚠️ IndexedDB not available, falling back to localStorage for compatibility');
-            / Fallback to localStorage if IndexedDB unavailable (shouldn't happen in modern setup)
+            // Fallback to localStorage if IndexedDB unavailable (shouldn't happen in modern setup)
             loadFromLocalStorage();
         }
     } catch (error) {
         console.error('❌ Error loading inventory data from IndexedDB:', error);
-        / Try localStorage as fallback
+        // Try localStorage as fallback
         loadFromLocalStorage();
     }
 }
 
-/ Fallback localStorage loading (only for compatibility if IndexedDB fails)
+// Fallback localStorage loading (only for compatibility if IndexedDB fails)
 function loadFromLocalStorage() {
     try {
         const stored = localStorage.getItem('inventoryItems');
@@ -246,22 +246,22 @@ function loadFromLocalStorage() {
     }
 }
 
-/ Auto-refresh mechanism using IndexedDB storage events
+// Auto-refresh mechanism using IndexedDB storage events
 function initAutoRefresh() {
     console.log('🔄 Initializing auto-refresh system with IndexedDB...');
 
-    / Listen for storage changes (including from other tabs/windows)
+    // Listen for storage changes (including from other tabs/windows)
     window.addEventListener('storage', function(e) {
-        if (e.key === 'eecolDBChange' || e.key === null) { / null key means any storage change
+        if (e.key === 'eecolDBChange' || e.key === null) { // null key means any storage change
             console.log('📡 Storage event detected - refreshing reports...');
             loadInventoryData();
         }
     });
 
-    / Also check periodically for changes (in case storage events don't fire)
+    // Also check periodically for changes (in case storage events don't fire)
     setInterval(function() {
         try {
-            / Light refresh - compare record counts
+            // Light refresh - compare record counts
             if (window.eecolDB && window.eecolDB.isReady()) {
                 window.eecolDB.count('inventoryRecords').then(currentCount => {
                     if (currentCount !== inventoryItems.length) {
@@ -269,16 +269,16 @@ function initAutoRefresh() {
                         loadInventoryData();
                     }
                 }).catch(() => {
-                    / Ignore errors in periodic check
+                    // Ignore errors in periodic check
                 });
             }
         } catch (e) {
-            / Ignore errors in periodic check
+            // Ignore errors in periodic check
         }
-    }, 5000); / Check every 5 seconds
+    }, 5000); // Check every 5 seconds
 }
 
-/ Manual refresh function
+// Manual refresh function
 function manualRefresh() {
     console.log('🔃 Manual refresh triggered...');
     const refreshBtn = document.getElementById('manualRefreshBtn');
@@ -287,12 +287,12 @@ function manualRefresh() {
     refreshBtn.textContent = '⟳';
     refreshBtn.disabled = true;
 
-    / Add loading animation
+    // Add loading animation
     refreshBtn.style.animation = 'spin 1s linear';
 
     loadInventoryData();
 
-    / Reset button after delay
+    // Reset button after delay
     setTimeout(() => {
         refreshBtn.textContent = originalText;
         refreshBtn.disabled = false;
@@ -300,7 +300,7 @@ function manualRefresh() {
     }, 500);
 }
 
-/ Utility functions for date handling
+// Utility functions for date handling
 function parseDate(dateStr) {
     if (!dateStr) return null;
     const date = new Date(dateStr);
@@ -338,13 +338,13 @@ function getSortedPeriodKeys(groups) {
     });
 }
 
-/ Dashboard statistics update
+// Dashboard statistics update
 function updateDashboard() {
     console.log('📊 Updating inventory dashboard statistics...');
 
     const totalItems = inventoryItems.length;
 
-    / BOLT OPTIMIZATION: Memoized metrics
+    // BOLT OPTIMIZATION: Memoized metrics
     if (cachedReportMetrics) {
         applyMetricsToDashboard(cachedReportMetrics);
         return;
@@ -374,7 +374,7 @@ function updateDashboard() {
     let previousWeekCount = 0;
 
     for (const item of inventoryItems) {
-        / Approval stats
+        // Approval stats
         if (item.approved === true) {
             approvedItems++;
             totalProcessed++;
@@ -382,10 +382,10 @@ function updateDashboard() {
             totalProcessed++;
         }
 
-        / Value
+        // Value
         totalValue += (item.totalValue || 0);
 
-        / Quality reasons
+        // Quality reasons
         const reason = (item.reason || '').toLowerCase();
         if (reason.includes('damaged')) {
             damagedItems++;
@@ -394,7 +394,7 @@ function updateDashboard() {
             tailendItems++;
         }
 
-        / Weekly change tracking (optimized numeric comparison)
+        // Weekly change tracking (optimized numeric comparison)
         const ts = item.timestamp;
         if (ts >= oneWeekAgoMs) {
             currentWeekCount++;
@@ -427,7 +427,7 @@ function updateDashboard() {
 }
 
 function applyMetricsToDashboard(m) {
-    / Update DOM elements
+    // Update DOM elements
     document.getElementById('totalItemsStat').textContent = m.totalItems;
     document.getElementById('approvedRateStat').textContent = m.approvedRate + '%';
     document.getElementById('damagedItemsStat').textContent = m.damagedItems;
@@ -442,7 +442,7 @@ function applyMetricsToDashboard(m) {
     console.log('✅ Dashboard statistics updated');
 }
 
-/ Chart update functions
+// Chart update functions
 function updateCharts() {
     try {
         console.log('📊 Updating inventory charts...');
@@ -451,7 +451,7 @@ function updateCharts() {
         const startDateVal = document.getElementById('startDate').value;
         const endDateVal = document.getElementById('endDate').value;
 
-        / BOLT OPTIMIZATION: Memoized trends and metrics for charts
+        // BOLT OPTIMIZATION: Memoized trends and metrics for charts
         if (cachedTrendsData && cachedTrendsData.period === period && cachedTrendsData.startDate === startDateVal && cachedTrendsData.endDate === endDateVal) {
             destroyExistingCharts();
             createInventoryTrendsChart(cachedTrendsData.metrics.trends);
@@ -483,7 +483,7 @@ function updateCharts() {
             approval: { approved: 0, rejected: 0, pending: 0 },
             productCounts: {},
             damage: { normal: 0, damaged: 0, tailends: 0 },
-            / Collect period metrics for ALL available data for Detailed Reports comparison
+            // Collect period metrics for ALL available data for Detailed Reports comparison
             allPeriodMetrics: {}
         };
 
@@ -491,16 +491,16 @@ function updateCharts() {
             const ts = item.timestamp;
             if (!ts) continue;
 
-            / Approval status
+            // Approval status
             if (item.approved === true) metrics.approval.approved++;
             else if (item.approved === false) metrics.approval.rejected++;
             else metrics.approval.pending++;
 
-            / Product code
+            // Product code
             const code = item.productCode || 'Unknown';
             metrics.productCounts[code] = (metrics.productCounts[code] || 0) + 1;
 
-            / Damage status
+            // Damage status
             const reason = (item.reason || '').toLowerCase();
             if (reason.includes('damaged')) {
                 metrics.damage.damaged++;
@@ -525,7 +525,7 @@ function updateCharts() {
                 periodKeyCache.set(dateStrKey, periodKey);
             }
 
-            / 1. Aggregated metrics for ALL data (for Detailed Reports comparison)
+            // 1. Aggregated metrics for ALL data (for Detailed Reports comparison)
             if (!metrics.allPeriodMetrics[periodKey]) {
                 metrics.allPeriodMetrics[periodKey] = {
                     items: 0, approved: 0, value: 0,
@@ -538,7 +538,7 @@ function updateCharts() {
             pMetric.value += (item.totalValue || 0);
             if (ts < pMetric.periodStart) pMetric.periodStart = ts;
 
-            / 2. Filtered metrics for charts (only within selected date range)
+            // 2. Filtered metrics for charts (only within selected date range)
             if ((!startDate || ts >= startDate) && (!endDate || ts <= endDate)) {
                 if (!metrics.trends[periodKey]) {
                     metrics.trends[periodKey] = { itemsCount: 0, totalValue: 0, periodStart: ts };
@@ -557,10 +557,10 @@ function updateCharts() {
         chartInstances.productCodeChart = createProductCodeChart(metrics.productCounts);
         chartInstances.damageChart = createDamageChart(metrics.damage);
 
-        / Update detailed reports table with pre-calculated metrics
+        // Update detailed reports table with pre-calculated metrics
         updateReportsTable(metrics);
 
-        / BOLT: Cache calculation results
+        // BOLT: Cache calculation results
         cachedTrendsData = {
             period: period,
             startDate: startDateVal,
@@ -585,7 +585,7 @@ function destroyExistingCharts() {
     chartInstances = {};
 }
 
-/ Chart creation functions
+// Chart creation functions
 function createUsageTrendsChart(trendsData) {
     const ctx = document.getElementById('usageTrendsChart').getContext('2d');
 
@@ -750,8 +750,8 @@ function createDamageChart(damageData) {
     });
 }
 
-/ Reports table update
-/ Reports table update
+// Reports table update
+// Reports table update
 function updateReportsTable(metrics) {
     const tableBody = document.getElementById('reportsTable');
 
@@ -798,7 +798,7 @@ function updateReportsTable(metrics) {
         return;
     }
 
-    / BOLT FIX: Restore comparison of two most recent available periods
+    // BOLT FIX: Restore comparison of two most recent available periods
     const sortedKeys = getSortedPeriodKeys(metrics.allPeriodMetrics);
     const currentPeriodKey = sortedKeys[sortedKeys.length - 1];
     const previousPeriodKey = sortedKeys[sortedKeys.length - 2];
@@ -856,7 +856,7 @@ function updateReportsTable(metrics) {
     });
 }
 
-/ Utility function for percentage changes
+// Utility function for percentage changes
 function calculateChange(current, previous) {
     if (previous === 0) {
         return current > 0 ? '+∞%' : '+0%';
@@ -876,19 +876,19 @@ function escapeCSVValue(value) {
     if (value === null || value === undefined) return '';
     let stringValue = value.toString();
 
-    / Mitigate CSV Injection by prefixing values starting with =, +, -, or @
+    // Mitigate CSV Injection by prefixing values starting with =, +, -, or @
     if (['=', '+', '-', '@'].some(char => stringValue.startsWith(char))) {
         stringValue = "'" + stringValue;
     }
 
-    / Standard RFC 4180 double-quote escaping
+    // Standard RFC 4180 double-quote escaping
     if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('\r')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
     }
     return stringValue;
 }
 
-/ Export functions
+// Export functions
 function exportReport() {
     if (inventoryItems.length === 0) {
         window.showAlert('No data to export!', 'No Records');
@@ -928,7 +928,7 @@ function generatePDF() {
         return;
     }
 
-    / Use the shared PDF generator utility
+    // Use the shared PDF generator utility
     if (window.generateInventoryPDF) {
         window.generateInventoryPDF(inventoryItems);
     } else {
@@ -937,14 +937,14 @@ function generatePDF() {
     }
 }
 
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '📦 Inventory Records', href: '/src/pages/inventory-records/inventory-records.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
-            { text: '📊 Live Statistics', href: '/src/pages/live-statistics/live-statistics.html', class: 'bg-teal-600 hover:bg-teal-700' }
+            { text: '📦 Inventory Records', href: '../inventory-records/inventory-records.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
+            { text: '📊 Live Statistics', href: '../live-statistics/live-statistics.html', class: 'bg-teal-600 hover:bg-teal-700' }
         ],
         version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',

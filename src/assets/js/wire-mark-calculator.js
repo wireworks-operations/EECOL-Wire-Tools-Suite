@@ -3,15 +3,15 @@
  * Enterprise PWA v0.8.0.0
  */
 
-/ ===== DEPENDENCIES =====
-/ - /src/utils/modals.js (showAlert, initModalSystem)
-/ - /src/utils/print.js (printWireMarkResults)
-/ - /src/assets/js/pwa-core.js (PWA functionality)
-/ - /src/core/database/indexeddb.js (data persistence)
+// ===== DEPENDENCIES =====
+// - /src/utils/modals.js (showAlert, initModalSystem)
+// - /src/utils/print.js (printWireMarkResults)
+// - /src/assets/js/pwa-core.js (PWA functionality)
+// - /src/core/database/indexeddb.js (data persistence)
 
-/ Wire Mark Calculator Logic - CORE BUSINESS FUNCTIONS
+// Wire Mark Calculator Logic - CORE BUSINESS FUNCTIONS
 const wireMarkCalculator = {
-    / DOM element references
+    // DOM element references
     elements: {
         startMark: null,
         endMark: null,
@@ -29,11 +29,11 @@ const wireMarkCalculator = {
         saveForCuttingRecordsBtn: null
     },
 
-    / Initialize the calculator when DOM is ready
+    // Initialize the calculator when DOM is ready
     init() {
         console.log('🧮 Initializing EECOL Wire Mark Calculator...');
 
-        / Get DOM elements
+        // Get DOM elements
         this.elements = {
             startMark: document.getElementById('startMark'),
             endMark: document.getElementById('endMark'),
@@ -51,52 +51,52 @@ const wireMarkCalculator = {
             saveForCuttingRecordsBtn: document.getElementById('saveForCuttingRecordsBtn')
         };
 
-        / Setup event listeners
+        // Setup event listeners
         this.setupEventListeners();
 
-        / Initialize PWA features
+        // Initialize PWA features
         this.initPWA();
     },
 
-    / Setup all event listeners
+    // Setup all event listeners
     setupEventListeners() {
-        / Calculate button
+        // Calculate button
         if (this.elements.calculateBtn) {
             this.elements.calculateBtn.addEventListener('click', () => this.calculate());
         }
 
-        / Input validation
+        // Input validation
         if (this.elements.startMark && this.elements.endMark) {
             [this.elements.startMark, this.elements.endMark].forEach(input => {
                 input.addEventListener('input', () => this.validateInput(input));
             });
         }
 
-        / Print button
+        // Print button
         if (this.elements.printResultsBtn) {
             this.elements.printResultsBtn.addEventListener('click', () => this.printResults());
         }
 
-        / Save for cutting records button
+        // Save for cutting records button
         if (this.elements.saveForCuttingRecordsBtn) {
             this.elements.saveForCuttingRecordsBtn.addEventListener('click', () => this.saveForCuttingRecords());
         }
     },
 
-    / Initialize PWA features
+    // Initialize PWA features
     initPWA() {
-        / Initialize modal system if available
+        // Initialize modal system if available
         if (typeof initModalSystem === 'function') {
             initModalSystem();
         }
 
-        / Setup PWA events if available
+        // Setup PWA events if available
         if (typeof setupPWAEvents === 'function') {
             setupPWAEvents();
         }
     },
 
-    / Validate individual input fields
+    // Validate individual input fields
     validateInput(input) {
         let value = parseFloat(input.value);
         if (isNaN(value) || value < 0) {
@@ -106,16 +106,16 @@ const wireMarkCalculator = {
         }
     },
 
-    / Main calculation logic
+    // Main calculation logic
     calculate() {
         const startMark = parseFloat(this.elements.startMark?.value || 0);
         const endMark = parseFloat(this.elements.endMark?.value || 0);
         const unit = this.elements.markUnit?.value || 'm';
 
-        / Reset error state
+        // Reset error state
         this.hideError();
 
-        / Validation
+        // Validation
         if (isNaN(startMark) || isNaN(endMark)) {
             this.showError('Please enter valid numbers for Start and End Marks.');
             return;
@@ -126,35 +126,35 @@ const wireMarkCalculator = {
             return;
         }
 
-        / Calculate difference (handles both counting directions)
+        // Calculate difference (handles both counting directions)
         let length;
         if (startMark > endMark) {
-            / Counting down
+            // Counting down
             length = startMark - endMark;
         } else {
-            / Counting up
+            // Counting up
             length = endMark - startMark;
         }
 
-        / Ensure result is always positive
+        // Ensure result is always positive
         length = Math.abs(length);
 
-        / Display results
+        // Display results
         this.displayResult(length, unit, startMark, endMark);
     },
 
-    / Display calculation results
+    // Display calculation results
     displayResult(length, unit, startValue, endValue) {
         if (!this.elements.resultTextPrimary || !this.elements.resultText || !this.elements.resultTextSecondary) {
             console.warn('Result display elements not found');
             return;
         }
 
-        / Primary result
+        // Primary result
         this.elements.resultTextPrimary.textContent = 'Length Between Marks';
         this.elements.resultText.textContent = `${length.toFixed(2)} ${unit}`;
 
-        / Update Start and End Mark display
+        // Update Start and End Mark display
         if (this.elements.displayStartMark) {
             this.elements.displayStartMark.textContent = `${startValue.toFixed(2)} ${unit}`;
         }
@@ -162,7 +162,7 @@ const wireMarkCalculator = {
             this.elements.displayEndMark.textContent = `${endValue.toFixed(2)} ${unit}`;
         }
 
-        / Secondary result (unit conversion)
+        // Secondary result (unit conversion)
         let secondaryText = '';
         if (unit === 'm') {
             const feetValue = (length * 3.28084).toFixed(2);
@@ -173,13 +173,13 @@ const wireMarkCalculator = {
         }
         this.elements.resultTextSecondary.textContent = secondaryText;
 
-        / Show results
+        // Show results
         if (this.elements.resultContainer) {
             this.elements.resultContainer.classList.remove('hidden');
         }
     },
 
-    / Show error message
+    // Show error message
     showError(message) {
         if (this.elements.errorMessage) {
             this.elements.errorMessage.textContent = message;
@@ -189,7 +189,7 @@ const wireMarkCalculator = {
         }
     },
 
-    / Hide error message
+    // Hide error message
     hideError() {
         if (this.elements.errorBox) {
             this.elements.errorBox.classList.add('hidden');
@@ -199,18 +199,18 @@ const wireMarkCalculator = {
         }
     },
 
-    / Print results functionality
+    // Print results functionality
     async printResults() {
         if (!this.elements.resultText) return;
 
         const resultText = this.elements.resultText.textContent;
 
         try {
-            / Use shared print utility if available
+            // Use shared print utility if available
             if (typeof printWireMarkResults === 'function') {
                 printWireMarkResults(resultText, 'Length Between Marks');
             } else {
-                / Fallback print function
+                // Fallback print function
                 this.fallbackPrint(resultText);
             }
         } catch (error) {
@@ -219,7 +219,7 @@ const wireMarkCalculator = {
         }
     },
 
-    / Fallback print function
+    // Fallback print function
     fallbackPrint(resultText) {
         const safeResult = window.escapeHTML(resultText);
         const html = `
@@ -259,7 +259,7 @@ const wireMarkCalculator = {
         }
     },
 
-    / Save for Cutting Records functionality
+    // Save for Cutting Records functionality
     async saveForCuttingRecords() {
         const startMark = parseFloat(this.elements.startMark?.value || 0);
         const endMark = parseFloat(this.elements.endMark?.value || 0);
@@ -281,7 +281,7 @@ const wireMarkCalculator = {
         try {
             console.log('🔄 Wire Mark Calculator: Starting save operation...');
 
-            / Use IndexedDB class if available
+            // Use IndexedDB class if available
             if (typeof EECOLIndexedDB !== 'undefined') {
                 console.log('✅ EECOLIndexedDB is available, creating instance...');
                 const eecolDB = EECOLIndexedDB.getInstance();
@@ -294,7 +294,7 @@ const wireMarkCalculator = {
                 await eecolDB.saveMarkConverter(data);
                 console.log('✅ Data saved successfully');
 
-                / Show success alert using modal system
+                // Show success alert using modal system
                 window.showAlert('Marks saved for import into Cutting Records tool.', 'Success');
             } else {
                 console.error('❌ EECOLIndexedDB is not available');
@@ -308,19 +308,19 @@ const wireMarkCalculator = {
     }
 };
 
-/ ===== INITIALIZATION =====
-/ Initialize calculator when DOM is ready
+// ===== INITIALIZATION =====
+// Initialize calculator when DOM is ready
 document.addEventListener('DOMContentLoaded', function () {
     wireMarkCalculator.init();
 });
 
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '/src/pages/src/pages/src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/src/pages/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
+            { text: '🏠 Home', href: '../../../src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../../../src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
         ],
         version: 'v0.8.0.5',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',

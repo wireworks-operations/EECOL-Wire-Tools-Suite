@@ -1,4 +1,4 @@
-/ Constants & Utility Functions
+// Constants & Utility Functions
 const METERS_TO_FEET = 3.280839895;
 const FEET_TO_METERS = 0.3048;
 const INCHES_TO_METERS = 0.0254;
@@ -15,7 +15,7 @@ const SPECIFIC_GRAVITY = {
 };
 const STRANDING_FACTOR = 1.03;
 
-/ Flag to track manual calculation state
+// Flag to track manual calculation state
 let hasCalculatedManually = false;
 
 function metersToFeet(m) { return m * METERS_TO_FEET; }
@@ -34,7 +34,7 @@ function degreesToRadians(degrees) {
     return degrees * (PI / 180);
 }
 
-/ Utility Functions
+// Utility Functions
 function hideAllMessages() {
     const wireCutResultContainer = document.getElementById('wireCutResultContainer');
     if (wireCutResultContainer) wireCutResultContainer.classList.add('hidden');
@@ -45,15 +45,15 @@ function hideAllMessages() {
 }
 
 async function showError(message) {
-    / Since no error div, maybe modal alert
+    // Since no error div, maybe modal alert
     await showAlert(message, "Input Error");
 }
 
 function hideError() {
-    / Nothing to hide
+    // Nothing to hide
 }
 
-/ Wire Cut Tool Calculation
+// Wire Cut Tool Calculation
 function calculateConversion(showErrors = false) {
     const startValue = parseFloat(document.getElementById('startValue').value);
     const startUnit = document.getElementById('startUnit').value;
@@ -134,11 +134,11 @@ function calculateConversion(showErrors = false) {
         visualMarkConverted.textContent = convertedValue;
     }
 
-    / New Reference Marks Logic
+    // New Reference Marks Logic
     const markAtCounter = parseFloat(stoppingMarkValue);
-    / "1 Unit Behind" defined as "1 unit upstream past counter" (towards reel).
-    / If counting UP (0->100), upstream is 101 (future/higher).
-    / If counting DOWN (100->0), upstream is 99 (future/lower).
+    // "1 Unit Behind" defined as "1 unit upstream past counter" (towards reel).
+    // If counting UP (0->100), upstream is 101 (future/higher).
+    // If counting DOWN (100->0), upstream is 99 (future/lower).
     let markBehind;
     if (countingDirection === 'up') {
         markBehind = markAtCounter + 1;
@@ -148,7 +148,7 @@ function calculateConversion(showErrors = false) {
 
     const referenceList = document.getElementById('referenceMarksList');
     if (referenceList) {
-        referenceList.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+        referenceList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
         const createReferenceRow = (icon, label, value, valueClass) => {
             const rowDiv = document.createElement('div');
@@ -193,7 +193,7 @@ function clearWireCutInputs() {
     hideAllMessages();
 }
 
-/ Custom Offset Logic
+// Custom Offset Logic
 function updateCustomOffsetInputs() {
     const markingReference = document.getElementById('markingReference').value;
     const customOffsetInput = document.getElementById('customOffsetInput');
@@ -213,13 +213,13 @@ function updateCustomOffsetInputs() {
     }
 }
 
-/ Print Results Function
+// Print Results Function
 function printWireCutResults() {
     const stoppingMark = document.getElementById('stoppingMarkPrimary').textContent;
     const visualMark = document.getElementById('visualMarkValue').textContent;
 
     try {
-        / Use shared print utility
+        // Use shared print utility
         if (typeof printWireStopMarkResults === 'function') {
             printWireStopMarkResults(stoppingMark, visualMark);
             return;
@@ -256,7 +256,7 @@ function printWireCutResults() {
         if (typeof createPrintWindow === 'function') {
             createPrintWindow('EECOL Wire Cut Results', html);
         } else {
-            / Fallback (hardened)
+            // Fallback (hardened)
             const printWindow = window.open('', '_blank');
             if (printWindow) {
                 printWindow.document.write(html);
@@ -269,28 +269,28 @@ function printWireCutResults() {
     }
 }
 
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',
         menuItems: [
-            { text: '🏠 Home', href: '/src/pages/src/pages/src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-            { text: 'Is This Tool Useful?', href: '/src/pages/src/pages/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
+            { text: '🏠 Home', href: '../../../src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+            { text: 'Is This Tool Useful?', href: '../../../src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
         ],
-        version: 'v0.8.0.5',
+        version: 'v0.8.0.0',
         credits: 'Made With ❤️ By: Lucas and Cline 🤖',
         title: 'EECOL Wire Stop Mark'
     });
 }
 
-/ Initialize modal system
+// Initialize modal system
 if (window.initModalSystem) window.initModalSystem();
 
-/ Initialize on page load
+// Initialize on page load
 hideAllMessages();
 updateCustomOffsetInputs();
 
-/ Wire Cut Tool Event Listeners
+// Wire Cut Tool Event Listeners
 document.getElementById('calculateBtn').addEventListener('click', () => {
     hasCalculatedManually = true;
     calculateConversion(true);
@@ -302,7 +302,7 @@ document.getElementById('markingReference').addEventListener('change', () => {
     if (hasCalculatedManually) calculateConversion(true);
 });
 
-/ Auto-update event listeners for input fields
+// Auto-update event listeners for input fields
 document.getElementById('startValue').addEventListener('input', () => {
     if (hasCalculatedManually) calculateConversion(true);
 });
@@ -331,7 +331,7 @@ document.getElementById('counterDistanceUnit').addEventListener('change', () => 
     if (hasCalculatedManually) calculateConversion(true);
 });
 
-/ Save for Cutting Records button functionality
+// Save for Cutting Records button functionality
 document.getElementById('saveForCuttingRecordsBtn').addEventListener('click', async () => {
     const startValue = parseFloat(document.getElementById('startValue').value);
     const stoppingMarkPrimary = document.getElementById('stoppingMarkPrimary').textContent;
@@ -352,7 +352,7 @@ document.getElementById('saveForCuttingRecordsBtn').addEventListener('click', as
     };
 
     try {
-        / Use IndexedDB instead of localStorage
+        // Use IndexedDB instead of localStorage
         if (typeof EECOLIndexedDB !== 'undefined') {
             const eecolDB = EECOLIndexedDB.getInstance();
             await eecolDB.ready;
@@ -360,7 +360,7 @@ document.getElementById('saveForCuttingRecordsBtn').addEventListener('click', as
 
             await showAlert('Marks saved for import into Cutting Records tool.');
         } else {
-            / Fallback to localStorage if IndexedDB not available
+            // Fallback to localStorage if IndexedDB not available
             localStorage.setItem('eecalWireMarks', JSON.stringify(data));
             await showAlert('Marks saved for import into Cutting Records tool.');
         }

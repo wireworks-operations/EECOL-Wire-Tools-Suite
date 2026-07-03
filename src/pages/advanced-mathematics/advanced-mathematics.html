@@ -7,15 +7,15 @@ Advanced Mathematics Page - EECOL Wire Tools Enterprise Edition
 
 <head>
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/src/pages/src/pages/manifest.json">
+    <link rel="manifest" href="../../../manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline' https:/cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https:/cdn.tailwindcss.com https:/fonts.googleapis.com; font-src https:/fonts.googleapis.com https:/fonts.gstatic.com; img-src 'self' data:;">
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:;">
     <title>EECOL Wire Tools Enterprise - Advanced Mathematics</title>
-    <script src="https:/cdn.tailwindcss.com"></script>
-    <script src="/src/pages/utils/theme-loader.js"></script>
-    <link rel="stylesheet" href="/src/pages/src/pages/src/assets/css/eecol-theme.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../utils/theme-loader.js"></script>
+    <link rel="stylesheet" href="../../../src/assets/css/eecol-theme.css">
 </head>
 
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
@@ -27,7 +27,7 @@ Advanced Mathematics Page - EECOL Wire Tools Enterprise Edition
 
         <!-- EECOL 'E' Logo (SVG) -->
         <div class="flex justify-center mb-1">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http:/www.w3.org/2000/svg"
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                 class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
                 <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2" />
                 <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor" />
@@ -407,10 +407,10 @@ Advanced Mathematics Page - EECOL Wire Tools Enterprise Edition
             <div class="mt-auto pt-4 border-t border-blue-200 hidden sm:block">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex space-x-3">
-                        <a href="/index.html"
+                        <a href="../index/index.html"
                             class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠
                             Home</a>
-                        <a href="/src/pages/useful-tool/useful-tool.html"
+                        <a href="../useful-tool/useful-tool.html"
                             class="px-3 py-1.5 bg-sky-500 border-2 border-sky-500 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-sky-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-sky-500 focus:ring-opacity-50 text-xs no-underline">Is
                             This Tool Useful?</a>
                         </a>
@@ -426,15 +426,15 @@ Advanced Mathematics Page - EECOL Wire Tools Enterprise Edition
             </div>
         </div>
 
-        <script src="/src/pages/src/pages/src/utils/mobile-menu.js"></script>
-        <script src="/src/pages/utils/dark-mode.js"></script>
+        <script src="../../../src/utils/mobile-menu.js"></script>
+        <script src="../../utils/dark-mode.js"></script>
         <script>
-            / Initialize mobile menu for this page
+            // Initialize mobile menu for this page
             if (typeof initMobileMenu === 'function') {
                 initMobileMenu({
                     menuItems: [
-                        { text: '🏠 Home', href: '/src/pages/src/pages/src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
-                        { text: 'Is This Tool Useful?', href: '/src/pages/src/pages/src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
+                        { text: '🏠 Home', href: '../../../src/pages/index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
+                        { text: 'Is This Tool Useful?', href: '../../../src/pages/useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' }
                     ],
                     version: 'v0.8.0.5',
                     credits: 'Made With ❤️ By: Lucas and Cline 🤖',
@@ -442,15 +442,15 @@ Advanced Mathematics Page - EECOL Wire Tools Enterprise Edition
                 });
             }
 
-            / Back to main tools
+            // Back to main tools
             document.getElementById('backToMainBtn').addEventListener('click', () => {
-                window.location.href = '/src/pages/port-from-this.html'; / Assuming relative path
+                window.location.href = '../port-from-this.html'; // Assuming relative path
             });
 
-            / PWA Service Worker Registration
+            // PWA Service Worker Registration
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/src/pages/src/pages/sw.js')
+                navigator.serviceWorker.register('../../../sw.js')
                         .then(registration => {
                             console.log('SW registered: ', registration);
                         })
