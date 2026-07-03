@@ -3,9 +3,9 @@
  * Enterprise PWA v0.8.0.0
  */
 
-/ Global variables
+// Global variables
 let labelHistory = [];
-let reelConfigurations = []; / Store available reel configurations from IndexedDB
+let reelConfigurations = []; // Store available reel configurations from IndexedDB
 
 /**
  * BOLT OPTIMIZATION: High-performance date formatters
@@ -15,13 +15,13 @@ let reelConfigurations = []; / Store available reel configurations from IndexedD
  */
 const standardDateFormat = new Intl.DateTimeFormat('en-US');
 
-/ DOM elements
+// DOM elements
 const autoPullBtn = document.getElementById('autoPullBtn');
 const printLabelBtn = document.getElementById('printLabelBtn');
 const importReelDimensionsBtn = document.getElementById('importReelDimensionsBtn');
 const hazardSheetsBtn = document.getElementById('hazardSheetsBtn');
 
-/ Form elements
+// Form elements
 const customerNameInput = document.getElementById('customerName');
 const wireIdInput = document.getElementById('wireId');
 const targetAmountInput = document.getElementById('targetAmount');
@@ -30,30 +30,30 @@ const orderNumberInput = document.getElementById('orderNumber');
 const weightInput = document.getElementById('weight');
 const customDetailsInput = document.getElementById('customDetails');
 
-/ Reel dimension elements
+// Reel dimension elements
 const coreDiameterInput = document.getElementById('coreDiameter');
 const flangeDiameterInput = document.getElementById('flangeDiameter');
 const traverseWidthInput = document.getElementById('traverseWidth');
 
-/ Auto-populate date on page load
+// Auto-populate date on page load
 document.addEventListener('DOMContentLoaded', async function() {
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
 
-    / Load label history
+    // Load label history
     loadLabelHistory();
 
-    / Initialize IndexedDB and load reel configurations
+    // Initialize IndexedDB and load reel configurations
     await initializeIndexedDB();
     await loadReelConfigurations();
 
-    / Set default reel dimensions if available from estimator (backward compatibility)
+    // Set default reel dimensions if available from estimator (backward compatibility)
     loadReelEstimatorData();
 });
 
-/ Auto-pull from cutting records
+// Auto-pull from cutting records
 autoPullBtn.addEventListener('click', function() {
-    / Load recent cutting records data
+    // Load recent cutting records data
     const cutRecords = loadCuttingRecordsData();
 
     if (cutRecords.length === 0) {
@@ -61,10 +61,10 @@ autoPullBtn.addEventListener('click', function() {
         return;
     }
 
-    / Get most recent record
+    // Get most recent record
     const latestRecord = cutRecords[0];
 
-    / Auto-populate form fields
+    // Auto-populate form fields
     if (latestRecord.customerName) {
         customerNameInput.value = latestRecord.customerName;
     }
@@ -78,7 +78,7 @@ autoPullBtn.addEventListener('click', function() {
     showAlert('Form populated with data from most recent cutting record.', 'Auto-Pull Complete');
 });
 
-/ Import from reel estimator
+// Import from reel estimator
 importReelDimensionsBtn.addEventListener('click', function() {
     const dataStr = localStorage.getItem('reelEstimatorFlangeDiameter');
     if (!dataStr) {
@@ -93,7 +93,7 @@ importReelDimensionsBtn.addEventListener('click', function() {
             return;
         }
 
-        / Set flange diameter
+        // Set flange diameter
         flangeDiameterInput.value = data.value;
         flangeDiameterUnit.value = data.unit;
 
@@ -103,12 +103,12 @@ importReelDimensionsBtn.addEventListener('click', function() {
     }
 });
 
-/ Print reel label
+// Print reel label
 printLabelBtn.addEventListener('click', function() {
     printShippingManifestLabel();
 });
 
-/ Hazard sheets button
+// Hazard sheets button
 hazardSheetsBtn.addEventListener('click', function() {
     printShippingManifestHazardSheets();
 });
@@ -173,19 +173,19 @@ function saveLabelHistory() {
 }
 
 
-/ IndexedDB Integration Functions
+// IndexedDB Integration Functions
 async function initializeIndexedDB() {
     try {
-        / Import EECOLIndexedDB if available
+        // Import EECOLIndexedDB if available
         if (typeof EECOLIndexedDB === 'undefined') {
-            / Try to load it dynamically
+            // Try to load it dynamically
             const script = document.createElement('script');
             script.src = '/src/pages/core/database/indexeddb.js';
             script.onload = () => console.log('✅ IndexedDB loaded for shipping manifest');
             script.onerror = () => console.warn('⚠️ Could not load IndexedDB for shipping manifest');
             document.head.appendChild(script);
 
-            / Wait a bit for the script to load
+            // Wait a bit for the script to load
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
@@ -205,15 +205,15 @@ async function loadReelConfigurations() {
         const db = EECOLIndexedDB.getInstance();
         await db.ready;
 
-        / Get all reel capacity estimator configurations
+        // Get all reel capacity estimator configurations
         reelConfigurations = await db.getAll('reelcapacityEstimator') || [];
 
-        / Sort by most recent timestamp
+        // Sort by most recent timestamp
         reelConfigurations.sort((a, b) => b.timestamp - a.timestamp);
 
         console.log(`✅ Loaded ${reelConfigurations.length} reel configurations`);
 
-        / Populate the configuration selector
+        // Populate the configuration selector
         populateReelConfigurationSelector();
 
     } catch (error) {
@@ -231,9 +231,9 @@ function populateReelConfigurationSelector() {
         return;
     }
 
-    / Clear existing options except the default
+    // Clear existing options except the default
     const defaultOption = selector.querySelector('option[value=""]');
-    selector.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+    selector.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
     if (defaultOption) {
         selector.appendChild(defaultOption);
@@ -244,12 +244,12 @@ function populateReelConfigurationSelector() {
         selector.appendChild(newDefault);
     }
 
-    / Add configurations
+    // Add configurations
     reelConfigurations.forEach((config, index) => {
         const option = document.createElement('option');
         option.value = index;
 
-        / Format display text
+        // Format display text
         const date = standardDateFormat.format(config.timestamp);
         const flange = config.flangeDiameter ? `${config.flangeDiameter.value} ${config.flangeDiameter.unit}` : 'N/A';
         const core = config.coreDiameter ? `${config.coreDiameter.value} ${config.coreDiameter.unit}` : 'N/A';
@@ -260,10 +260,10 @@ function populateReelConfigurationSelector() {
         selector.appendChild(option);
     });
 
-    / Add change listener
+    // Add change listener
     selector.addEventListener('change', handleReelConfigurationChange);
 
-    / Add refresh button listener
+    // Add refresh button listener
     if (refreshBtn) {
         refreshBtn.addEventListener('click', async () => {
             await loadReelConfigurations();
@@ -278,7 +278,7 @@ function handleReelConfigurationChange(event) {
     const selectedIndex = event.target.value;
 
     if (!selectedIndex && selectedIndex !== '0') {
-        / No selection made
+        // No selection made
         return;
     }
 
@@ -288,7 +288,7 @@ function handleReelConfigurationChange(event) {
         return;
     }
 
-    / Fill in the reel dimensions
+    // Fill in the reel dimensions
     const updates = [];
 
     if (config.flangeDiameter) {
@@ -309,14 +309,14 @@ function handleReelConfigurationChange(event) {
         updates.push(`Traverse: ${config.traverseWidth.value} ${config.traverseWidth.unit}`);
     }
 
-    / Show success message
+    // Show success message
     if (updates.length > 0) {
         const configDate = standardDateFormat.format(config.timestamp);
         showAlert(`Configuration loaded from ${configDate}:\n${updates.join('\n')}`, 'Configuration Auto-Filled');
     }
 }
 
-/ Auto-uppercase inputs
+// Auto-uppercase inputs
 customerNameInput.addEventListener('input', function(e) {
     e.target.value = e.target.value.toUpperCase();
 });
@@ -326,11 +326,11 @@ wireIdInput.addEventListener('input', function(e) {
 });
 
 orderNumberInput.addEventListener('input', function(e) {
-    / Restrict to digits only and limit to 7 characters
+    // Restrict to digits only and limit to 7 characters
     e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7).toUpperCase();
 });
 
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         menuItems: [

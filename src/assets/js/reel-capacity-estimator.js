@@ -1,8 +1,8 @@
-/ ====================================================================
-/ DATABASE INITIALIZATION - Standardized with other tools
-/ ====================================================================
+// ====================================================================
+// DATABASE INITIALIZATION - Standardized with other tools
+// ====================================================================
 
-/ Import standards and EECOL/Wesco product data and functions
+// Import standards and EECOL/Wesco product data and functions
 import {
     getIndustryStandardReelOptions,
     getReelByKey,
@@ -11,7 +11,7 @@ import {
     CABLE_CONSTRUCTION_DATA
 } from '/src/pages/core/modules/industry-standards.js';
 
-/ Import EECOL/Wesco specific product data
+// Import EECOL/Wesco specific product data
 import {
     getAllEecolWescoProducts,
     getEecolWescoProductsByType,
@@ -19,30 +19,30 @@ import {
     getOrganizedEecolWescoProducts
 } from '/src/pages/core/modules/wesco-eecol-products.js';
 
-        / ====================================================================
-        / CONSTANTS & UTILITY FUNCTIONS
-        / ====================================================================
+        // ====================================================================
+        // CONSTANTS & UTILITY FUNCTIONS
+        // ====================================================================
 
-        const METERS_TO_FEET = 3.280839895; / Precise conversion factor
-        const FEET_TO_METERS = 0.3048; / Precise conversion factor
+        const METERS_TO_FEET = 3.280839895; // Precise conversion factor
+        const FEET_TO_METERS = 0.3048; // Precise conversion factor
         const INCHES_TO_METERS = 0.0254;
         const MM_TO_METERS = 0.001;
         const CM_TO_METERS = 0.01;
         const PI = Math.PI;
 
-        const VOLUMETRIC_EFFICIENCY = 0.90; / Default efficiency
-        const TURN_SPACING_FACTOR = 1.1; / Axial spacing = 1.1 * wire diameter for safe winding
-        const REEL_FACTOR_CONSTANT = 0.262; / C_const for Imperial units
-        const DEAD_WRAPS = 3; / Standard mandatory dead wraps for safety
+        const VOLUMETRIC_EFFICIENCY = 0.90; // Default efficiency
+        const TURN_SPACING_FACTOR = 1.1; // Axial spacing = 1.1 * wire diameter for safe winding
+        const REEL_FACTOR_CONSTANT = 0.262; // C_const for Imperial units
+        const DEAD_WRAPS = 3; // Standard mandatory dead wraps for safety
 
-        / Specific Gravity Constants from AIO version
+        // Specific Gravity Constants from AIO version
         const SPECIFIC_GRAVITY = {
             copper: 8.89,
             aluminum: 2.70,
             pvc: 1.40,
             xlpe: 0.92
         };
-        const STRANDING_FACTOR = 1.03; / K for stranded conductors
+        const STRANDING_FACTOR = 1.03; // K for stranded conductors
 
         function metersToFeet(m) { return m * METERS_TO_FEET; }
         function feetToMeters(ft) { return ft / METERS_TO_FEET; }
@@ -68,9 +68,9 @@ import {
             return degrees * (PI / 180);
         }
 
-        / ====================================================================
-        / TARGET LENGTH FUNCTION (Extracted from reel-size-estimator.html)
-        / ====================================================================
+        // ====================================================================
+        // TARGET LENGTH FUNCTION (Extracted from reel-size-estimator.html)
+        // ====================================================================
 
         /**
          * BOLT OPTIMIZATION: O(1) Capacity Calculation
@@ -94,7 +94,7 @@ import {
 
             if (segments <= 0) return { error: 'Traverse width is too narrow for the specified cable diameter.' };
 
-            / Calculate length of mandatory dead wraps
+            // Calculate length of mandatory dead wraps
             const deadLength = _getSpoolCapacity(DEAD_WRAPS, Dc_m, d_m, segments, efficiency);
             const totalRequired = target_m + deadLength;
 
@@ -126,9 +126,9 @@ import {
             };
         }
 
-        / ====================================================================
-        / REEL ESTIMATOR LOGIC
-        / ====================================================================
+        // ====================================================================
+        // REEL ESTIMATOR LOGIC
+        // ====================================================================
 
         const calculateCapacityBtn = document.getElementById('calculateCapacityBtn');
         const reelEstimatorResultContainer = document.getElementById('reelEstimatorResultContainer');
@@ -147,7 +147,7 @@ import {
         const wireDiameterUnitSelect = document.getElementById('wireDiameterUnit');
         const freeboardStatusSpan = document.getElementById('freeboardStatus');
 
-        / Error handling
+        // Error handling
         const errorBox = document.getElementById('errorBox');
         const errorMessageDisplay = document.getElementById('errorMessage');
 
@@ -158,14 +158,14 @@ import {
              if (DdRatio) DdRatio.textContent = '--';
              if (targetAchievement) targetAchievement.textContent = '--';
              if (layerList) {
-                 layerList.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+                 layerList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
                  const p = document.createElement('p');
                  p.className = 'text-sm text-gray-500';
                  p.textContent = 'Enter data and calculate to see layer breakdown.';
                  layerList.appendChild(p);
              }
              if (capacityWarning) capacityWarning.textContent = '';
-             / Clear dynamic elements
+             // Clear dynamic elements
              const capacityPercentage = document.getElementById('capacityPercentage');
              if (capacityPercentage) capacityPercentage.textContent = '--%';
              const capacityProgressBar = document.getElementById('capacityProgressBar');
@@ -175,7 +175,7 @@ import {
              }
              const safetyWarnings = document.getElementById('safetyWarnings');
              if (safetyWarnings) safetyWarnings.classList.add('hidden');
-             / Clear provided specs
+             // Clear provided specs
              const providedCoreDiameter = document.getElementById('providedCoreDiameter');
              if (providedCoreDiameter) providedCoreDiameter.textContent = '--';
              const providedFlangeDiameter = document.getElementById('providedFlangeDiameter');
@@ -249,7 +249,7 @@ import {
             }
         }
 
-/ STANDALONE VERSION calculateReelCapacity FUNCTION WITH EXACT MATCHING
+// STANDALONE VERSION calculateReelCapacity FUNCTION WITH EXACT MATCHING
         function calculateReelCapacity(showErrors = false) {
             if (showErrors) {
                 errorBox.classList.add('hidden');
@@ -290,15 +290,15 @@ import {
                 const F_m = toMeters(F, FUnit);
                 const d_m = toMeters(d, dUnit);
 
-                / Calculate absolute total capacity (no freeboard subtraction)
-                const D_absolute_m = Df_m; / Full flange diameter
+                // Calculate absolute total capacity (no freeboard subtraction)
+                const D_absolute_m = Df_m; // Full flange diameter
                 const N_layers_absolute = Math.max(0, Math.floor((D_absolute_m - Dc_m) / (2 * d_m)));
                 const SEGMENTS_PER_LAYER_absolute = Math.floor(W_m / (TURN_SPACING_FACTOR * d_m));
 
-                / BOLT: O(1) total absolute capacity calculation
+                // BOLT: O(1) total absolute capacity calculation
                 const C_absolute_total_m_by_layer = _getSpoolCapacity(N_layers_absolute, Dc_m, d_m, SEGMENTS_PER_LAYER_absolute, efficiency);
 
-                / Calculate freeboard-based capacity (current working capacity with freeboard applied)
+                // Calculate freeboard-based capacity (current working capacity with freeboard applied)
                 const D_usable_m = Df_m - (2 * F_m);
 
                 if (D_usable_m <= Dc_m + d_m) {
@@ -316,18 +316,18 @@ import {
 
                 const SEGMENTS_PER_LAYER = Math.floor(W_m / (TURN_SPACING_FACTOR * d_m));
 
-                / BOLT: O(1) capacity calculations to eliminate iterative accumulation
+                // BOLT: O(1) capacity calculations to eliminate iterative accumulation
                 const C_dead_m = _getSpoolCapacity(Math.min(DEAD_WRAPS, N_layers), Dc_m, d_m, SEGMENTS_PER_LAYER, efficiency);
                 const C_total_m_by_layer = _getSpoolCapacity(N_layers, Dc_m, d_m, SEGMENTS_PER_LAYER, efficiency);
                 const C_working_m = Math.max(0, C_total_m_by_layer - C_dead_m);
 
-                layerList.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+                layerList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
-                / Show all physical layers that actually fit in the freeboard-limited space
+                // Show all physical layers that actually fit in the freeboard-limited space
                 for (let n = 1; n <= N_layers; n++) {
                     const D_n_m = Dc_m + (2 * n - 1) * d_m;
                     const L_n_m_theoretical = SEGMENTS_PER_LAYER * PI * D_n_m;
-                    const L_n_m = L_n_m_theoretical * efficiency; / Use selected efficiency
+                    const L_n_m = L_n_m_theoretical * efficiency; // Use selected efficiency
 
                     const L_n_ft = metersToFeet(L_n_m);
 
@@ -337,13 +337,13 @@ import {
                     const mStr = L_n_m.toLocaleString('en-US', {maximumFractionDigits: 0});
                     const ftStr = L_n_ft.toLocaleString('en-US', {maximumFractionDigits: 0});
 
-                    / Style based on whether layer is a dead wrap or usable
+                    // Style based on whether layer is a dead wrap or usable
                     if (n <= DEAD_WRAPS) {
-                        / Dead wrap layer - red styling
+                        // Dead wrap layer - red styling
                         layerP.classList.add('text-red-600');
                         layerP.textContent = `📍 Layer ${n} [DEAD WRAP]: ${mStr} m (${ftStr} ft)`;
                     } else {
-                        / Usable layer - green styling
+                        // Usable layer - green styling
                         layerP.classList.add('text-green-600');
                         layerP.textContent = `✅ Layer ${n}: ${mStr} m (${ftStr} ft)`;
                     }
@@ -357,16 +357,16 @@ import {
                     layerList.appendChild(p);
                 }
 
-                / Add summary container
+                // Add summary container
                 const breakdownElement = document.createElement('div');
                 breakdownElement.id = 'capacityBreakdownSummary';
                 breakdownElement.className = 'mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg';
                 layerList.appendChild(breakdownElement);
 
-                const C_total_final_m = C_total_m_by_layer; / Freeboard-based total (was absolute total before)
+                const C_total_final_m = C_total_m_by_layer; // Freeboard-based total (was absolute total before)
                 const C_working_final_m = C_total_final_m - C_dead_m;
                 const C_working_final_m_safe = Math.max(0, C_working_final_m);
-                const C_absolute_final_m = C_absolute_total_m_by_layer; / Absolute total capacity
+                const C_absolute_final_m = C_absolute_total_m_by_layer; // Absolute total capacity
 
                 const C_total_ft = metersToFeet(C_total_final_m);
                 const C_working_ft = metersToFeet(C_working_final_m_safe);
@@ -377,7 +377,7 @@ import {
                 if (capacityAbsolute) capacityAbsolute.textContent = `${C_total_final_m.toLocaleString('en-US', {maximumFractionDigits: 0})} m (${C_total_ft.toLocaleString('en-US', {maximumFractionDigits: 0})} ft)`;
                 if (DdRatio) DdRatio.textContent = `${Dd_ratio_value.toFixed(1)}:1`;
 
-                / Fill in the capacity breakdown summary
+                // Fill in the capacity breakdown summary
                 const usableLayersCount = Math.max(0, N_layers - DEAD_WRAPS);
                 const deadWrapsLength = C_dead_m;
                 const deadWrapsLengthFt = metersToFeet(deadWrapsLength);
@@ -395,7 +395,7 @@ import {
                 const gridDiv = document.createElement('div');
                 gridDiv.className = 'grid grid-cols-2 gap-2 text-xs';
 
-                / Dead Wraps Box
+                // Dead Wraps Box
                 const deadWrapsBox = document.createElement('div');
                 deadWrapsBox.className = 'bg-white p-2 rounded border';
 
@@ -418,7 +418,7 @@ import {
 
                 gridDiv.appendChild(deadWrapsBox);
 
-                / Usable Capacity Box
+                // Usable Capacity Box
                 const usableBox = document.createElement('div');
                 usableBox.className = 'bg-white p-2 rounded border';
 
@@ -452,7 +452,7 @@ import {
 
                 capacityWarning.textContent = `Note: Estimates include a ${efficiency * 100}% Winding Efficiency Factor.`;
 
-                / Update efficiency labels (with null checks)
+                // Update efficiency labels (with null checks)
                 const efficiencyLabelTotal = document.getElementById('efficiencyLabelTotal');
                 if (efficiencyLabelTotal) efficiencyLabelTotal.textContent = `${(efficiency * 100).toFixed(0)}%`;
                 const efficiencyLabelWorking = document.getElementById('efficiencyLabelWorking');
@@ -462,14 +462,14 @@ import {
                 const efficiencyLabelLayer = document.getElementById('efficiencyLabelLayer');
                 if (efficiencyLabelLayer) efficiencyLabelLayer.textContent = `${(efficiency * 100).toFixed(0)}%`;
 
-                / Update dynamic elements
+                // Update dynamic elements
                 updateDynamicElements(C_total_final_m, C_working_final_m_safe, C_working_final_m_safe, Dd_ratio_value, F_m, d_m);
 
                 generateReelSVG(Df_m, Dc_m, W_m, d_m, F_m, N_layers);
 
                 calculateVolumetricWeightEstimation();
 
-                / Update freeboard tolerance analysis
+                // Update freeboard tolerance analysis
                 const targetValue = parseFloat(document.getElementById('targetLength').value);
                 const targetUnit = document.getElementById('targetLengthUnit').value;
                 const target_m = targetUnit === 'm' ? targetValue : feetToMeters(targetValue);
@@ -487,7 +487,7 @@ import {
                     targetElement.className = `text-sm font-extrabold ${met ? 'text-green-600' : 'text-red-600'}`;
                 }
 
-                / Populate provided specs
+                // Populate provided specs
                 document.getElementById('providedCoreDiameter').textContent = `${parseFloat(document.getElementById('coreDiameter').value)} ${DcUnit}`;
                 document.getElementById('providedFlangeDiameter').textContent = `${parseFloat(document.getElementById('flangeDiameter').value)} ${DfUnit}`;
                 document.getElementById('providedTraverseWidth').textContent = `${parseFloat(document.getElementById('traverseWidth').value)} ${WUnit}`;
@@ -508,13 +508,13 @@ import {
             }
         }
 
-        / Make calculateReelCapacity available globally for inline onclick handlers
+        // Make calculateReelCapacity available globally for inline onclick handlers
         window.calculateReelCapacity = calculateReelCapacity;
 
         function generateReelSVG(Df_m, Dc_m, W_m, d_m, F_m, numLayers) {
             const svgVisualization = document.getElementById('svgVisualization');
             if (!svgVisualization) return;
-            svgVisualization.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+            svgVisualization.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
             const svgWidth = svgVisualization.clientWidth || 300;
             const svgHeight = svgVisualization.clientHeight || 200;
@@ -536,7 +536,7 @@ import {
             svg.setAttribute("height", svgHeight);
             svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
 
-            / Define arrow marker
+            // Define arrow marker
             const defs = document.createElementNS("http:/www.w3.org/2000/svg", "defs");
             const marker = document.createElementNS("http:/www.w3.org/2000/svg", "marker");
             marker.setAttribute("id", "arrowhead");
@@ -626,7 +626,7 @@ import {
                 return;
             }
 
-            / Check inputs
+            // Check inputs
             const conductorMaterial = document.getElementById('conductorMaterial').value;
             const insulationMaterial = document.getElementById('insulationMaterial').value;
             const dc = parseFloat(document.getElementById('conductorDiameter').value);
@@ -664,14 +664,14 @@ import {
             if (weightSection) weightSection.style.display = 'block';
         }
 
-/ ===== MODULAR FEATURES PRESERVED =====
+// ===== MODULAR FEATURES PRESERVED =====
 
-/ ====================================================================
-/ INDEXEDDB CONFIGURATION LOADING FUNCTIONS (same as other tools)
-/ ====================================================================
+// ====================================================================
+// INDEXEDDB CONFIGURATION LOADING FUNCTIONS (same as other tools)
+// ====================================================================
 
-let reelConfigurations = []; / Store available reel configurations from IndexedDB
-let isManualMode = false; / Track if user intentionally switched to manual mode
+let reelConfigurations = []; // Store available reel configurations from IndexedDB
+let isManualMode = false; // Track if user intentionally switched to manual mode
 
 async function loadReelConfigurations() {
     try {
@@ -683,15 +683,15 @@ async function loadReelConfigurations() {
         const db = EECOLIndexedDB.getInstance();
         await db.ready;
 
-        / Get all reel capacity estimator configurations
+        // Get all reel capacity estimator configurations
         reelConfigurations = await db.getAll('reelcapacityEstimator') || [];
 
-        / Sort by most recent timestamp
+        // Sort by most recent timestamp
         reelConfigurations.sort((a, b) => b.timestamp - a.timestamp);
 
         console.log(`✅ Loaded ${reelConfigurations.length} reel configurations`);
 
-        / Populate the configuration selector
+        // Populate the configuration selector
         populateReelConfigurationSelector();
 
     } catch (error) {
@@ -709,9 +709,9 @@ function populateReelConfigurationSelector() {
         return;
     }
 
-    / Clear existing options except the default
+    // Clear existing options except the default
     const defaultOption = selector.querySelector('option[value=""]');
-    selector.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+    selector.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
     if (defaultOption) {
         selector.appendChild(defaultOption);
     } else {
@@ -721,12 +721,12 @@ function populateReelConfigurationSelector() {
         selector.appendChild(newDefault);
     }
 
-    / Add configurations
+    // Add configurations
     reelConfigurations.forEach((config, index) => {
         const option = document.createElement('option');
         option.value = index;
 
-        / Format display text
+        // Format display text
         const date = new Date(config.timestamp).toLocaleDateString();
         const flange = config.flangeDiameter ? `${config.flangeDiameter.value} ${config.flangeDiameter.unit}` : 'N/A';
         const core = config.coreDiameter ? `${config.coreDiameter.value} ${config.coreDiameter.unit}` : 'N/A';
@@ -744,7 +744,7 @@ function handleReelConfigurationChange(event) {
     const selectedIndex = event.target.value;
 
     if (!selectedIndex && selectedIndex !== '0') {
-        / No selection made
+        // No selection made
         return;
     }
 
@@ -754,14 +754,14 @@ function handleReelConfigurationChange(event) {
         return;
     }
 
-    / Clear/reset the industry standard reel selection to resolve conflicts
-    / Loaded configurations should take full priority over any previously selected standard reel
+    // Clear/reset the industry standard reel selection to resolve conflicts
+    // Loaded configurations should take full priority over any previously selected standard reel
     const industryStandardReelSelect = document.getElementById('industryStandardReelSelect');
     if (industryStandardReelSelect) {
-        industryStandardReelSelect.value = ''; / Clear selection
+        industryStandardReelSelect.value = ''; // Clear selection
     }
 
-    / Fill in only the basic reel dimensions (A, B, C)
+    // Fill in only the basic reel dimensions (A, B, C)
     const updates = [];
 
     if (config.flangeDiameter) {
@@ -782,51 +782,51 @@ function handleReelConfigurationChange(event) {
         updates.push(`Traverse: ${config.traverseWidth.value} ${config.traverseWidth.unit}`);
     }
 
-    / Clear any calculated results when loading different reel configuration
+    // Clear any calculated results when loading different reel configuration
     clearReelResults();
 
-    / Show success message
+    // Show success message
     if (updates.length > 0) {
         const configDate = new Date(config.timestamp).toLocaleDateString();
         showAlert(`Configuration loaded from ${configDate}:\n${updates.join('\n')}`, 'Configuration Auto-Filled');
     }
 }
 
-/ Add event listeners for configuration selector
+// Add event listeners for configuration selector
 document.addEventListener('DOMContentLoaded', async () => {
-    / Wait for database initialization
+    // Wait for database initialization
     /await initializeDatabase();
 
-    / Initialize reel configurations loading
+    // Initialize reel configurations loading
     await loadReelConfigurations();
 
-    / Initialize collapsible sections
+    // Initialize collapsible sections
     initializeCollapsibleSections();
 
-    / Clear results and set up UI
+    // Clear results and set up UI
     clearReelResults();
 
-    / Hide results container initially - user must click Calculate first
+    // Hide results container initially - user must click Calculate first
     reelEstimatorResultContainer.classList.add('hidden');
 
-    / Set up button event listeners after DOM is ready
+    // Set up button event listeners after DOM is ready
     setupButtonEventListeners();
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    / Add hover highlight functionality for SVG dimension lines
+    // Add hover highlight functionality for SVG dimension lines
     const inputGroups = document.querySelectorAll('#leftColumn .input-group');
     inputGroups.forEach(group => {
         group.addEventListener('mouseenter', () => {
-            / Remove active class from all highlights
+            // Remove active class from all highlights
             document.querySelectorAll('.svg-dimension-line').forEach(el => {
                 el.classList.remove('active');
             });
-            / Determine which highlight class to activate based on input-group index
-            / Skip target length (index 0), then map A, B, C, D, E inputs to highlights
+            // Determine which highlight class to activate based on input-group index
+            // Skip target length (index 0), then map A, B, C, D, E inputs to highlights
             const index = Array.from(inputGroups).indexOf(group);
-            if (index >= 1) { / Skip target length at index 0
-                const dimensionIndex = index - 1; / Adjust index after skipping target length
+            if (index >= 1) { // Skip target length at index 0
+                const dimensionIndex = index - 1; // Adjust index after skipping target length
                 const highlightClasses = ['highlight-A', 'highlight-B', 'highlight-C', 'highlight-D', 'highlight-E'];
                 if (dimensionIndex >= 0 && dimensionIndex < highlightClasses.length) {
                     const highlightClass = highlightClasses[dimensionIndex];
@@ -838,7 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         group.addEventListener('mouseleave', () => {
-            / Remove active class on mouse leave
+            // Remove active class on mouse leave
             document.querySelectorAll('.svg-dimension-line').forEach(el => {
                 el.classList.remove('active');
             });
@@ -847,25 +847,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function updateDynamicElements(C_total_m, C_working_m, C_recommended_m, Dd_ratio_value, F_m, d_m) {
-    / Update capacity progress bar
+    // Update capacity progress bar
     const capacityElement = document.getElementById('capacityProgressBar');
     const percentageElement = document.getElementById('capacityPercentage');
     const safetyWarnings = document.getElementById('safetyWarnings');
     const safetyWarningText = document.getElementById('safetyWarningText');
 
-    / Reset states
+    // Reset states
     capacityElement.classList.remove('safe', 'warning', 'danger');
     safetyWarnings.classList.add('hidden');
 
-    / Calculate utilization percentage based on recommended capacity
-    const maxCapacity = C_total_m; / Use total capacity as 100%
+    // Calculate utilization percentage based on recommended capacity
+    const maxCapacity = C_total_m; // Use total capacity as 100%
     const utilizationPct = maxCapacity > 0 ? Math.min((C_recommended_m / maxCapacity) * 100, 100) : 0;
 
-    / Animate progress bar
+    // Animate progress bar
     percentageElement.textContent = `${utilizationPct.toFixed(0)}%`;
     capacityElement.style.width = `${utilizationPct}%`;
 
-    / Determine color based on utilization
+    // Determine color based on utilization
     let colorClass = 'safe';
     if (utilizationPct > 90) {
         colorClass = 'danger';
@@ -874,7 +874,7 @@ function updateDynamicElements(C_total_m, C_working_m, C_recommended_m, Dd_ratio
     }
     capacityElement.classList.add(colorClass);
 
-    / Update towperknot indicators
+    // Update towperknot indicators
     updateTowperknotIndicators(Dd_ratio_value, F_m, d_m);
 }
 
@@ -882,10 +882,10 @@ function updateTowperknotIndicators(Dd_ratio, F_m, d_m) {
     const safetyWarnings = document.getElementById('safetyWarnings');
     const safetyWarningText = document.getElementById('safetyWarningText');
 
-    / Hide warnings by default
+    // Hide warnings by default
     safetyWarnings.classList.add('hidden');
 
-    / Check D/d ratio (should be 21:1 or higher for good spooling)
+    // Check D/d ratio (should be 21:1 or higher for good spooling)
     const ddThreshold = 21;
     if (Dd_ratio < 12) {
         safetyWarnings.classList.remove('hidden');
@@ -897,7 +897,7 @@ function updateTowperknotIndicators(Dd_ratio, F_m, d_m) {
         return;
     }
 
-    / Check freeboard safety
+    // Check freeboard safety
     const F_inches = F_m / INCHES_TO_METERS;
     if (F_inches < 0.25) {
         safetyWarnings.classList.remove('hidden');
@@ -920,28 +920,28 @@ function updateFreeboardTolerance(C_absolute_m, C_freeboard_m, target_m, F_m, sa
 
     freeboardToleranceSection.classList.remove('hidden');
 
-    / Left side: Show the freeboard setting in inches
+    // Left side: Show the freeboard setting in inches
     const F_inches = F_m / INCHES_TO_METERS;
     freeboardTolerance.textContent = `${F_inches.toFixed(1)} in`;
     freeboardTolerance.className = `text-sm font-bold text-blue-600`;
 
-    / Right side: Safety margin status based on target length
+    // Right side: Safety margin status based on target length
     let statusText = 'Safe';
     let statusColor = 'text-green-600';
     let analysisText = 'Freeboard setting provides adequate clearance for safe winding.';
 
     if (target_m > C_absolute_m) {
-        / Target exceeds absolute maximum capacity
+        // Target exceeds absolute maximum capacity
         statusText = 'Unsafe, too much wire for reel';
         statusColor = 'text-red-600';
         analysisText = 'Target length exceeds the maximum possible capacity of this reel, even without freeboard restrictions.';
     } else if (safetyStandard === 'full') {
-        / Full drum selected (zero clearance)
+        // Full drum selected (zero clearance)
         statusText = 'Full drum, zero clearance, not within safety standards';
         statusColor = 'text-red-600';
         analysisText = 'Full drum winding provides no clearance margin. Wire may contact flanges, violating safety standards.';
     } else if (F_inches <= 0) {
-        / No freeboard calculated
+        // No freeboard calculated
         statusText = 'No freeboard';
         statusColor = 'text-orange-600';
         analysisText = 'No freeboard clearance calculated. Wire may contact flanges during winding.';
@@ -953,16 +953,16 @@ function updateFreeboardTolerance(C_absolute_m, C_freeboard_m, target_m, F_m, sa
     freeboardAnalysis.textContent = analysisText;
 }
 
-/ ====================================================================
-/ INITIALIZATION & EVENT LISTENERS ADDED
-/ ====================================================================
+// ====================================================================
+// INITIALIZATION & EVENT LISTENERS ADDED
+// ====================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    / Initialize modal close functionality (this might already be handled by showModal functions)
-    / const modalBackdrop = document.getElementById('modalBackdrop');
-    / if (modalBackdrop) modalBackdrop.addEventListener('click', hideModal);
+    // Initialize modal close functionality (this might already be handled by showModal functions)
+    // const modalBackdrop = document.getElementById('modalBackdrop');
+    // if (modalBackdrop) modalBackdrop.addEventListener('click', hideModal);
 
-    / Wire Diameter Preset Dropdown Event Listeners
+    // Wire Diameter Preset Dropdown Event Listeners
     document.getElementById('wireDiameterPresetInch').addEventListener('change', (e) => {
         const selectedValue = e.target.value;
         if (selectedValue && selectedValue !== "") {
@@ -970,15 +970,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetUnit = wireDiameterUnitSelect.value;
             let convertedValue;
 
-            / Convert from inches to target unit
+            // Convert from inches to target unit
             if (targetUnit === 'in') {
-                convertedValue = inchValue; / already in inches
+                convertedValue = inchValue; // already in inches
             } else if (targetUnit === 'cm') {
-                convertedValue = inchValue * 2.54; / inches to cm
+                convertedValue = inchValue * 2.54; // inches to cm
             } else if (targetUnit === 'mm') {
-                convertedValue = inchValue * 25.4; / inches to mm
+                convertedValue = inchValue * 25.4; // inches to mm
             } else {
-                convertedValue = inchValue; / fallback
+                convertedValue = inchValue; // fallback
             }
 
             wireDiameterInput.value = convertedValue.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
@@ -993,15 +993,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetUnit = wireDiameterUnitSelect.value;
             let convertedValue;
 
-            / Convert from mm to target unit
+            // Convert from mm to target unit
             if (targetUnit === 'mm') {
-                convertedValue = mmValue; / already in mm
+                convertedValue = mmValue; // already in mm
             } else if (targetUnit === 'cm') {
-                convertedValue = mmValue / 10; / mm to cm
+                convertedValue = mmValue / 10; // mm to cm
             } else if (targetUnit === 'in') {
-                convertedValue = mmValue / 25.4; / mm to inches
+                convertedValue = mmValue / 25.4; // mm to inches
             } else {
-                convertedValue = mmValue; / fallback
+                convertedValue = mmValue; // fallback
             }
 
             wireDiameterInput.value = convertedValue.toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
@@ -1009,51 +1009,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    / Add event listeners for the missing buttons
+    // Add event listeners for the missing buttons
     setupButtonEventListeners();
 });
 
-/ ====================================================================
-/ BUTTON EVENT LISTENERS SETUP
-/ ====================================================================
+// ====================================================================
+// BUTTON EVENT LISTENERS SETUP
+// ====================================================================
 
 function setupButtonEventListeners() {
-    / Print Results Button
+    // Print Results Button
     const printResultsBtn = document.getElementById('printResultsBtn');
     if (printResultsBtn) {
         printResultsBtn.addEventListener('click', handlePrintResults);
     }
 
-    / Save Reel Specifications Button
+    // Save Reel Specifications Button
     const exportToCuttingRecordsBtn = document.getElementById('exportToCuttingRecordsBtn');
     if (exportToCuttingRecordsBtn) {
         exportToCuttingRecordsBtn.addEventListener('click', handleSaveReelSpecifications);
     }
 
-    / Refresh Configurations Button
+    // Refresh Configurations Button
     const refreshConfigurationsBtn = document.getElementById('refreshConfigurationsBtn');
     if (refreshConfigurationsBtn) {
         refreshConfigurationsBtn.addEventListener('click', loadReelConfigurations);
     }
 
-    / New collapsible section buttons
+    // New collapsible section buttons
     const clearReelSpecificationsBtn = document.getElementById('clearReelSpecificationsBtn');
     if (clearReelSpecificationsBtn) {
         clearReelSpecificationsBtn.addEventListener('click', clearReelSpecifications);
     }
 
-    / New preset-related buttons
+    // New preset-related buttons
     const clearCablePresetBtn = document.getElementById('clearCablePresetBtn');
     if (clearCablePresetBtn) {
         clearCablePresetBtn.addEventListener('click', clearCablePreset);
     }
 }
 
-/ ====================================================================
-/ NEW COLLAPSIBLE SECTION HANDLERS
-/ ====================================================================
+// ====================================================================
+// NEW COLLAPSIBLE SECTION HANDLERS
+// ====================================================================
 
-/ Industry Standard Reels Handler
+// Industry Standard Reels Handler
 function handleIndustryStandardReelChange(event) {
     const reelKey = event.target.value;
     if (!reelKey) return;
@@ -1064,12 +1064,12 @@ function handleIndustryStandardReelChange(event) {
         return;
     }
 
-    / Convert meters to inches for display
+    // Convert meters to inches for display
     const coreIn = Math.round(reel.core / 0.0254);
     const flangeIn = Math.round(reel.flange / 0.0254);
     const traverseIn = Math.round(reel.width / 0.0254);
 
-    / Auto-fill the form fields
+    // Auto-fill the form fields
     document.getElementById('coreDiameter').value = coreIn;
     document.getElementById('coreDiameterUnit').value = 'in';
     document.getElementById('flangeDiameter').value = flangeIn;
@@ -1077,38 +1077,38 @@ function handleIndustryStandardReelChange(event) {
     document.getElementById('traverseWidth').value = traverseIn;
     document.getElementById('traverseWidthUnit').value = 'in';
 
-    / Show success feedback
+    // Show success feedback
     showAlert(`Industry standard reel "${reel.name}" loaded successfully!\nCore: ${coreIn}"\nFlange: ${flangeIn}"\nTraverse: ${traverseIn}"`, 'Reel Specifications Auto-Filled');
 }
 
-/ Local implementations of cable functions using EECOL/Wesco products
+// Local implementations of cable functions using EECOL/Wesco products
 function getAvailableCableTypes() {
-    / Aggregate both EECOL/Wesco and Industry Standards databases dynamically
+    // Aggregate both EECOL/Wesco and Industry Standards databases dynamically
 
-    / Get EECOL/Wesco cables (prioritized)
+    // Get EECOL/Wesco cables (prioritized)
     const eecolWescoProducts = getOrganizedEecolWescoProducts();
     const eecolCableTypes = Object.keys(eecolWescoProducts);
 
-    / Get Industry Standards cables
+    // Get Industry Standards cables
     const industryStandardCableTypes = getIndustryStandardCableTypes();
 
-    / Combine and remove duplicates, prioritizing EECOL first
+    // Combine and remove duplicates, prioritizing EECOL first
     const allCableTypes = [...new Set([...industryStandardCableTypes, ...eecolCableTypes])];
 
-    / Sort alphabetically for consistent ordering
+    // Sort alphabetically for consistent ordering
     const sortedTypes = allCableTypes.sort();
 
-    console.log('📊 Aggregated cable types:', sortedTypes); / For debugging
+    console.log('📊 Aggregated cable types:', sortedTypes); // For debugging
 
     return sortedTypes;
 }
 
 function getAvailableCableDesignations(cableType) {
-    / Aggregate designations from both EECOL/Wesco and Industry Standards databases
+    // Aggregate designations from both EECOL/Wesco and Industry Standards databases
 
-    const allDesignations = new Set(); / Use Set to avoid duplicates
+    const allDesignations = new Set(); // Use Set to avoid duplicates
 
-    / Get from EECOL/Wesco database
+    // Get from EECOL/Wesco database
     const organizedProducts = getOrganizedEecolWescoProducts();
     if (organizedProducts[cableType]) {
         Object.keys(organizedProducts[cableType]).forEach(designation => {
@@ -1116,29 +1116,29 @@ function getAvailableCableDesignations(cableType) {
         });
     }
 
-    / Get from Industry Standards database using imported function
+    // Get from Industry Standards database using imported function
     const standardDesignations = getIndustryStandardCableDesignations(cableType);
     standardDesignations.forEach(designation => {
         allDesignations.add(designation);
     });
 
-    / Sort alphabetically and return as array
+    // Sort alphabetically and return as array
     return Array.from(allDesignations).sort();
 }
 
-/ Enhanced function to get cable diameter from aggregated databases (EECOL + Industry Standards)
+// Enhanced function to get cable diameter from aggregated databases (EECOL + Industry Standards)
 function getCableOverallDiameter(cableType, designation) {
     if (!cableType || !designation) {
         return 0;
     }
 
-    / First try EECOL/Wesco database
+    // First try EECOL/Wesco database
     const eecolProductDetails = getEecolWescoProductDetails(designation);
     if (eecolProductDetails && eecolProductDetails.od_inches) {
         return eecolProductDetails.od_inches;
     }
 
-    / Fallback to Industry Standards database using imported data
+    // Fallback to Industry Standards database using imported data
     const cableConstructionData = CABLE_CONSTRUCTION_DATA || {};
 
     if (!cableConstructionData[cableType]) {
@@ -1147,10 +1147,10 @@ function getCableOverallDiameter(cableType, designation) {
 
     const cableData = cableConstructionData[cableType];
 
-    / Handle nested voltage structure (TK90, ACWU90, RW90, SOOW)
+    // Handle nested voltage structure (TK90, ACWU90, RW90, SOOW)
     if (cableData['600V'] || cableData['1KV'] || cableData['300V']) {
-        / Determine voltage from designation
-        let voltage = '600V'; / default
+        // Determine voltage from designation
+        let voltage = '600V'; // default
         if (designation.includes('600V')) voltage = '600V';
         if (designation.includes('1KV') || designation.includes('1kV')) voltage = '1KV';
         if (designation.includes('300V')) voltage = '300V';
@@ -1160,7 +1160,7 @@ function getCableOverallDiameter(cableType, designation) {
         }
     }
 
-    / Handle flat od_inches structure (BARE)
+    // Handle flat od_inches structure (BARE)
     if (cableData.od_inches && cableData.od_inches[designation]) {
         return cableData.od_inches[designation];
     }
@@ -1168,7 +1168,7 @@ function getCableOverallDiameter(cableType, designation) {
     return 0;
 }
 
-/ Legacy function for backward compatibility
+// Legacy function for backward compatibility
 function getCableDiameterFromEecolProducts(productName) {
     const productDetails = getEecolWescoProductDetails(productName);
     if (productDetails && productDetails.od_inches) {
@@ -1177,7 +1177,7 @@ function getCableDiameterFromEecolProducts(productName) {
     return 0;
 }
 
-/ Clear all reel specifications
+// Clear all reel specifications
 function clearReelSpecifications() {
     document.getElementById('coreDiameter').value = '';
     document.getElementById('flangeDiameter').value = '';
@@ -1188,7 +1188,7 @@ function clearReelSpecifications() {
     showAlert('All reel specifications cleared.', 'Specifications Cleared');
 }
 
-/ Cable Type Change Handler
+// Cable Type Change Handler
 function handleCableTypeChange(event) {
     const cableType = event.target.value;
     const designationSelect = document.getElementById('cableDesignationSelect');
@@ -1200,7 +1200,7 @@ function handleCableTypeChange(event) {
         return;
     }
 
-    / Populate designation dropdown
+    // Populate designation dropdown
     const designations = getAvailableCableDesignations(cableType);
     designationSelect.innerHTML = '<option value="">-- Select specific designation --</option>';
 
@@ -1214,7 +1214,7 @@ function handleCableTypeChange(event) {
     designationSelect.disabled = false;
 }
 
-/ Cable Designation Change Handler
+// Cable Designation Change Handler
 function handleCableDesignationChange(event) {
     const cableType = document.getElementById('cableTypeSelect').value;
     const designation = event.target.value;
@@ -1224,38 +1224,38 @@ function handleCableDesignationChange(event) {
         return;
     }
 
-    / Get cable diameter and set it
+    // Get cable diameter and set it
     const diameter = getCableOverallDiameter(cableType, designation);
     if (diameter > 0) {
-        / Convert to current unit setting
+        // Convert to current unit setting
         const currentUnit = wireDiameterUnitSelect.value;
         let displayDiameter = diameter;
 
         if (currentUnit === 'cm') {
-            displayDiameter = diameter * 2.54; / inches to cm
+            displayDiameter = diameter * 2.54; // inches to cm
         } else if (currentUnit === 'mm') {
-            displayDiameter = diameter * 25.4; / inches to mm
+            displayDiameter = diameter * 25.4; // inches to mm
         } else if (currentUnit === 'm') {
-            displayDiameter = diameter * 0.0254; / inches to meters
+            displayDiameter = diameter * 0.0254; // inches to meters
         } else if (currentUnit === 'ft') {
-            displayDiameter = diameter * 0.0254; / inches to meters, will be displayed as feet equivalent
-            displayDiameter *= 3.28084; / meters to feet
+            displayDiameter = diameter * 0.0254; // inches to meters, will be displayed as feet equivalent
+            displayDiameter *= 3.28084; // meters to feet
         }
 
-        / Set the wire diameter
+        // Set the wire diameter
         wireDiameterInput.value = displayDiameter.toFixed(5).replace(/\.?0+$/, '');
 
-    / Only disable inputs if user hasn't switched to manual mode
+    // Only disable inputs if user hasn't switched to manual mode
     if (!isManualMode) {
         wireDiameterInput.disabled = true;
         wireDiameterUnitSelect.disabled = true;
         document.getElementById('wireDiameterPresetInch').disabled = true;
         document.getElementById('wireDiameterPresetMm').disabled = true;
 
-        / Show preset mode indicator with both buttons
+        // Show preset mode indicator with both buttons
         const indicator = document.getElementById('presetModeIndicator');
         indicator.classList.remove('hidden');
-        indicator.replaceChildren(); / BOLT OPTIMIZATION: O(1) DOM clearing
+        indicator.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
         const titleSpan = document.createElement('span');
         titleSpan.className = 'font-semibold';
@@ -1284,78 +1284,78 @@ function handleCableDesignationChange(event) {
         indicator.appendChild(btnGroup);
     }
 
-        / Update freeboard and trigger calculation
+        // Update freeboard and trigger calculation
         updateFreeboardInput(true);
     }
 }
 
-/ Clear cable preset and restore manual input
+// Clear cable preset and restore manual input
 function clearCablePreset() {
-    / Enable manual mode - user intentionally switched to manual
+    // Enable manual mode - user intentionally switched to manual
     isManualMode = true;
 
-    / Re-enable manual inputs
+    // Re-enable manual inputs
     wireDiameterInput.disabled = false;
     wireDiameterUnitSelect.disabled = false;
     document.getElementById('wireDiameterPresetInch').disabled = false;
     document.getElementById('wireDiameterPresetMm').disabled = false;
 
-    / Clear selections to prevent auto-disable on subsequent changes
+    // Clear selections to prevent auto-disable on subsequent changes
     document.getElementById('cableTypeSelect').value = '';
     document.getElementById('cableDesignationSelect').innerHTML = '<option value="">-- Select cable type first --</option>';
     document.getElementById('cableDesignationSelect').disabled = true;
 
-    / Hide preset mode indicator
+    // Hide preset mode indicator
     document.getElementById('presetModeIndicator').classList.add('hidden');
 }
 
-/ Switch to manual mode (from preset mode button)
+// Switch to manual mode (from preset mode button)
 function switchToManualMode() {
-    / Set manual mode flag
+    // Set manual mode flag
     isManualMode = true;
 
-    / Re-enable all wire diameter inputs
+    // Re-enable all wire diameter inputs
     wireDiameterInput.disabled = false;
     wireDiameterUnitSelect.disabled = false;
     document.getElementById('wireDiameterPresetInch').disabled = false;
     document.getElementById('wireDiameterPresetMm').disabled = false;
 
-    / Hide preset mode indicator
+    // Hide preset mode indicator
     document.getElementById('presetModeIndicator').classList.add('hidden');
 
-    / Show feedback
+    // Show feedback
     showAlert('Switched to manual input mode. You can now edit all wire diameter fields.', 'Manual Mode Enabled');
 }
 
-/ Clear all cable selections and reset to manual mode
+// Clear all cable selections and reset to manual mode
 function clearAllCableSelections() {
-    / Reset to manual mode
+    // Reset to manual mode
     isManualMode = true;
 
-    / Re-enable all wire diameter inputs
+    // Re-enable all wire diameter inputs
     wireDiameterInput.disabled = false;
     wireDiameterUnitSelect.disabled = false;
     document.getElementById('wireDiameterPresetInch').disabled = false;
     document.getElementById('wireDiameterPresetMm').disabled = false;
 
-    / Clear all cable selections
+    // Clear all cable selections
     document.getElementById('cableTypeSelect').value = '';
     document.getElementById('cableDesignationSelect').innerHTML = '<option value="">-- Select cable type first --</option>';
     document.getElementById('cableDesignationSelect').disabled = true;
 
-    / Hide preset mode indicator
+    // Hide preset mode indicator
     document.getElementById('presetModeIndicator').classList.add('hidden');
 
-    / Clear wire diameter fields to blank slate
+    // Clear wire diameter fields to blank slate
     wireDiameterInput.value = '';
 
-    / Show feedback
+    // Show feedback
     showAlert('All cable selections cleared. You can now start fresh with manual input.', 'Selections Cleared');
 }
 
-/ Initialize collapsible sections
+// Initialize collapsible sections
 function initializeCollapsibleSections() {
-    / Populate industry standard reels dropdown
+    // Populate industry standard reels dropdown
     const reelSelect = document.getElementById('industryStandardReelSelect');
     if (reelSelect) {
         const reelOptions = getIndustryStandardReelOptions();
@@ -1368,7 +1368,7 @@ function initializeCollapsibleSections() {
         reelSelect.addEventListener('change', handleIndustryStandardReelChange);
     }
 
-    / Populate cable types dropdown
+    // Populate cable types dropdown
     const cableTypeSelect = document.getElementById('cableTypeSelect');
     if (cableTypeSelect) {
         const cableTypes = getAvailableCableTypes();
@@ -1381,32 +1381,32 @@ function initializeCollapsibleSections() {
         cableTypeSelect.addEventListener('change', handleCableTypeChange);
     }
 
-    / Cable designation change handler
+    // Cable designation change handler
     const cableDesignationSelect = document.getElementById('cableDesignationSelect');
     if (cableDesignationSelect) {
         cableDesignationSelect.addEventListener('change', handleCableDesignationChange);
     }
 
-    / Saved configurations change handler
+    // Saved configurations change handler
     const reelConfigurationSelector = document.getElementById('reelConfigurationSelector');
     if (reelConfigurationSelector) {
         reelConfigurationSelector.addEventListener('change', handleReelConfigurationChange);
     }
 }
 
-/ ====================================================================
-/ SAVE REEL SPECIFICATIONS FUNCTIONALITY
-/ ====================================================================
+// ====================================================================
+// SAVE REEL SPECIFICATIONS FUNCTIONALITY
+// ====================================================================
 
 async function handleSaveReelSpecifications() {
     try {
-        / Check if IndexedDB is available
+        // Check if IndexedDB is available
         if (typeof EECOLIndexedDB === 'undefined') {
             showAlert('Database not available. Please ensure the application is fully loaded.', 'Database Error');
             return;
         }
 
-        / Collect all the reel specification data
+        // Collect all the reel specification data
         const reelSpecs = collectReelSpecifications();
 
         if (!reelSpecs) {
@@ -1414,18 +1414,18 @@ async function handleSaveReelSpecifications() {
             return;
         }
 
-        / Initialize database connection
+        // Initialize database connection
         const db = EECOLIndexedDB.getInstance();
         await db.ready;
 
-        / Save to IndexedDB
+        // Save to IndexedDB
         const result = await db.saveReelCapacityEstimator(reelSpecs);
 
         if (result) {
-            / Refresh the configuration selector to show the new saved spec
+            // Refresh the configuration selector to show the new saved spec
             await loadReelConfigurations();
 
-            / Show success message
+            // Show success message
             const timestamp = new Date(reelSpecs.timestamp).toLocaleDateString();
             showAlert(`Reel specifications saved successfully!\nSaved: ${timestamp}\nFlange: ${reelSpecs.flangeDiameter.value} ${reelSpecs.flangeDiameter.unit}\nCore: ${reelSpecs.coreDiameter.value} ${reelSpecs.coreDiameter.unit}\nTraverse: ${reelSpecs.traverseWidth.value} ${reelSpecs.traverseWidth.unit}`, 'Specifications Saved');
         } else {
@@ -1439,7 +1439,7 @@ async function handleSaveReelSpecifications() {
 }
 
 function collectReelSpecifications() {
-    / Get basic reel dimensions
+    // Get basic reel dimensions
     const flangeDiameter = parseFloat(document.getElementById('flangeDiameter').value);
     const flangeDiameterUnit = document.getElementById('flangeDiameterUnit').value;
     const coreDiameter = parseFloat(document.getElementById('coreDiameter').value);
@@ -1447,13 +1447,13 @@ function collectReelSpecifications() {
     const traverseWidth = parseFloat(document.getElementById('traverseWidth').value);
     const traverseWidthUnit = document.getElementById('traverseWidthUnit').value;
 
-    / Validate that we have the required dimensions
+    // Validate that we have the required dimensions
     if (isNaN(flangeDiameter) || isNaN(coreDiameter) || isNaN(traverseWidth) ||
         flangeDiameter <= 0 || coreDiameter <= 0 || traverseWidth <= 0) {
         return null;
     }
 
-    / Get additional specifications
+    // Get additional specifications
     const wireDiameter = parseFloat(document.getElementById('wireDiameter').value);
     const wireDiameterUnit = document.getElementById('wireDiameterUnit').value;
     const targetLength = parseFloat(document.getElementById('targetLength').value);
@@ -1463,15 +1463,15 @@ function collectReelSpecifications() {
     const safetyStandard = document.getElementById('safetyStandard').value;
     const windingEfficiency = document.getElementById('windingEfficiency').value;
 
-    / Get calculated results if available
+    // Get calculated results if available
     const capacityTotal = document.getElementById('capacityTotal').textContent;
     const capacityWorking = document.getElementById('capacityWorking').textContent;
     const capacityAbsolute = document.getElementById('capacityAbsolute').textContent;
     const ddRatio = document.getElementById('DdRatio').textContent;
 
-    / Collect the specifications object
+    // Collect the specifications object
     const specs = {
-        / Basic reel dimensions (the 3 main ones requested)
+        // Basic reel dimensions (the 3 main ones requested)
         flangeDiameter: {
             value: flangeDiameter,
             unit: flangeDiameterUnit
@@ -1485,7 +1485,7 @@ function collectReelSpecifications() {
             unit: traverseWidthUnit
         },
 
-        / Additional specifications
+        // Additional specifications
         wireDiameter: {
             value: wireDiameter,
             unit: wireDiameterUnit
@@ -1501,7 +1501,7 @@ function collectReelSpecifications() {
         safetyStandard: safetyStandard,
         windingEfficiency: windingEfficiency,
 
-        / Calculated results
+        // Calculated results
         calculatedResults: {
             totalCapacity: capacityTotal,
             workingCapacity: capacityWorking,
@@ -1509,7 +1509,7 @@ function collectReelSpecifications() {
             coreToCableRatio: ddRatio
         },
 
-        / Metadata
+        // Metadata
         timestamp: Date.now(),
         tool: 'reelCapacityEstimator',
         version: '0.8.0.0'
@@ -1518,13 +1518,13 @@ function collectReelSpecifications() {
     return specs;
 }
 
-/ ====================================================================
-/ PRINT RESULTS FUNCTIONALITY
-/ ====================================================================
+// ====================================================================
+// PRINT RESULTS FUNCTIONALITY
+// ====================================================================
 
 function handlePrintResults() {
     try {
-        / Check if there are calculation results to print
+        // Check if there are calculation results to print
         const hasResults = document.getElementById('reelEstimatorResultContainer') &&
                           !document.getElementById('reelEstimatorResultContainer').classList.contains('hidden');
 
@@ -1533,7 +1533,7 @@ function handlePrintResults() {
             return;
         }
 
-        / Collect all the data to print
+        // Collect all the data to print
         const printData = collectPrintData();
 
         if (!printData) {
@@ -1541,7 +1541,7 @@ function handlePrintResults() {
             return;
         }
 
-        / Use the existing print utility function
+        // Use the existing print utility function
         printReelCapacityResults(printData);
 
     } catch (error) {
@@ -1551,7 +1551,7 @@ function handlePrintResults() {
 }
 
 function collectPrintData() {
-    / Get basic specifications
+    // Get basic specifications
     const flangeDiameter = document.getElementById('flangeDiameter').value;
     const flangeDiameterUnit = document.getElementById('flangeDiameterUnit').value;
     const coreDiameter = document.getElementById('coreDiameter').value;
@@ -1559,18 +1559,18 @@ function collectPrintData() {
     const traverseWidth = document.getElementById('traverseWidth').value;
     const traverseWidthUnit = document.getElementById('traverseWidthUnit').value;
 
-    / Get results
+    // Get results
     const totalCapacity = document.getElementById('capacityTotal').textContent;
     const workingCapacity = document.getElementById('capacityWorking').textContent;
     const absoluteCapacity = document.getElementById('capacityAbsolute').textContent;
     const ddRatio = document.getElementById('DdRatio').textContent;
     const targetAchievement = document.getElementById('targetAchievement').textContent;
 
-    / Get layer breakdown
+    // Get layer breakdown
     const layerList = document.getElementById('layerList');
     const layerBreakdown = layerList ? layerList.textContent || layerList.innerText : '';
 
-    / Get provided specs
+    // Get provided specs
     const providedCore = document.getElementById('providedCoreDiameter').textContent;
     const providedFlange = document.getElementById('providedFlangeDiameter').textContent;
     const providedTraverse = document.getElementById('providedTraverseWidth').textContent;
@@ -1618,10 +1618,10 @@ function _esc(v) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
-        .replace(/\/g, '&#x2F;');
+        .replace(/\//g, '&#x2F;');
 }
 
-/ Custom print function for reel capacity results using existing print utilities
+// Custom print function for reel capacity results using existing print utilities
 function printReelCapacityResults(data) {
     const formattedTitle = data.title || 'EECOL Reel Capacity Estimator Results';
     const specs = data.specifications || {};
@@ -1819,11 +1819,11 @@ function printReelCapacityResults(data) {
     }
 }
 
-/ ============================================================================
-/ MOBILE MENU INITIALIZATION FOR REEL CAPACITY ESTIMATOR PAGE
-/ ============================================================================
+// ============================================================================
+// MOBILE MENU INITIALIZATION FOR REEL CAPACITY ESTIMATOR PAGE
+// ============================================================================
 
-/ Initialize mobile menu for this page
+// Initialize mobile menu for this page
 if (typeof initMobileMenu === 'function') {
     initMobileMenu({
         version: 'v0.8.0.5',

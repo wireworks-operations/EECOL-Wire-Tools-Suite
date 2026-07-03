@@ -1,6 +1,9 @@
 export function safeOpenPrintWindow(title, htmlContent) {
   const w = window.open('', '_blank');
-  if (!w) {
+  if (w) {
+    // IDB SENTINEL: Prevent reverse tabnabbing (security best practice)
+    try { w.opener = null; } catch (e) {}
+  } else {
     // fallback: create an in-page modal / inform the user
     alert('Unable to open print window. Please allow popups for this site to print.');
     return null;

@@ -21,7 +21,10 @@
   function safeOpenPrintWindow(title, htmlContent) {
     try {
       const w = window.open('', '_blank');
-      if (!w) {
+      if (w) {
+        // IDB SENTINEL: Prevent reverse tabnabbing (security best practice)
+        try { w.opener = null; } catch (e) {}
+      } else {
         // Popup blocked
         alert('Unable to open the print window. Please allow popups for this site to print.');
         return null;
