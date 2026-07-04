@@ -10,6 +10,18 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 
 ---
 
+## 📖 Table of Contents
+
+- [🚀 Getting Started](#-getting-started)
+- [🧭 Quickstart](#-quickstart-90-second-path)
+- [🏗️ Architecture](#-architecture)
+- [📋 Available Tools](#-available-tools)
+- [🧪 Testing Matrix](#-testing-matrix)
+- [🔒 Security & Privacy](#-security--privacy)
+- [📄 License](#-license)
+
+---
+
 ## 🚀 Getting Started
 
 > The commands below are verified for this repository. If your platform differs, see **Troubleshooting**.
@@ -22,47 +34,57 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 
 ### 1) Python Setup
 
+The suite uses Python-based Playwright scripts for automated database and UI verification.
+
 ```bash
-# It is recommended to use a virtual environment
+# Create and activate a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Install verification dependencies
+# Install Playwright and necessary browser binaries
 pip install playwright
 playwright install chromium
 ```
 
 ### 2) Node Setup
 
+Install the necessary dependencies for the development server and build tools.
+
 ```bash
-# Install project dependencies
+# Install project dependencies using npm
 npm install
 ```
 
 ### 3) Run (Local)
 
+Launch the application in development mode. This will serve the static assets and enable PWA features.
+
 ```bash
-# Start the development server (serves the PWA at http://localhost:3000)
+# Start the development server at http://localhost:3000
 npm run dev
 ```
 
 ### 4) Docker (Optional)
 
+If you prefer a containerized environment, you can use the following commands.
+
 ```bash
-# Build the production image
+# Build the production-ready Docker image
 npm run docker:build
 
-# Run the container
+# Run the containerized app on port 3000
 npm run docker:run
 ```
 
 ### 5) Test & Verification
 
+Always run verification scripts after making changes to the database schema or UI.
+
 ```bash
-# Run IndexedDB v10 schema verification
+# Run IndexedDB v10 schema and CRUD verification
 python3 verification/verify_idb_v10.py
 
-# Run UI version verification
+# Run UI version and visibility verification
 python3 verification/verify_ui_v0.8.0.5.py
 ```
 
@@ -73,13 +95,15 @@ python3 verification/verify_ui_v0.8.0.5.py
 | `npm run dev` | ✅ **Operational** | Starts local dev server using `http-server`. |
 | `python3 verification/verify_idb_v10.py` | ✅ **Operational** | IDB verification via Playwright (Python). |
 | `python3 verification/verify_ui_v0.8.0.5.py` | ✅ **Operational** | UI Version verification via Playwright. |
-| `npm run build` | 🚧 **In-Progress** | Production build (Missing Webpack config). |
-| `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Missing config). |
-| `npm run lint` | 🚧 **In-Progress** | ESLint validation (Missing config). |
+| `npm run build` | 🚧 **In-Progress** | Production build (Webpack configuration present in `package.json`). |
+| `npm test` | 🚧 **In-Progress** | Unit testing via Jest (Configuration pending). |
+| `npm run lint` | 🚧 **In-Progress** | ESLint validation (Configuration pending). |
 
 ---
 
 ## 🧭 Quickstart (90-second path)
+
+For the fastest path to a running application, follow these three steps:
 
 ```bash
 # 1. Clone & Enter
@@ -124,7 +148,7 @@ See **[BLUEPRINT.md](BLUEPRINT.md)** for the ASCII architecture and component in
 - **Machine Maintenance**: Daily equipment inspection checklists with multi-page support.
 - **Shipping Manifest**: Generate reel labels and shipping documentation.
 - **Reel Inventory Labels**: Simple large-format reel identification.
-- **Multi-Cut Planner**: (Planned) Plan multiple reel cuts & capacity.
+- **Wire Cut List**: Queue of pending wire cuts with AutoFill integration.
 
 </details>
 
