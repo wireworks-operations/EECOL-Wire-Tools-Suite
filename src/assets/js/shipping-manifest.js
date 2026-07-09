@@ -1,6 +1,6 @@
 /**
  * EECOL Wire Tools Suite - Shipping Manifest JavaScript
- * Enterprise PWA v0.8.0.0
+ * Enterprise PWA v0.8.0.5
  */
 
 // Global variables

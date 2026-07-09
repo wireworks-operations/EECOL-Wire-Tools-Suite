@@ -1,6 +1,6 @@
 /**
  * EECOL Wire Tools Suite - PWA Core Functionality
- * Enterprise PWA v0.8.0.0
+ * Enterprise PWA v0.8.0.5
  */
 
 // ===== PWA SERVICE WORKER REGISTRATION =====

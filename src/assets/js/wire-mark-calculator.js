@@ -1,6 +1,6 @@
 /**
  * EECOL Wire Tools Suite - Wire Mark Calculator Business Logic
- * Enterprise PWA v0.8.0.0
+ * Enterprise PWA v0.8.0.5
  */
 
 // ===== DEPENDENCIES =====
