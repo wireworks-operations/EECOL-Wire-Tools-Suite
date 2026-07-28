@@ -26,6 +26,7 @@ critical patterns for the EECOL Wire Tools Suite.
   multi-record operations (Undo, Redo, Import). This pattern wraps all requests
   in a single transaction, ensuring atomicity and minimizing
   performance-degrading disk syncs.
+- **Version:** Target version is **10** (EECOLTools_v2).
 
 ### 🛡️ Security (Sentinel Protocol)
 
@@ -101,8 +102,7 @@ critical patterns for the EECOL Wire Tools Suite.
 
 - **No Backend:** Do not expect a traditional server. All sync is P2P or
   export-based.
-- **Environment:** If `pnpm dev` fails, use `python3 -m http.server 3000` as a
-  fallback.
+- **Environment:** If `npm run dev` fails, use `npx http-server . -p 3000` or `python3 -m http.server 3000` as a fallback.
 - **Verification:** UI changes must be verified with Playwright scripts and
   screenshots.
 - **Constraints:** Keep changes focused and under 50 lines per PR where
