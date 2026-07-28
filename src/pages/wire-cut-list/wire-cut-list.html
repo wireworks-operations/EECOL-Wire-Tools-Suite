@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" id="csp-meta"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'">
+    <title>Dedicated Wire Cut List - EECOL Tools</title>
+    <script src="../../utils/theme-loader.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../assets/css/cutting-records.css">
+    <link rel="stylesheet" href="../../assets/css/eecol-theme.css">
+    <link rel="manifest" href="../../../manifest.json">
+    <meta name="theme-color" content="#0058B3">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EECOL Tools">
+    <link rel="apple-touch-icon" href="../../../src/assets/icons/icon-192x192.png">
+    <script src="../../core/database/indexeddb.js"></script>
+    <script src="../../utils/modals.js"></script>
+    <script src="../../utils/mobile-menu.js"></script>
+</head>
+
+<body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
+
+    <!-- Main Container -->
+    <div id="wireListPage"
+        class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-7xl xl:max-w-9xl bg-white p-4 sm:p-6 rounded-xl shadow-2xl mx-auto border-2 border-solid border-[#0058B3] overflow-hidden flex flex-col mb-16 relative">
+
+        <!-- Header -->
+        <div class="flex justify-center mb-1 relative">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                class="text-[#0058B3] drop-shadow-lg eecol-logo-tilt">
+                <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2" />
+                <rect x="4" y="4" width="4" height="16" rx="1" fill="currentColor" />
+                <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
+                <path d="M 8,12 C 12,11 16,13 20,12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
+                <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="currentColor" stroke-width="3.5"
+                    stroke-linecap="round" />
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-black mb-3 text-center header-gradient">
+            🗂️ Standalone Wire Cut List
+        </h1>
+        <p class="mb-5 text-center text-sm font-medium header-gradient">
+            Manage cutting list items, update urgency, trigger autofill, and synchronize real-time updates.
+        </p>
+
+        <!-- Controls Section -->
+        <div class="mb-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl shadow-md">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button id="addWireListItemBtnDirect"
+                        class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition font-bold text-xs flex items-center gap-1 shadow">
+                        ➕ Add Item
+                    </button>
+                    <button id="refreshWireListBtn"
+                        class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-bold text-xs flex items-center gap-1 shadow">
+                        🔄 Refresh
+                    </button>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label for="wireListSearch" class="text-xs font-bold text-yellow-800">Search:</label>
+                        <input id="wireListSearch" type="text" placeholder="Search list items..."
+                            class="flex-1 sm:flex-initial p-2 border border-yellow-300 rounded-lg bg-white text-xs shadow-inner">
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label for="wireListStatusFilter" class="text-xs font-bold text-yellow-800">Status:</label>
+                        <select id="wireListStatusFilter"
+                            class="p-2 border border-yellow-300 rounded-lg bg-white text-xs shadow font-semibold">
+                            <option value="active">Active</option>
+                            <option value="completed">Completed</option>
+                            <option value="removed">Removed</option>
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrollable Cut List Container -->
+        <div class="flex-1 overflow-y-auto bg-gray-50 rounded-xl p-4 border border-gray-200 shadow-inner">
+            <div id="wireCutListItems" class="space-y-3 min-h-[150px]">
+                <p class="text-center text-gray-500 italic mt-8">Loading items...</p>
+            </div>
+        </div>
+
+        <!-- Footer inside main box -->
+        <div class="mt-auto pt-4 border-t border-blue-200 hidden sm:block">
+            <div class="flex justify-between items-center">
+                <div class="flex space-x-3">
+                    <a href="../index/index.html"
+                        class="px-3 py-1.5 bg-blue-600 border-2 border-blue-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 text-xs no-underline">🏠
+                        Home</a>
+                    <a href="../cutting-records/cutting-records.html"
+                        class="px-3 py-1.5 bg-indigo-600 border-2 border-indigo-600 text-white font-bold rounded-xl shadow-lg transition duration-200 ease-in-out transform hover:bg-indigo-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-opacity-50 text-xs no-underline">
+                        📊 Cutting Records
+                    </a>
+                </div>
+                <p class="text-xs text-gray-500 font-mono select-none">v0.8.0.5</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Alerts/Confirmations -->
+    <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="modalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-[#0058B3] transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="modalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
+                    <defs>
+                        <linearGradient id="modalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#0058B3;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#004a99;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="url(#modalGradient)" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="url(#modalGradient)" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="url(#modalGradient)" stroke-width="3.5"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-center mb-3 header-gradient" id="modalTitle">Notification</h3>
+            <div class="text-sm text-gray-700 mb-6 whitespace-pre-line text-center" id="modalMessage">Message here...
+            </div>
+            <div class="flex justify-center space-x-3" id="modalButtons">
+                <!-- Buttons will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Wire Cut List Item Modal -->
+    <div id="wireListItemModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="wireModalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 border-2 border-yellow-500 transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="wireModalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="#0058B3" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="#0058B3" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="#0058B3" stroke-width="3.5" stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-center mb-4 header-gradient" id="wireModalTitle">Add Wire Cut List Item</h3>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Order #</label>
+                    <input id="wireListOrder" type="text" placeholder="1234567"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Line #</label>
+                    <input id="wireListLine" type="text" placeholder="1"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Customer</label>
+                    <input id="wireListCustomer" type="text" placeholder="Customer Name"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Wire Type</label>
+                    <input id="wireListWireType" type="text" placeholder="TK6/3CU"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Length (Z)</label>
+                        <input id="wireListLength" type="text" placeholder="44"
+                            class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Reel Size (in)</label>
+                        <input id="wireListReelSize" type="number" placeholder="40"
+                            class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Urgency</label>
+                    <select id="wireListUrgency" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="normal">Normal</option>
+                        <option value="rush">⚡ RUSH</option>
+                        <option value="critical">🚨 CRITICAL</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Status</label>
+                    <select id="wireListStatus" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-semibold mb-1">Description</label>
+                <input id="wireListDescription" type="text" placeholder="BLD ACWU90 500/4 AL..."
+                    class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+
+            <div class="mb-4 grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Order Comments</label>
+                    <textarea id="wireListOrderComments" placeholder="Order comments..."
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm h-20"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Shipper Comments</label>
+                    <textarea id="wireListShipperComments" placeholder="Shipper comments..."
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm h-20"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-center space-x-3">
+                <button id="cancelWireListItemBtn"
+                    class="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600 transition font-bold">
+                    Cancel
+                </button>
+                <button id="saveWireListItemBtn"
+                    class="px-4 py-2 bg-yellow-600 text-white rounded-lg shadow-lg hover:bg-yellow-700 transition font-bold">
+                    Save Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wire Cut List Removal Reason Modal -->
+    <div id="removalReasonModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="removalModalBackdrop"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-2 border-red-500 transform scale-95 opacity-0 transition-all duration-200 ease-out"
+            id="removalModalContent">
+            <div class="flex items-center justify-center mb-4">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    class="eecol-logo-tilt">
+                    <circle cx="12" cy="12" r="11.35" fill="white" stroke="#0058B3" stroke-width="2" />
+                    <rect x="4" y="4" width="4" height="16" rx="1" fill="#0058B3" />
+                    <path d="M 8,6.5 C 12,5.5 16,7.5 20,6.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                    <path d="M 8,12 C 12,11 16,13 20,12" stroke="#0058B3" stroke-width="3.5" stroke-linecap="round" />
+                    <path d="M 8,17.5 C 12,16.5 16,18.5 20,17.5" stroke="#0058B3" stroke-width="3.5"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-center mb-4 header-gradient">Reason for Removal</h3>
+            <p class="text-xs text-gray-600 mb-2 text-center">Please provide a reason why this item is being removed from the active list.</p>
+            <textarea id="removalReasonText" placeholder="e.g., Customer cancelled, incorrect wire type specified..."
+                class="w-full p-2 border border-gray-300 rounded-lg text-sm h-32 mb-4"></textarea>
+            <div class="flex justify-center space-x-3">
+                <button id="cancelRemovalBtn"
+                    class="px-4 py-2 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600 transition font-bold">
+                    Cancel
+                </button>
+                <button id="confirmRemovalBtn"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition font-bold">
+                    Archive Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right-click Context Menu -->
+    <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-52">
+        <button id="ctxEdit" class="w-full text-left px-4 py-2 hover:bg-blue-100 text-sm flex items-center">
+            ✏️ Edit
+        </button>
+        <button id="ctxActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700">
+            🌟 Make Active
+        </button>
+        <button id="ctxRemove" class="w-full text-left px-4 py-2 hover:bg-red-100 text-sm flex items-center">
+            🗑️ Remove
+        </button>
+        <div class="px-4 py-2 border-t border-gray-100">
+            <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Softer Colors</p>
+            <div id="pastelPresets" class="grid grid-cols-4 gap-2 mb-2">
+                <!-- Preset buttons added by JS -->
+            </div>
+            <input type="color" id="ctxColorPicker" class="w-full h-6 cursor-pointer border-none p-0 opacity-50" title="Custom color (Softness advised)">
+        </div>
+    </div>
+
+    <script src="../../assets/js/wire-cut-list.js"></script>
+</body>
+
+</html>

@@ -1867,6 +1867,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         initModalSystem();
     }
 
+    // Listen for storage events (AutoFill Cut from the other tab)
+    window.addEventListener('storage', async function(e) {
+        if (e.key === 'eecolWireListAutofillId' && e.newValue) {
+            const id = e.newValue;
+            console.log('📡 Autofill event detected for item ID:', id);
+
+            // Clear autofill ID from localStorage to allow subsequent triggers
+            localStorage.removeItem('eecolWireListAutofillId');
+
+            // Attempt to focus this window
+            window.focus();
+
+            // AutoFill form
+            await autoFillCuttingForm(id);
+        }
+    });
+
     // Batch Entry Mode toggle
     const batchEntryModeCheckbox = document.getElementById('batchEntryMode');
     const singleCutForm = document.getElementById('singleCutForm');
@@ -2877,70 +2894,18 @@ function hideImportModal() {
 // ====================================================================
 
 async function initWireCutList() {
-    const toggleBtn = document.getElementById('toggleWireList');
-    const content = document.getElementById('wireListContent');
-    const toggleArrow = document.getElementById('wireListToggle');
-    const addBtn = document.getElementById('addWireListItemBtn');
-    const refreshBtn = document.getElementById('refreshWireListBtn');
-    const statusFilter = document.getElementById('wireListStatusFilter');
-    const searchInput = document.getElementById('wireListSearch');
+    const addBtnDirect = document.getElementById('addWireListItemBtnDirect');
+    const openBtn = document.getElementById('openWireListBtn');
 
-    if (toggleBtn && content) {
-        toggleBtn.addEventListener('click', () => {
-            const isHidden = content.classList.contains('hidden');
-            if (isHidden) {
-                content.classList.remove('hidden');
-                toggleArrow.textContent = '▼';
-                loadWireCutList();
-            } else {
-                content.classList.add('hidden');
-                toggleArrow.textContent = '►';
-            }
-        });
+    if (addBtnDirect) {
+        addBtnDirect.addEventListener('click', () => showWireListItemModal());
     }
 
-    if (addBtn) addBtn.addEventListener('click', () => showWireListItemModal());
-    if (refreshBtn) refreshBtn.addEventListener('click', loadWireCutList);
-
-    // Initialize Pastel Presets
-    const pastelPresets = document.getElementById('pastelPresets');
-    if (pastelPresets) {
-        const softColors = [
-            '#eff6ff', // Soft Blue
-            '#ecfdf5', // Soft Green
-            '#fffbeb', // Soft Yellow
-            '#fef2f2', // Soft Red
-            '#f5f3ff', // Soft Purple
-            '#faf5ff', // Soft Pink
-            '#f0fdf4', // Soft Emerald
-            '#fff7ed'  // Soft Orange
-        ];
-
-        softColors.forEach(color => {
-            const btn = document.createElement('button');
-            btn.className = 'w-full aspect-square rounded-md border border-black/5 hover:scale-110 transition-transform';
-            btn.style.backgroundColor = color;
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                if (currentContextMenuId) {
-                    updateWireListItemColor(currentContextMenuId, color);
-                }
-            };
-            pastelPresets.appendChild(btn);
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            window.open('../wire-cut-list/wire-cut-list.html', '_blank');
         });
     }
-
-    // Custom color picker fallback (still available but advised softness)
-    const ctxColorPicker = document.getElementById('ctxColorPicker');
-    if (ctxColorPicker) {
-        ctxColorPicker.addEventListener('input', (e) => {
-            if (currentContextMenuId) {
-                updateWireListItemColor(currentContextMenuId, e.target.value);
-            }
-        });
-    }
-    if (statusFilter) statusFilter.addEventListener('change', renderWireCutList);
-    if (searchInput) searchInput.addEventListener('input', renderWireCutList);
 
     // Modal input listeners for auto-capitalization
     ['wireListOrder', 'wireListCustomer', 'wireListWireType'].forEach(id => {
@@ -2961,52 +2926,54 @@ async function initWireCutList() {
     if (saveBtn) saveBtn.addEventListener('click', saveWireListItem);
     if (backdrop) backdrop.addEventListener('click', hideWireListItemModal);
 
-    // Removal reason modal events
-    const cancelRemBtn = document.getElementById('cancelRemovalBtn');
-    const confirmRemBtn = document.getElementById('confirmRemovalBtn');
-    const remBackdrop = document.getElementById('removalModalBackdrop');
+    // Safeguard context menu events if present (they are now on the standalone page, but kept here for backward compatibility)
+    const ctxEdit = document.getElementById('ctxEdit');
+    if (ctxEdit) {
+        ctxEdit.addEventListener('click', () => {
+            if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
+        });
+    }
 
-    if (cancelRemBtn) cancelRemBtn.addEventListener('click', hideRemovalReasonModal);
-    if (confirmRemBtn) confirmRemBtn.addEventListener('click', saveRemovalWithReason);
-    if (remBackdrop) remBackdrop.addEventListener('click', hideRemovalReasonModal);
-
-    // Context menu events
-    document.addEventListener('click', hideWireListContextMenu);
-    document.getElementById('ctxEdit').addEventListener('click', () => {
-        if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
-    });
-    document.getElementById('ctxActive').addEventListener('click', async () => {
-        if (currentContextMenuId) {
-            await setActiveWireListItem(currentContextMenuId);
-        }
-    });
-
-    document.getElementById('ctxRemove').addEventListener('click', async () => {
-        if (currentContextMenuId) {
-            const confirm = await showConfirm('Remove this item from the list?', 'Remove Item');
-            if (confirm) {
-                await deleteWireListItem(currentContextMenuId);
+    const ctxActive = document.getElementById('ctxActive');
+    if (ctxActive) {
+        ctxActive.addEventListener('click', async () => {
+            if (currentContextMenuId) {
+                await setActiveWireListItem(currentContextMenuId);
             }
-        }
-    });
+        });
+    }
 
-    // Drag and drop events for the container
+    const ctxRemove = document.getElementById('ctxRemove');
+    if (ctxRemove) {
+        ctxRemove.addEventListener('click', async () => {
+            if (currentContextMenuId) {
+                const confirm = await showConfirm('Remove this item from the list?', 'Remove Item');
+                if (confirm) {
+                    await deleteWireListItem(currentContextMenuId);
+                }
+            }
+        });
+    }
+
+    // Drag and drop events for the container (safeguarded)
     const container = document.getElementById('wireCutListItems');
-    container.addEventListener('dragover', e => {
-        e.preventDefault();
-        const afterElement = getDragAfterElement(container, e.clientY);
-        const dragging = document.querySelector('.dragging');
-        if (afterElement == null) {
-            container.appendChild(dragging);
-        } else {
-            container.insertBefore(dragging, afterElement);
-        }
-    });
+    if (container) {
+        container.addEventListener('dragover', e => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(container, e.clientY);
+            const dragging = document.querySelector('.dragging');
+            if (afterElement == null) {
+                container.appendChild(dragging);
+            } else {
+                container.insertBefore(dragging, afterElement);
+            }
+        });
 
-    container.addEventListener('drop', async e => {
-        e.preventDefault();
-        await saveWireListOrder();
-    });
+        container.addEventListener('drop', async e => {
+            e.preventDefault();
+            await saveWireListOrder();
+        });
+    }
 
     // Load initial data
     await loadWireCutList();
@@ -3348,7 +3315,10 @@ async function setActiveWireListItem(id) {
 }
 
 async function completeWireListItem(id, silent = false) {
-    const item = wireCutList.find(i => i.id === id);
+    let item = wireCutList.find(i => i.id === id);
+    if (!item && window.eecolDB && await window.eecolDB.isReady()) {
+        item = await window.eecolDB.get('wireCutList', id);
+    }
     if (item) {
         item.status = 'completed';
         item.updatedAt = Date.now();
@@ -3432,7 +3402,10 @@ async function autoFillCuttingForm(id) {
         if (!confirmOverwrite) return;
     }
 
-    const item = wireCutList.find(i => i.id === id);
+    let item = wireCutList.find(i => i.id === id);
+    if (!item && window.eecolDB && await window.eecolDB.isReady()) {
+        item = await window.eecolDB.get('wireCutList', id);
+    }
     if (!item) return;
 
     // Mapping wire list fields to cutting record fields
