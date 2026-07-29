@@ -53,6 +53,107 @@ function loadSharedChecklistData() {
     });
 }
 
+// Fill Last checklist entries functionality
+async function setupFillLastFunctionality() {
+    const fillLastBtn = document.getElementById('fillLastBtn');
+    if (!fillLastBtn) return;
+
+    fillLastBtn.addEventListener('click', async () => {
+        try {
+            let lastRecord = null;
+            if (window.eecolDB) {
+                const records = await window.eecolDB.getAll('maintenanceLogs');
+                if (records && records.length > 0) {
+                    // Filter out administrative/temporary logs
+                    const completedRecords = records.filter(r =>
+                        r.id &&
+                        r.id !== 'current_session' &&
+                        r.id !== 'shared_checklist_data' &&
+                        r.id !== 'daily_check' &&
+                        r.completedAt
+                    );
+
+                    if (completedRecords.length > 0) {
+                        // Sort descending by completedAt timestamp
+                        completedRecords.sort((a, b) => {
+                            const timeA = typeof a.completedAt === 'number' ? a.completedAt : Date.parse(a.completedAt);
+                            const timeB = typeof b.completedAt === 'number' ? b.completedAt : Date.parse(b.completedAt);
+                            return timeB - timeA;
+                        });
+                        lastRecord = completedRecords[0];
+                    }
+                }
+            }
+
+            // Fallback to localStorage if no DB record found
+            if (!lastRecord) {
+                const fallbackData = localStorage.getItem('machineMaintenanceChecklist');
+                if (fallbackData) {
+                    try {
+                        const parsed = JSON.parse(fallbackData);
+                        if (parsed && parsed.completedAt) {
+                            lastRecord = parsed;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing fallback data:', e);
+                    }
+                }
+            }
+
+            if (!lastRecord) {
+                await showAlert('No previous completed maintenance log was found.', 'No Entries Found');
+                return;
+            }
+
+            // Prompt user with confirmation modal
+            const confirmed = await showConfirm(
+                'Are you sure you want to re-fill this checklist with the previously completed record? This will overwrite your current progress.',
+                'Confirm Fill Last'
+            );
+
+            if (confirmed) {
+                // Keep the current inspection date
+                const currentDate = document.getElementById('globalInspectionDate').value;
+
+                // Populate global fields (with fallback to multi-page keys for seamless compatibility)
+                document.getElementById('globalInspectedBy').value = lastRecord.globalInspectedBy || (lastRecord['machine-1'] && lastRecord['machine-1'].inspectedBy) || '';
+                document.getElementById('comments').value = lastRecord.comments || (lastRecord['machine-1'] && lastRecord['machine-1'].comments) || '';
+
+                // Restore checkbox states
+                for (let i = 1; i <= 6; i++) {
+                    const machineData = lastRecord[`machine-${i}`];
+                    if (machineData && machineData.checks) {
+                        machineData.checks.forEach((check, itemIndex) => {
+                            const okCheckbox = document.querySelector(`.ok-checkbox[data-machine="${i}"][data-item="${itemIndex}"]`);
+                            const notOkCheckbox = document.querySelector(`.not-ok-checkbox[data-machine="${i}"][data-item="${itemIndex}"]`);
+
+                            if (okCheckbox && notOkCheckbox) {
+                                okCheckbox.checked = check.ok || false;
+                                notOkCheckbox.checked = check.notOk || false;
+                            }
+                        });
+                    }
+                }
+
+                // Restore date to keep today's date intact
+                if (currentDate) {
+                    document.getElementById('globalInspectionDate').value = currentDate;
+                } else {
+                    setTodaysDate();
+                }
+
+                // Trigger auto-save
+                saveCurrentSession();
+
+                await showAlert('Checklist successfully re-filled with previously saved entries!', 'Checklist Filled');
+            }
+        } catch (error) {
+            console.error('Error in Fill Last:', error);
+            await showAlert('Failed to retrieve previous entries. Please try again.', 'Error');
+        }
+    });
+}
+
 
 // Maintenance checklist data
 const machines = [
@@ -702,6 +803,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     restoreCurrentSession(); // Restore any saved current work session
     setTodaysDate();
     setupPrintFunctionality();
+    setupFillLastFunctionality();
     setupCompleteFunctionality();
     setupViewPastLogFunctionality();
 });
@@ -714,6 +816,7 @@ if (typeof initMobileMenu === 'function') {
             { text: '🏠 Home', href: '../index/index.html', class: 'bg-blue-600 hover:bg-blue-700' },
             { text: 'Is This Tool Useful?', href: '../useful-tool/useful-tool.html', class: 'bg-sky-500 hover:bg-sky-600' },
             { text: '📋 Alternate Checklist', href: '../machine-maintenance-checklist/machine-maintenance-checklist-multi.html', class: 'bg-teal-600 hover:bg-teal-700' },
+            { text: '⚡ Fill Last', action: 'click', selector: '#fillLastBtn', class: 'bg-amber-500 hover:bg-amber-600' },
             { text: '📅 View Past Log', action: 'click', selector: '#viewPastLogBtn', class: 'bg-blue-500 hover:bg-blue-600' },
             { text: '🖨️ Print Checklist', action: 'click', selector: '#printBtn', class: 'bg-blue-700 hover:bg-blue-800' },
             { text: '✅ Complete', action: 'click', selector: '#completeBtn', class: 'bg-green-600 hover:bg-green-700' }
