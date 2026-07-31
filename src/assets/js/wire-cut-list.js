@@ -252,12 +252,12 @@ function renderWireCutList() {
 
         // Middle Column (Order Comments)
         const orderCommentsCol = document.createElement('div');
-        orderCommentsCol.className = `w-1/3 border-l pl-2 text-[10px] whitespace-pre-wrap ${borderColorClass}`;
+        orderCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
         orderCommentsCol.textContent = item.orderComments || '';
 
         // Right Column (Shipper Comments)
         const shipperCommentsCol = document.createElement('div');
-        shipperCommentsCol.className = `w-1/3 border-l pl-2 text-[10px] whitespace-pre-wrap ${borderColorClass}`;
+        shipperCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
         shipperCommentsCol.textContent = item.shipperComments || '';
 
         bodyRow.appendChild(detailsCol);
