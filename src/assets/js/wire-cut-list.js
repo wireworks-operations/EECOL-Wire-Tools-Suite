@@ -447,10 +447,27 @@ async function setActiveWireListItem(id) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
-            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'info');
+            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'success');
         }
     } catch (error) {
         console.error("Error setting active item:", error);
+    }
+}
+
+async function clearActiveWireListItem(id) {
+    const item = wireCutList.find(i => i.id === id);
+    if (item) {
+        item.isActive = false;
+    }
+
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
+            renderWireCutList();
+            showToast(`Order #${item?.orderNumber || 'Unknown'} active status removed`, 'warning');
+        }
+    } catch (error) {
+        console.error("Error clearing active item:", error);
     }
 }
 
@@ -533,10 +550,31 @@ function showWireListContextMenu(e, id) {
     menu.classList.remove('hidden');
 
     const item = wireCutList.find(i => i.id === id);
-    if (item && item.color) {
-        document.getElementById('ctxColorPicker').value = item.color;
-    } else {
-        document.getElementById('ctxColorPicker').value = '#fef08a';
+    const ctxActive = document.getElementById('ctxActive');
+    const ctxDeactivate = document.getElementById('ctxDeactivate');
+
+    if (item) {
+        if (item.color) {
+            document.getElementById('ctxColorPicker').value = item.color;
+        } else {
+            document.getElementById('ctxColorPicker').value = '#fef08a';
+        }
+
+        // Conditionally show/hide Active/Deactivate options
+        if (ctxActive && ctxDeactivate) {
+            if (item.status === 'active') {
+                if (item.isActive) {
+                    ctxActive.classList.add('hidden');
+                    ctxDeactivate.classList.remove('hidden');
+                } else {
+                    ctxActive.classList.remove('hidden');
+                    ctxDeactivate.classList.add('hidden');
+                }
+            } else {
+                ctxActive.classList.add('hidden');
+                ctxDeactivate.classList.add('hidden');
+            }
+        }
     }
 }
 
@@ -681,6 +719,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('ctxActive').addEventListener('click', async () => {
         if (currentContextMenuId) {
             await setActiveWireListItem(currentContextMenuId);
+        }
+    });
+    document.getElementById('ctxDeactivate').addEventListener('click', async () => {
+        if (currentContextMenuId) {
+            await clearActiveWireListItem(currentContextMenuId);
         }
     });
     document.getElementById('ctxRemove').addEventListener('click', async () => {
