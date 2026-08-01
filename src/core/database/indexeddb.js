@@ -132,22 +132,33 @@ class EECOLIndexedDB {
 
   async initialize() {
     // IDB SENTINEL: Request persistence to prevent browser eviction
-    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+    if (navigator.storage && navigator.storage.persist) {
+      try {
+        navigator.storage.persist().catch(() => {});
+      } catch (e) {
+        console.warn('⚠️ navigator.storage.persist failed:', e);
+      }
+    }
 
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, this.dbVersion);
-
-      request.onerror = () => {
-        const error = request.error;
-        console.error('❌ IndexedDB initialization failed:', error);
-
-        // Handle VersionError - specifically when requested version is less than existing
-        if (error && error.name === 'VersionError') {
-          console.warn('🔄 Database version mismatch detected. This usually happens if a stale service worker requests an old version.');
+      try {
+        if (typeof indexedDB === 'undefined') {
+          throw new Error('IndexedDB is not supported in this environment.');
         }
 
-        reject(error);
-      };
+        const request = indexedDB.open(this.dbName, this.dbVersion);
+
+        request.onerror = () => {
+          const error = request.error;
+          console.error('❌ IndexedDB initialization failed:', error);
+
+          // Handle VersionError - specifically when requested version is less than existing
+          if (error && error.name === 'VersionError') {
+            console.warn('🔄 Database version mismatch detected. This usually happens if a stale service worker requests an old version.');
+          }
+
+          reject(error);
+        };
 
       request.onblocked = () => {
         console.warn('⚠️ IndexedDB upgrade blocked by another connection');
@@ -159,42 +170,46 @@ class EECOLIndexedDB {
         }
       };
 
-      request.onsuccess = (event) => {
-        this.db = event.target.result;
+        request.onsuccess = (event) => {
+          this.db = event.target.result;
 
-        // Close connection if another tab requests an upgrade
-        this.db.onversionchange = () => {
-          this.db.close();
-          this.db = null; // Ensure instance state reflects closed connection
-          console.log('🔄 Database closed due to version change request from another tab');
-          const msg = 'A new version of the database is available. This tab has been disconnected to allow the upgrade. Please refresh the page to continue.';
-          if (typeof window !== 'undefined' && window.showAlert) {
-            window.showAlert(msg, 'Database Update Available').then(() => {
-              window.location.reload();
-            });
-          } else {
-            alert(msg);
-            if (typeof window !== 'undefined') window.location.reload();
-          }
+          // Close connection if another tab requests an upgrade
+          this.db.onversionchange = () => {
+            this.db.close();
+            this.db = null; // Ensure instance state reflects closed connection
+            console.log('🔄 Database closed due to version change request from another tab');
+            const msg = 'A new version of the database is available. This tab has been disconnected to allow the upgrade. Please refresh the page to continue.';
+            if (typeof window !== 'undefined' && window.showAlert) {
+              window.showAlert(msg, 'Database Update Available').then(() => {
+                window.location.reload();
+              });
+            } else {
+              alert(msg);
+              if (typeof window !== 'undefined') window.location.reload();
+            }
+          };
+
+          /**
+           * IDB SENTINEL: Global database error handler.
+           * Catches and logs unhandled transaction errors that bubble up to the database object,
+           * improving observability for debugging complex race conditions or storage issues.
+           */
+          this.db.onerror = (event) => {
+            console.error('❌ IndexedDB Global Error:', event.target.error);
+          };
+
+          resolve();
         };
 
-        /**
-         * IDB SENTINEL: Global database error handler.
-         * Catches and logs unhandled transaction errors that bubble up to the database object,
-         * improving observability for debugging complex race conditions or storage issues.
-         */
-        this.db.onerror = (event) => {
-          console.error('❌ IndexedDB Global Error:', event.target.error);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          const transaction = event.target.transaction;
+          this.createObjectStores(db, transaction);
         };
-
-        resolve();
-      };
-
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        const transaction = event.target.transaction;
-        this.createObjectStores(db, transaction);
-      };
+      } catch (error) {
+        console.error('❌ Synchronous IndexedDB error caught:', error);
+        reject(error);
+      }
     });
   }
 
@@ -327,7 +342,7 @@ class EECOLIndexedDB {
    */
 
   async add(storeName, data) {
-    await this.dbInitialized;
+    await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
     /**
@@ -345,7 +360,7 @@ class EECOLIndexedDB {
   }
 
   async get(storeName, key) {
-    await this.dbInitialized;
+    await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
     const transaction = this.db.transaction([storeName], 'readonly');
@@ -792,7 +807,11 @@ class EECOLIndexedDB {
   }
 
   async isReady() {
-    await this.dbInitialized;
+    try {
+      await this.dbInitialized;
+    } catch (e) {
+      console.warn('⚠️ EECOLIndexedDB initialization promise rejected:', e);
+    }
     return !!this.db;
   }
 

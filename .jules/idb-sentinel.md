@@ -110,3 +110,15 @@ The `createObjectStores` method in `EECOLIndexedDB` had a non-idempotent migrati
 3. Enhanced `_notifyChange()` to use a hybrid value: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`.
 4. Added `try-catch` around `localStorage` access for robustness.
 **Validation:** Verified via `verification/verify_idb_v10.py` (CRUD integrity) and `verification/verify_tab_sync.py` (uniqueness of sync keys).
+
+## 2026-05-18 - Harden Initialization and Unified Ready State Mapping
+
+**Observation:** Accessing `indexedDB` can throw synchronous ReferenceError (unsupported contexts) or SecurityError (private browsing/third-party sandbox). Also, if initialization failed, the private `dbInitialized` promise rejected, causing unhandled promise rejections on subsequent database calls. Furthermore, `add` and `get` methods bypassed the `isReady()` helper, creating inconsistency in state checking.
+**Learning:** Explicit feature-detection and try-catch blocks during database open calls prevent crash-inducing synchronous exceptions. Having `isReady()` wrap initialization-promise awaiting in a try-catch ensures that subsequent database accesses gracefully fail with standard, clean errors instead of raw unhandled promise rejections.
+**Action:**
+
+1. Wrapped `navigator.storage.persist` in a try-catch to avoid unexpected environment blocks.
+2. Hardened `initialize()` with explicit `indexedDB` checks and try-catch to reject initialization promise gracefully instead of throwing synchronously.
+3. Updated `isReady()` to catch any initialization rejection and return `false`.
+4. Standardized `add()` and `get()` to await `this.isReady()` rather than awaiting `this.dbInitialized` directly.
+**Validation:** Verified via `verification/verify_idb_v10.py` and `verification/verify_sentinel_reliability.py`.
