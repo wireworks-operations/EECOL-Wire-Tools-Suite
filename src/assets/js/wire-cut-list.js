@@ -101,16 +101,19 @@ function renderWireCutList() {
 
         // Search filter
         if (searchTerm) {
-            const searchFields = [
-                item.orderNumber,
-                item.customerName,
-                item.wireType,
-                item.description,
-                item.orderComments,
-                item.shipperComments
-            ].map(f => (f || '').toLowerCase());
+            /**
+             * BOLT OPTIMIZATION: Zero-allocation high-performance lookup
+             * Avoids creating a temporary array and map-closure on every single record lookup.
+             * Directly runs short-circuit comparisons on the necessary fields, securely casted to String.
+             */
+            const matches = String(item.orderNumber || '').toLowerCase().includes(searchTerm) ||
+                            String(item.customerName || '').toLowerCase().includes(searchTerm) ||
+                            String(item.wireType || '').toLowerCase().includes(searchTerm) ||
+                            String(item.description || '').toLowerCase().includes(searchTerm) ||
+                            String(item.orderComments || '').toLowerCase().includes(searchTerm) ||
+                            String(item.shipperComments || '').toLowerCase().includes(searchTerm);
 
-            if (!searchFields.some(f => f.includes(searchTerm))) return false;
+            if (!matches) return false;
         }
 
         return true;

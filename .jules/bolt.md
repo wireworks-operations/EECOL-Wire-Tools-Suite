@@ -54,3 +54,8 @@
 
 **Learning:** Even with an IndexedDB normalization layer, UI search filters should maintain explicit `.toString().toUpperCase()` on record fields within search loops to ensure robustness against legacy data or manual entries. Additionally, replacing iterative `appendChild` with `DocumentFragment` reduces layout thrashing from O(N) to O(1) during large list renders.
 **Action:** Use `DocumentFragment` for list rendering and cache the search term's uppercase version once while maintaining type-safe checks in filter loops.
+
+## 2026-08-02 - Zero-allocation High-performance Search Lookups
+
+**Learning:** Creating array mappings and using closures like `.map().some()` within high-frequency search filtering logic generates substantial garbage collection overhead and CPU execution cycles. Since search filters execute on every keystroke or debounce, dynamic array allocations inside loops scale poorly with the number of records.
+**Action:** Replace dynamic array allocations and iterator/closure methods inside record filtering loops with short-circuiting logical OR (`||`) statements. This achieves a zero-allocation profile during list search filtering, maximizing UI responsiveness and reducing battery drain on mobile client devices.
