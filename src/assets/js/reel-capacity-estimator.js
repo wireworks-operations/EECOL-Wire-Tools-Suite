@@ -1809,6 +1809,11 @@ function printReelCapacityResults(data) {
             return;
         }
         try {
+            printWindow.opener = null;
+        } catch (e) {
+            // ignore cross-browser quirks
+        }
+        try {
             printWindow.document.title = formattedTitle;
             printWindow.document.write(html);
             printWindow.document.close();

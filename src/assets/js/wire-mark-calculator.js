@@ -252,6 +252,11 @@ const wireMarkCalculator = {
         } else {
             const printWindow = window.open('', '_blank');
             if (printWindow) {
+                try {
+                    printWindow.opener = null;
+                } catch (e) {
+                    // ignore cross-browser quirks
+                }
                 printWindow.document.write(html);
                 printWindow.document.close();
                 printWindow.print();

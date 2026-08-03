@@ -767,6 +767,11 @@ function printWeightResults() {
             alert('Unable to open print window. Please allow popups for this site.');
             return;
         }
+        try {
+            printWindow.opener = null;
+        } catch (e) {
+            // ignore cross-browser quirks
+        }
 
         const html = `
             <!DOCTYPE html>
