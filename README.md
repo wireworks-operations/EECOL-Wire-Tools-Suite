@@ -14,7 +14,7 @@ An enterprise-grade, **"Local-First"** Progressive Web Application (PWA) designe
 
 - [🚀 Getting Started](#-getting-started)
 - [🧭 Quickstart](#-quickstart-90-second-path)
-- [🏗️ Architecture](#-architecture)
+- [🏗 Architecture](#-architecture)
 - [📋 Available Tools](#-available-tools)
 - [🧪 Testing Matrix](#-testing-matrix)
 - [🔒 Security & Privacy](#-security--privacy)
@@ -119,7 +119,7 @@ npm install && npm run dev
 
 ---
 
-## 🏗️ Architecture
+## 🏗 Architecture
 
 The EECOL Wire Tools Suite is built on a **Local-First** architecture, meaning it operates entirely on the client-side with zero external API or database dependencies.
 
@@ -199,9 +199,40 @@ See **[SECURITY.md](SECURITY.md)** for our full security policy.
 
 ## 🆘 Troubleshooting
 
-- **Service Worker not registering**: Ensure you are serving via `http` or `https`. The `file://` protocol is not supported for PWAs.
-- **IndexedDB not updating**: Use the "Refresh" button in the browser's DevTools Application panel (IndexedDB view) to see live changes. Ensure you are looking at the **EECOLTools_v2** database (Version 10).
-- **Port Conflict**: If port 3000 is in use, run `PORT=3001 npm run dev`.
+- **Service Worker Not Registering**: Ensure you are serving via `http` or `https`. The `file://` protocol is not supported for Progressive Web Apps (PWAs).
+- **IndexedDB Not Updating**: Use the **Refresh** button in the browser's DevTools **Application** panel (IndexedDB view) to see live changes. Ensure you are inspecting the `EECOLTools_v2` database (Version 10).
+- **Port Conflict (3000)**: If port 3000 is in use, you can identify and terminate the occupying process by running:
+
+  ```bash
+  kill $(lsof -t -i :3000) 2>/dev/null || true
+  ```
+
+  Alternatively, you can run the server on a different port:
+
+  ```bash
+  PORT=3001 npm run dev
+  ```
+
+- **EECOLIndexedDB Not Found**: If running Playwright verification scripts and encountering "EECOLIndexedDB not found" errors, it usually means the local web server failed to launch or is inaccessible. Ensure `npm run dev` (or `npx http-server . -p 3000`) is running and responsive.
+- **Content Security Policy (CSP) Blockages**: If certain scripts or fonts fail to load, ensure they comply with the strict CSP meta tags defined in `index.html`.
+
+<details>
+<summary>💻 Developer Profiles & Platform Quirks</summary>
+
+### Supported OS & Environments
+
+- **macOS / Linux**: Fully supported. All verification scripts are tested and run natively.
+- **Windows (WSL/cmd/PowerShell)**: Fully supported. For PowerShell, use `.venv\Scripts\Activate.ps1` to activate the virtual environment.
+
+### Docker Environment Note
+
+- Please note that the Docker-related scripts in `package.json` (`docker:build` and `docker:run`) are **In-Progress** as a default `Dockerfile` is not yet bundled in the root. Production builds via Webpack are currently being integrated.
+
+### Known Browser Issues
+
+- **Firefox Private Browsing**: IndexedDB is disabled by default in Firefox Private Browsing mode, which will prevent local-first state persistence. Please use a standard tab or Chromium-based browsers for full functionality during local testing.
+
+</details>
 
 ---
 

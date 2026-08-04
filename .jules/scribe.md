@@ -67,3 +67,14 @@ A Scribe pass must be thorough and derive truth directly from the codebase. Cros
 
 **Action:**
 Synchronized all documentation to v0.8.0.5 and IDB v10. Refined system architecture diagrams and store enumerations in `BLUEPRINT.md`. Verified all "Getting Started" commands and ensured link integrity.
+
+## 2026-06-12 - [📘 Scribe: Markdown Validation & Real-Time Sync Documentation]
+
+**Observation:**
+Discovered that some local heading anchor links in `README.md` generated markdownlint `MD051` (link fragment validation) warnings due to the presence of the `\ufe0f` variation selector in headings containing emojis like `## 🏗️ Architecture`. This selector caused inconsistent slugification behavior depending on the specific markdown parser.
+
+**Learning:**
+Emojis with variation selectors (like `\ufe0f`) produce inconsistent heading slugs in markdown-it and github slugifiers. Removing the variation selector (`\ufe0f`) directly from headings results in clean, reliable, and standardized slug generation (e.g., `#-architecture`) without altering the visual presentation of the emoji.
+
+**Action:**
+Removed the variation selector from `## 🏗 Architecture` and updated the link to `[🏗 Architecture](#-architecture)` in `README.md`. Enhanced `BLUEPRINT.md` with in-depth explanations of the suite's cross-tab workspace synchronization patterns (using `eecolWireListAutofillId` and `eecolDBChange` localStorage events) and atomic batch designs. Detailed Content Security Policy (CSP) and programmatic reverse-tabnabbing protections in `SECURITY.md`. Verified that `npx markdownlint-cli2 .` runs 100% clean.

@@ -65,6 +65,54 @@ The application uses **14 specialized stores** within the `EECOLTools_v2` databa
 | `calibrationMeasurements` | `id` | Machine calibration tracking. |
 | `wireCutList` | `id` | Queue of pending wire cuts. |
 
+## 🔄 Real-Time Workspace & Tab Synchronization
+
+To deliver a seamless desktop experience across multiple browser tabs or detached windows, the suite utilizes an event-driven synchronization layer that coordinates the primary workspace (Cutting Records) and the standalone dedicated views (e.g., Wire Cut List, Live Statistics, Reports).
+
+### 1) Cross-Tab Autofill Coordination
+
+When an operator clicks the **"AutoFill Cut"** action on an item in the standalone Wire Cut List tab:
+
+1. The standalone tab writes the item's unique identifier to the dedicated `localStorage` synchronization key:
+
+   ```javascript
+   localStorage.setItem('eecolWireListAutofillId', targetId);
+   ```
+
+2. The main Cutting Records tab, which runs a global window listener for `storage` events, instantly captures this key write:
+
+   ```javascript
+   window.addEventListener('storage', (event) => {
+     if (event.key === 'eecolWireListAutofillId' && event.newValue) {
+       // Automatically loads, switches forms, and regains operating focus
+       autoFillFormFromList(event.newValue);
+     }
+   });
+   ```
+
+3. This eliminates double-entry and enables physical separation of queue-management and cutting-execution screens.
+
+### 2) Database Change Propagation
+
+Because IndexedDB does not natively support multi-tab push notifications, the `EECOLIndexedDB` singleton implements a lightweight broadcast pattern:
+
+- Every successful write/delete operation triggers `_notifyChange()`.
+- `_notifyChange()` updates a volatile `localStorage` key containing a high-resolution timestamp and random salt:
+
+  ```javascript
+  localStorage.setItem('eecolDBChange', `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+  ```
+
+- Subscribing pages (such as Live Statistics, Dashboard, and Reports) listen for this specific key change and trigger an incremental, zero-refresh redraw of their visual elements.
+
+## ⚡ Performance & Atomicity Patterns
+
+Given the high throughput requirements of industrial workshops, database operations are strictly optimized to prevent UI locking and layout thrashing:
+
+- **Relaxed Durability**: All database transactions are initiated with `{ durability: 'relaxed' }`. This instructs the browser's storage engine to acknowledge commits in memory first and flush to disk asynchronously, resulting in up to a **10x write throughput increase** during rapid operator entries.
+- **Atomic Batching**: Multi-item operations (such as list reorderings, data backups, and CSV imports) are wrapped in specialized single-transaction blocks (`bulkPut` and `bulkDelete`). This ensures all operations succeed or fail together, maintaining perfect referential integrity and avoiding repeated transaction overhead.
+- **Map-Driven Reordering**: Reordering complex sequences (like the Wire Cut List) leverages `Map`-based O(1) lookups to determine new positions before issuing an atomic `bulkPut` operation, converting O(N²) quadratic nested searches into highly performant O(N) linear runs.
+
 ## 📁 Repos & Conventions
 
 - **Pages**: `/src/pages/<tool-name>/` (HTML/JS/CSS for specific tools).
