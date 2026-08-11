@@ -2096,6 +2096,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    if (clearFormBtn) {
+        clearFormBtn.addEventListener('click', () => {
+            clearForm();
+        });
+    }
+
     // Sync endingMarkUnit with startingMarkUnit
     const startingMarkUnit = document.getElementById('startingMarkUnit');
     if (startingMarkUnit) {
@@ -2205,9 +2212,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Button event listeners
     const recordBtn = document.getElementById('recordBtn');
     if (recordBtn) recordBtn.addEventListener('click', saveCutRecord);
-
-    const clearFormBtn = document.getElementById('clearFormBtn');
-    if (clearFormBtn) clearFormBtn.addEventListener('click', clearForm);
 
     // Undo/Redo button event listeners
     const undoBtn = document.getElementById('undoBtn');

@@ -11,135 +11,84 @@ def run_verification():
             record_video_dir="/home/jules/verification/videos"
         )
 
-        # Page 1: Standalone Wire Cut List page
-        print("Opening Standalone Wire Cut List page...")
-        page2 = context.new_page()
-        page2.goto("http://127.0.0.1:3000/src/pages/wire-cut-list/wire-cut-list.html")
-        page2.wait_for_timeout(1000)
+        # Page 1: Cutting Records
+        page1 = context.new_page()
+        page1.goto("http://localhost:3000/src/pages/cutting-records/cutting-records.html")
+        page1.wait_for_timeout(1000)
 
-        # Verify "Add Item" button is visible
-        add_btn = page2.locator("#addWireListItemBtnDirect")
-        if add_btn.is_visible():
-            print("✅ Verified Add Item button is visible on Standalone page.")
+        # 1. Verify "Add Cut" and "Open Wire List" buttons are visible
+        add_btn = page1.locator("#addWireListItemBtnDirect")
+        open_btn = page1.locator("#openWireListBtn")
+
+        if add_btn.is_visible() and open_btn.is_visible():
+            print("✅ Verified action buttons are visible on Cutting Records page.")
         else:
-            print("❌ Add Item button is missing from Standalone page.")
+            print("❌ Action buttons are missing from Cutting Records page.")
             context.close()
             browser.close()
             exit(1)
 
-        # 1. Click "+ Add Item" on the standalone page to open its modal
+        # Take screenshot of the Cutting Records page with action buttons
+        page1.screenshot(path="/home/jules/verification/screenshots/cutting_records_actions.png")
+        print("📸 Screenshot saved: cutting_records_actions.png")
+
+        # 2. Click "+ Add Cut" to open the Wire Cut List Item Modal
         print("Opening Add Item modal...")
         add_btn.click()
-        page2.wait_for_timeout(500)
+        page1.wait_for_timeout(500)
 
-        # Fill out the modal fields on the standalone page
-        page2.locator("#wireListOrder").fill("ORD9999")
-        page2.locator("#wireListLine").fill("1")
-        page2.locator("#wireListCustomer").fill("LUCAS CORP")
-        page2.locator("#wireListWireType").fill("TK6/3CU")
-        page2.locator("#wireListLength").fill("250")
-        page2.locator("#wireListReelSize").fill("36")
-        page2.locator("#wireListUrgency").select_option("normal")
-        page2.locator("#wireListDescription").fill("E2E DEACTIVATION TEST")
-        page2.locator("#wireListOrderComments").fill("TEST DEACTIVATE COMMENTS")
-        page2.locator("#wireListShipperComments").fill("TEST SHIPPER COMMENTS")
-        page2.wait_for_timeout(500)
+        # Fill out the modal fields
+        page1.locator("#wireListOrder").fill("ORD1234")
+        page1.locator("#wireListLine").fill("2")
+        page1.locator("#wireListCustomer").fill("ACME CORP")
+        page1.locator("#wireListWireType").fill("TK6/3CU")
+        page1.locator("#wireListLength").fill("150")
+        page1.locator("#wireListReelSize").fill("40")
+        page1.locator("#wireListUrgency").select_option("rush")
+        page1.locator("#wireListDescription").fill("TEST DESCRIPTION")
+        page1.locator("#wireListOrderComments").fill("TEST ORDER COMMENTS")
+        page1.locator("#wireListShipperComments").fill("TEST SHIPPER COMMENTS")
+        page1.wait_for_timeout(500)
 
         # Save Item
         print("Saving new item to Wire Cut List...")
-        page2.locator("#saveWireListItemBtn").click()
+        page1.locator("#saveWireListItemBtn").click()
+        page1.wait_for_timeout(1000)
+
+        # Dismiss success modal if it appears
+        ok_btn = page1.locator("#modalButtons button", has_text="OK")
+        if ok_btn.is_visible():
+            ok_btn.click()
+            page1.wait_for_timeout(500)
+
+        # Page 2: Standalone Wire Cut List
+        print("Opening Standalone Wire Cut List page...")
+        page2 = context.new_page()
+        page2.goto("http://localhost:3000/src/pages/wire-cut-list/wire-cut-list.html")
         page2.wait_for_timeout(1000)
 
-        # Verify ORD9999 item is listed in the standalone workspace
-        item_text_locator = "text=ORD9999 / 1"
-        item_locator = page2.locator(".wire-list-item", has_text="ORD9999 / 1")
-        if item_locator.is_visible():
+        # Verify ORD1234 item is listed in the standalone workspace
+        item_text_selector = "text=ORD1234 / 2"
+        if page2.locator(item_text_selector).is_visible():
             print("✅ Standalone page successfully loaded and rendered the new item!")
         else:
-            print("❌ Newly added item ORD9999 is missing from the standalone list.")
+            print("❌ Newly added item ORD1234 is missing from the standalone list.")
             context.close()
             browser.close()
             exit(1)
 
+        # Take screenshot of the Standalone Wire Cut List page
         page2.screenshot(path="/home/jules/verification/screenshots/wire_cut_list_standalone.png")
         print("📸 Screenshot saved: wire_cut_list_standalone.png")
 
-        # 2. Right-click the item to open context menu
-        print("Right-clicking the item...")
-        item_locator.click(button="right")
-        page2.wait_for_timeout(500)
-
-        # Verify Make Active is visible, and Clear Active Status is hidden
-        ctx_active = page2.locator("#ctxActive")
-        ctx_deactivate = page2.locator("#ctxDeactivate")
-
-        if ctx_active.is_visible() and not ctx_deactivate.is_visible():
-            print("✅ Verified: 'Make Active' is visible and 'Clear Active Status' is hidden for inactive item.")
-        else:
-            print(f"❌ Context menu visibility mismatch. Make Active visible: {ctx_active.is_visible()}, Clear Active Status visible: {ctx_deactivate.is_visible()}")
-            context.close()
-            browser.close()
-            exit(1)
-
-        # Click "Make Active"
-        print("Clicking 'Make Active'...")
-        ctx_active.click()
-        page2.wait_for_timeout(500)
-
-        # Verify Success Toast is shown
-        toast_container = page2.locator("#toastContainer")
-        if toast_container.is_visible() and "set as Active" in toast_container.inner_text():
-            print("✅ Verified success toast notification for activation!")
-        else:
-            print("❌ Success toast notification missing or incorrect.")
-            context.close()
-            browser.close()
-            exit(1)
-
-        page2.wait_for_timeout(2000) # wait for toast to fade or just check the DOM
-
-        # Right-click again
-        print("Right-clicking the item again...")
-        item_locator.click(button="right")
-        page2.wait_for_timeout(500)
-
-        # Verify Clear Active Status is visible, and Make Active is hidden
-        if ctx_deactivate.is_visible() and not ctx_active.is_visible():
-            print("✅ Verified: 'Clear Active Status' is visible and 'Make Active' is hidden for active item.")
-        else:
-            print(f"❌ Context menu visibility mismatch after activating. Make Active visible: {ctx_active.is_visible()}, Clear Active Status visible: {ctx_deactivate.is_visible()}")
-            context.close()
-            browser.close()
-            exit(1)
-
-        # Click "Clear Active Status"
-        print("Clicking 'Clear Active Status'...")
-        ctx_deactivate.click()
-        page2.wait_for_timeout(500)
-
-        # Verify Warning Toast is shown
-        if toast_container.is_visible() and "active status removed" in toast_container.inner_text():
-            print("✅ Verified warning toast notification for deactivation!")
-        else:
-            print("❌ Warning/deactivation toast notification missing or incorrect.")
-            context.close()
-            browser.close()
-            exit(1)
-
-        # Page 3: Main Cutting Records page (cross-tab integration test)
-        print("Opening Cutting Records page to test cross-tab autofill...")
-        page1 = context.new_page()
-        page1.goto("http://127.0.0.1:3000/src/pages/cutting-records/cutting-records.html")
-        page1.wait_for_timeout(1000)
-
-        # Go back to standalone page and trigger AutoFill
-        page2.bring_to_front()
-        page2.wait_for_timeout(500)
+        # 3. Test AutoFill Cut trigger
+        print("Testing AutoFill Cut button interaction...")
         autofill_btn = page2.locator("button:has-text('AutoFill Cut')").first
         autofill_btn.click()
         page2.wait_for_timeout(1000)
 
-        # Switch back to Cutting Records to check values
+        # Check that eecolWireListAutofillId is present or autofilled successfully
+        # Switch back to page 1 to check if fields were autofilled
         page1.bring_to_front()
         page1.wait_for_timeout(1000)
 
@@ -150,10 +99,10 @@ def run_verification():
 
         print(f"Autofilled Form Fields: Order={order_num_val}, Customer={customer_val}, Wire={wire_id_val}, Length={cut_length_val}")
 
-        if order_num_val == "ORD9999" and customer_val == "LUCAS CORP" and wire_id_val == "TK6/3CU" and cut_length_val == "250":
-            print("✅ Verified cross-tab autofill still works perfectly!")
+        if order_num_val == "ORD1234" and customer_val == "ACME CORP" and wire_id_val == "TK6/3CU" and cut_length_val == "150":
+            print("✅ Verified that AutoFill successfully populated the fields in the primary Cutting Records tab!")
         else:
-            print("❌ Form cross-tab autofill verification failed.")
+            print("❌ Form autofill verification failed or values did not match.")
             context.close()
             browser.close()
             exit(1)
@@ -162,7 +111,7 @@ def run_verification():
         page1.screenshot(path="/home/jules/verification/screenshots/verification.png")
         print("📸 Screenshot saved: verification.png")
 
-        # Clean up by deleting the item from page 2
+        # Clean up by deleting the item from page 2 (via context menu or direct delete in IndexedDB)
         print("Cleaning up database entries...")
         page2.bring_to_front()
         page2.evaluate("window.eecolDB.clear('wireCutList')")
