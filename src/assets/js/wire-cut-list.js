@@ -11,42 +11,6 @@ let wireListEditingId = null;
 let currentContextMenuId = null;
 let draggedItemId = null;
 
-/**
- * Calculates whether black or white text has better contrast on a given background hex color.
- * Uses the standard WCAG relative luminance formula.
- * @param {string} hexColor - The background color in hexadecimal (e.g. "#ffffff" or "ffffff")
- * @returns {string} - "#ffffff" (white) for dark backgrounds, or "#1f2937" (dark gray) for light backgrounds
- */
-function getContrastColor(hexColor) {
-    if (!hexColor) return '#1f2937'; // Default text color is dark gray
-
-    // Clean hex color string
-    let color = hexColor.replace('#', '');
-    if (color.length === 3) {
-        color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
-    }
-
-    if (color.length !== 6) return '#1f2937';
-
-    // Parse to RGB
-    const r = parseInt(color.substring(0, 2), 16);
-    const g = parseInt(color.substring(2, 4), 16);
-    const b = parseInt(color.substring(4, 6), 16);
-
-    // Calculate relative luminance
-    // Formula: L = 0.2126 * R + 0.7152 * G + 0.0722 * B
-    // Where R, G, B are normalized sRGB values
-    const normalize = (val) => {
-        const s = val / 255;
-        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-    };
-
-    const L = 0.2126 * normalize(r) + 0.7152 * normalize(g) + 0.0722 * normalize(b);
-
-    // If background is bright (L > 0.179), use dark text; otherwise use light text
-    return L > 0.179 ? '#1f2937' : '#ffffff';
-}
-
 // Debounce utility for search input
 function debounce(func, wait) {
     let timeout;
@@ -174,21 +138,14 @@ function renderWireCutList() {
             card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
         }
 
-        const textColor = getContrastColor(item.color);
-        const isDarkBackground = (textColor === '#ffffff');
-        const borderColorClass = isDarkBackground ? 'border-white/20' : 'border-black/10';
-        const highlightBoxBgClass = isDarkBackground ? 'bg-white/10' : 'bg-black/5';
-        const highlightBoxBorderClass = isDarkBackground ? 'border-white/20' : 'border-black/10';
-
-        card.style.color = textColor;
         if (item.color) {
             card.style.backgroundColor = item.color;
-            card.style.borderColor = isDarkBackground ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+            card.style.borderColor = 'rgba(0,0,0,0.1)';
         }
 
         // Header Labels
         const headerRow = document.createElement('div');
-        headerRow.className = `flex justify-between items-start border-b pb-1 mb-1 font-bold text-[10px] uppercase ${borderColorClass}`;
+        headerRow.className = 'flex justify-between items-start border-b border-black/10 pb-1 mb-1 font-bold text-[10px] uppercase';
 
         ['ORDER / LINE CUSTOMER', 'ORDER COMMENTS', 'SHIPPER COMMENTS'].forEach(text => {
             const div = document.createElement('div');
@@ -224,14 +181,13 @@ function renderWireCutList() {
 
         const meta = document.createElement('div');
         meta.className = 'text-[9px] font-bold';
-        meta.style.color = isDarkBackground ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)';
         const dateStr = new Date(item.timestamp).toLocaleString('en-US', {
             month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
         }).toUpperCase();
         meta.textContent = `${dateStr} @ ${item.customerName || 'N/A'}`;
 
         const highlightBox = document.createElement('div');
-        highlightBox.className = `mt-2 border p-1 rounded italic font-black text-xs ${highlightBoxBgClass} ${highlightBoxBorderClass}`;
+        highlightBox.className = 'mt-2 bg-black/5 border border-black/10 p-1 rounded italic font-black text-xs';
 
         const typeLength = document.createElement('div');
         let typeLengthText = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
@@ -242,7 +198,6 @@ function renderWireCutList() {
 
         const desc = document.createElement('span');
         desc.className = 'text-[9px] font-normal';
-        desc.style.color = isDarkBackground ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)';
         desc.textContent = item.description || '';
 
         highlightBox.appendChild(typeLength);
@@ -254,12 +209,12 @@ function renderWireCutList() {
 
         // Middle Column (Order Comments)
         const orderCommentsCol = document.createElement('div');
-        orderCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
+        orderCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
         orderCommentsCol.textContent = item.orderComments || '';
 
         // Right Column (Shipper Comments)
         const shipperCommentsCol = document.createElement('div');
-        shipperCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
+        shipperCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
         shipperCommentsCol.textContent = item.shipperComments || '';
 
         bodyRow.appendChild(detailsCol);
@@ -272,7 +227,7 @@ function renderWireCutList() {
         // Removal Reason
         if (item.status === 'removed' && item.removalReason) {
             const reasonDiv = document.createElement('div');
-            reasonDiv.className = `mt-1 p-1 border rounded text-[9px] italic ${isDarkBackground ? 'bg-red-900/40 border-red-500/30' : 'bg-red-100/50 border-red-200'}`;
+            reasonDiv.className = 'mt-1 p-1 bg-red-100/50 border border-red-200 rounded text-[9px] italic';
             reasonDiv.textContent = `Removal Reason: ${item.removalReason}`;
             card.appendChild(reasonDiv);
         }
@@ -280,7 +235,7 @@ function renderWireCutList() {
         // Action Buttons (only for active items)
         if (item.status === 'active') {
             const actionsRow = document.createElement('div');
-            actionsRow.className = `flex justify-end gap-2 mt-2 pt-1 border-t ${isDarkBackground ? 'border-white/10' : 'border-black/5'}`;
+            actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
 
             const autoFillBtn = document.createElement('button');
             autoFillBtn.className = 'px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold hover:bg-blue-700 transition shadow';
@@ -520,27 +475,10 @@ async function setActiveWireListItem(id) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
-            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'success');
+            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'info');
         }
     } catch (error) {
         console.error("Error setting active item:", error);
-    }
-}
-
-async function clearActiveWireListItem(id) {
-    const item = wireCutList.find(i => i.id === id);
-    if (item) {
-        item.isActive = false;
-    }
-
-    try {
-        if (window.eecolDB && await window.eecolDB.isReady()) {
-            await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
-            renderWireCutList();
-            showToast(`Order #${item?.orderNumber || 'Unknown'} active status removed`, 'warning');
-        }
-    } catch (error) {
-        console.error("Error clearing active item:", error);
     }
 }
 
@@ -623,31 +561,10 @@ function showWireListContextMenu(e, id) {
     menu.classList.remove('hidden');
 
     const item = wireCutList.find(i => i.id === id);
-    const ctxActive = document.getElementById('ctxActive');
-    const ctxDeactivate = document.getElementById('ctxDeactivate');
-
-    if (item) {
-        if (item.color) {
-            document.getElementById('ctxColorPicker').value = item.color;
-        } else {
-            document.getElementById('ctxColorPicker').value = '#fef08a';
-        }
-
-        // Conditionally show/hide Active/Deactivate options
-        if (ctxActive && ctxDeactivate) {
-            if (item.status === 'active') {
-                if (item.isActive) {
-                    ctxActive.classList.add('hidden');
-                    ctxDeactivate.classList.remove('hidden');
-                } else {
-                    ctxActive.classList.remove('hidden');
-                    ctxDeactivate.classList.add('hidden');
-                }
-            } else {
-                ctxActive.classList.add('hidden');
-                ctxDeactivate.classList.add('hidden');
-            }
-        }
+    if (item && item.color) {
+        document.getElementById('ctxColorPicker').value = item.color;
+    } else {
+        document.getElementById('ctxColorPicker').value = '#fef08a';
     }
 }
 
@@ -738,16 +655,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         searchInput.addEventListener('input', debounce(renderWireCutList, 250));
     }
 
-    // Initialize Pastel Presets (exactly the 6 soft colors: Yellow, Red, Green, Blue, Purple, Orange)
+    // Initialize Pastel Presets
     const pastelPresets = document.getElementById('pastelPresets');
     if (pastelPresets) {
         const softColors = [
-            '#fef08a', // Soft Yellow
-            '#fee2e2', // Soft Red
-            '#d1fae5', // Soft Green
-            '#dbeafe', // Soft Blue
-            '#f3e8ff', // Soft Purple
-            '#ffedd5'  // Soft Orange
+            '#eff6ff', // Soft Blue
+            '#ecfdf5', // Soft Green
+            '#fffbeb', // Soft Yellow
+            '#fef2f2', // Soft Red
+            '#f5f3ff', // Soft Purple
+            '#faf5ff', // Soft Pink
+            '#f0fdf4', // Soft Emerald
+            '#fff7ed'  // Soft Orange
         ];
 
         softColors.forEach(color => {
@@ -810,11 +729,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('ctxActive').addEventListener('click', async () => {
         if (currentContextMenuId) {
             await setActiveWireListItem(currentContextMenuId);
-        }
-    });
-    document.getElementById('ctxDeactivate').addEventListener('click', async () => {
-        if (currentContextMenuId) {
-            await clearActiveWireListItem(currentContextMenuId);
         }
     });
     document.getElementById('ctxRemove').addEventListener('click', async () => {
