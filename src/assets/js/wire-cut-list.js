@@ -1,3 +1,5 @@
+import { WireCutLinker } from '../../core/modules/WireCutLinker.js';
+
 /**
  * Dedicated Wire Cut List Workspace - JavaScript Module
  * Enterprise PWA
@@ -286,13 +288,39 @@ function renderWireCutList() {
     });
 }
 
-// Trigger AutoFill via localStorage communication
+// Trigger AutoFill via localStorage communication using WireCutLinker
 async function triggerAutoFill(id) {
     const item = wireCutList.find(i => i.id === id);
     if (!item) return;
 
-    // Set localStorage key to trigger the storage listener in the Cutting Records tab
-    localStorage.setItem('eecolWireListAutofillId', id);
+    const linker = WireCutLinker.getInstance();
+    const result = await linker.requestAutofill(item);
+
+    if (result.status === 'DISCONNECTED') {
+        const confirmOpen = await showConfirm(
+            "The Cutting Records tool is not open or active in another tab. Open it now?",
+            "Cutting Records Inactive"
+        );
+        if (confirmOpen) {
+            window.open('../cutting-records/cutting-records.html', '_blank');
+        }
+        return;
+    }
+
+    if (result.status === 'CONFIRM_OVERWRITE') {
+        const confirmOverwrite = await showConfirm(
+            `The Cutting Records form already contains active cut data:\n\n` +
+            `Order: ${result.formState.orderNumber || 'N/A'}\n` +
+            `Customer: ${result.formState.customerName || 'N/A'}\n` +
+            `Wire: ${result.formState.wireId || 'N/A'}\n\n` +
+            `Do you want to overwrite it with this item's details (Order #${item.orderNumber})?`,
+            "Unsaved Data Conflict"
+        );
+        if (!confirmOverwrite) return;
+    }
+
+    // Trigger autofill safely
+    await linker.triggerAutofill(item.id);
 
     // Attempt to focus parent/opener window
     if (window.opener) {
@@ -589,6 +617,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (typeof initModalSystem === 'function') {
         initModalSystem();
     }
+
+    function updateConnectionBadge() {
+        const badge = document.getElementById('connectionBadge');
+        if (!badge) return;
+
+        const linker = WireCutLinker.getInstance();
+        const isActive = linker.isCuttingRecordsActive();
+
+        if (isActive) {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-green-100 text-green-800 border-green-300 animate-pulse';
+            badge.textContent = '🟢 Cutting Records: Connected';
+        } else {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-red-100 text-red-800 border-red-300';
+            badge.textContent = '🔴 Cutting Records: Disconnected';
+        }
+    }
+
+    // Run connection status update periodically
+    setInterval(updateConnectionBadge, 1500);
+    updateConnectionBadge();
 
     // Direct Add Button event
     const addBtnDirect = document.getElementById('addWireListItemBtnDirect');

@@ -1,3 +1,5 @@
+import { WireCutLinker } from '../../core/modules/WireCutLinker.js';
+
 /**
  * EECOL Wire Cut Records Tool - JavaScript Module
  * Modern IndexedDB implementation with P2P sync capability
@@ -5,6 +7,27 @@
 
 // Global variables
 let cutRecords = [];
+
+// Function to update shared form state via WireCutLinker ES6 module
+function updateSharedFormState() {
+    const linker = WireCutLinker.getInstance();
+    const state = {
+        orderNumber: document.getElementById('orderNumber')?.value.trim() || '',
+        customerName: document.getElementById('customerName')?.value.trim() || '',
+        wireId: document.getElementById('wireId')?.value.trim() || '',
+        cutLength: document.getElementById('cutLength')?.value.trim() || '',
+        reelSize: document.getElementById('reelSize')?.value.trim() || '',
+        coilOrReel: document.getElementById('coilOrReel')?.value || '',
+        pendingAutoFillId: pendingAutoFillId,
+        isDirty: !!(
+            document.getElementById('orderNumber')?.value.trim() ||
+            document.getElementById('customerName')?.value.trim() ||
+            document.getElementById('wireId')?.value.trim() ||
+            document.getElementById('cutLength')?.value.trim()
+        )
+    };
+    linker.updateFormState(state);
+}
 
 /**
  * BOLT OPTIMIZATION: High-performance date formatters
@@ -573,6 +596,7 @@ function clearForm() {
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
     document.getElementById('noMarks').dispatchEvent(new Event('change'));
     document.getElementById('systemCut').dispatchEvent(new Event('change'));
+    updateSharedFormState();
 }
 
 async function saveCutRecord() {
@@ -1107,6 +1131,7 @@ function editRecord(id) {
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
     document.getElementById('noMarks').dispatchEvent(new Event('change'));
     document.getElementById('systemCut').dispatchEvent(new Event('change'));
+    updateSharedFormState();
 }
 
 function getFilteredRecords() {
@@ -1867,22 +1892,29 @@ document.addEventListener('DOMContentLoaded', async function() {
         initModalSystem();
     }
 
-    // Listen for storage events (AutoFill Cut from the other tab)
-    window.addEventListener('storage', async function(e) {
-        if (e.key === 'eecolWireListAutofillId' && e.newValue) {
-            const id = e.newValue;
-            console.log('📡 Autofill event detected for item ID:', id);
+    const linker = WireCutLinker.getInstance();
 
-            // Clear autofill ID from localStorage to allow subsequent triggers
-            localStorage.removeItem('eecolWireListAutofillId');
+    // Start heartbeat immediately on page load
+    linker.startHeartbeat();
 
-            // Attempt to focus this window
-            window.focus();
-
-            // AutoFill form
-            await autoFillCuttingForm(id);
-        }
+    // Listen for AutoFill Cut requests from the other tab/workspace
+    linker.listenForAutofill(async (id) => {
+        console.log('📡 Autofill event detected from WireCutLinker for item ID:', id);
+        // Attempt to focus this window
+        window.focus();
+        // AutoFill form
+        await autoFillCuttingForm(id);
     });
+
+    // Listen to input and change events inside recordsPage to update shared form state
+    ['input', 'change'].forEach(eventType => {
+        document.getElementById('recordsPage')?.addEventListener(eventType, () => {
+            updateSharedFormState();
+        });
+    });
+
+    // Initial call to sync initial form state (which is empty/clean)
+    updateSharedFormState();
 
     // Batch Entry Mode toggle
     const batchEntryModeCheckbox = document.getElementById('batchEntryMode');
@@ -2232,13 +2264,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (exportJSONBtn) exportJSONBtn.addEventListener('click', exportJSONBackup);
     const importJSONBtn = document.getElementById('importJSONBtn');
     if (importJSONBtn) {
+        const jsonFileInput = document.getElementById('jsonFileInput');
         importJSONBtn.addEventListener('click', () => {
-            jsonFileInput = document.getElementById('jsonFileInput');
             if (jsonFileInput) jsonFileInput.click();
         });
 
         // Add the missing change event listener
-        jsonFileInput = document.getElementById('jsonFileInput');
         if (jsonFileInput) jsonFileInput.addEventListener('change', importJSONBackup);
     }
 
@@ -2993,7 +3024,8 @@ async function loadWireCutList() {
 
 function renderWireCutList() {
     const container = document.getElementById('wireCutListItems');
-    const filter = document.getElementById('wireListStatusFilter').value;
+    if (!container) return;
+    const filter = document.getElementById('wireListStatusFilter')?.value || 'all';
     const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
 
     container.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
@@ -3461,6 +3493,8 @@ async function autoFillCuttingForm(id) {
 
     // Scroll to the form
     document.getElementById('recordsPage').scrollIntoView({ behavior: 'smooth' });
+
+    updateSharedFormState();
 }
 
 async function updateWireListItemColor(id, color) {
