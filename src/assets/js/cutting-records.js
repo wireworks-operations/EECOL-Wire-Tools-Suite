@@ -2174,6 +2174,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const recordBtn = document.getElementById('recordBtn');
     if (recordBtn) recordBtn.addEventListener('click', saveCutRecord);
 
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    if (clearFormBtn) clearFormBtn.addEventListener('click', clearForm);
+
     // Undo/Redo button event listeners
     const undoBtn = document.getElementById('undoBtn');
     if (undoBtn) undoBtn.addEventListener('click', undo);
