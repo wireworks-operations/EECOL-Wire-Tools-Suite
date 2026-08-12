@@ -270,6 +270,10 @@ function renderWireCutList() {
         itemDiv.appendChild(card);
 
         // Events
+        itemDiv.addEventListener('click', () => {
+            showWireListItemModal(item.id);
+        });
+
         itemDiv.addEventListener('contextmenu', e => {
             e.preventDefault();
             showWireListContextMenu(e, item.id);
@@ -723,9 +727,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Context menu events
     document.addEventListener('click', hideWireListContextMenu);
-    document.getElementById('ctxEdit').addEventListener('click', () => {
-        if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
-    });
     document.getElementById('ctxActive').addEventListener('click', async () => {
         if (currentContextMenuId) {
             await setActiveWireListItem(currentContextMenuId);
