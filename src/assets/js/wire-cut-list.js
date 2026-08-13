@@ -235,6 +235,12 @@ function renderWireCutList() {
         if (item.reelSize) {
             typeLengthText += ` \u00A0\u00A0 [RLS: ${item.reelSize}\"]`;
         }
+        if (item.isReReel) {
+            typeLengthText += ` \u00A0\u00A0 [🔄 RE-REEL]`;
+        }
+        if (item.isFullPick) {
+            typeLengthText += ` \u00A0\u00A0 [⚡ FULL PICK]`;
+        }
         typeLength.textContent = typeLengthText;
 
         const desc = document.createElement('span');
@@ -422,6 +428,10 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
             document.getElementById('wireListReelSize').value = item.reelSize || '';
+            const reReelEl = document.getElementById('wireListReReel');
+            if (reReelEl) reReelEl.value = item.isReReel ? 'yes' : 'no';
+            const fullPickEl = document.getElementById('wireListFullPick');
+            if (fullPickEl) fullPickEl.value = item.isFullPick ? 'yes' : 'no';
             document.getElementById('wireListUrgency').value = item.urgency || 'normal';
             document.getElementById('wireListStatus').value = item.status || 'active';
             document.getElementById('wireListDescription').value = item.description || '';
@@ -436,6 +446,10 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
         document.getElementById('wireListReelSize').value = '';
+        const reReelEl = document.getElementById('wireListReReel');
+        if (reReelEl) reReelEl.value = 'no';
+        const fullPickEl = document.getElementById('wireListFullPick');
+        if (fullPickEl) fullPickEl.value = 'no';
         document.getElementById('wireListUrgency').value = 'normal';
         document.getElementById('wireListStatus').value = 'active';
         document.getElementById('wireListDescription').value = '';
@@ -471,6 +485,8 @@ async function saveWireListItem() {
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
         lengthZ: document.getElementById('wireListLength').value.trim(),
         reelSize: document.getElementById('wireListReelSize').value.trim(),
+        isReReel: document.getElementById('wireListReReel') ? document.getElementById('wireListReReel').value === 'yes' : false,
+        isFullPick: document.getElementById('wireListFullPick') ? document.getElementById('wireListFullPick').value === 'yes' : false,
         urgency: document.getElementById('wireListUrgency').value,
         status: document.getElementById('wireListStatus').value,
         description: document.getElementById('wireListDescription').value.trim(),

@@ -642,6 +642,7 @@ async function saveSingleRecord() {
         const isNoMarks = document.getElementById('noMarks').checked;
         const isSystemCut = document.getElementById('systemCut').checked;
         const isCutInSystem = document.getElementById('cutInSystem').checked;
+        const isReReel = document.getElementById('reReel') ? document.getElementById('reReel').checked : false;
         const now = Date.now();
         const existingRecord = editingId ? cutRecords.find(r => r.id === editingId) : null;
 
@@ -680,6 +681,7 @@ async function saveSingleRecord() {
             isNoMarks,
             isSystemCut,
             isCutInSystem,
+            isReReel,
             cutInSystemTimestamp,
             createdAt: existingRecord ? existingRecord.createdAt : now,
             updatedAt: now,
@@ -1104,6 +1106,8 @@ function editRecord(id) {
     document.getElementById('noMarks').checked = record.isNoMarks || false;
     document.getElementById('systemCut').checked = !!record.isSystemCut;
     document.getElementById('cutInSystem').checked = !!record.isCutInSystem;
+    const reReelCheckbox = document.getElementById('reReel');
+    if (reReelCheckbox) reReelCheckbox.checked = !!record.isReReel;
     if (record.isFullPick || record.isNoMarks) {
         document.getElementById('startingMark').value = '';
         document.getElementById('startingMarkUnit').value = 'm';
@@ -1131,6 +1135,7 @@ function editRecord(id) {
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
     document.getElementById('noMarks').dispatchEvent(new Event('change'));
     document.getElementById('systemCut').dispatchEvent(new Event('change'));
+    if (reReelCheckbox) reReelCheckbox.dispatchEvent(new Event('change'));
     updateSharedFormState();
 }
 
@@ -1311,6 +1316,12 @@ function renderCutRecords() {
         cutInSystemSpan.className = 'font-bold';
         cutInSystemSpan.textContent = ` | Cut In System: ${record.isCutInSystem ? 'Yes' : 'No'}`;
         cutterP.appendChild(cutInSystemSpan);
+        if (record.isReReel) {
+            const reReelSpan = document.createElement('span');
+            reReelSpan.className = 'font-bold text-emerald-600';
+            reReelSpan.textContent = ' | Re-Reel';
+            cutterP.appendChild(reReelSpan);
+        }
         recordDiv.appendChild(cutterP);
 
         const commentsP = document.createElement('p');
@@ -3490,6 +3501,19 @@ async function autoFillCuttingForm(id) {
     if (batchMode && batchMode.checked) {
         batchMode.checked = false;
         batchMode.dispatchEvent(new Event('change'));
+    }
+
+    // Handle Re-Reel and Full Pick integration
+    const reReelCheckbox = document.getElementById('reReel');
+    if (reReelCheckbox) {
+        reReelCheckbox.checked = !!(item.isReReel || item.reReel === 'yes');
+        reReelCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const fullPickCheckbox = document.getElementById('fullPick');
+    if (fullPickCheckbox) {
+        fullPickCheckbox.checked = !!(item.isFullPick || item.fullPick === 'yes');
+        fullPickCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Track this ID for automatic completion after record save

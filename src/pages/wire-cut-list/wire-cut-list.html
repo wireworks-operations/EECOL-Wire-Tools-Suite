@@ -184,7 +184,7 @@
                     <input id="wireListWireType" type="text" placeholder="TK6/3CU"
                         class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                 </div>
-                <div class="flex gap-2">
+                <div class="col-span-2 flex gap-2">
                     <div class="flex-1">
                         <label class="block text-xs font-semibold mb-1">Length (Z)</label>
                         <input id="wireListLength" type="text" placeholder="44"
@@ -195,8 +195,22 @@
                         <input id="wireListReelSize" type="number" placeholder="40"
                             class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                     </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Re-Reel</label>
+                        <select id="wireListReReel" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Full Pick</label>
+                        <select id="wireListFullPick" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
+                <div class="col-span-1 col-start-1">
                     <label class="block text-xs font-semibold mb-1">Urgency</label>
                     <select id="wireListUrgency" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                         <option value="normal">Normal</option>
@@ -204,7 +218,7 @@
                         <option value="critical">🚨 CRITICAL</option>
                     </select>
                 </div>
-                <div>
+                <div class="col-span-1 col-start-1">
                     <label class="block text-xs font-semibold mb-1">Status</label>
                     <select id="wireListStatus" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                         <option value="active">Active</option>
