@@ -445,8 +445,8 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListDescription').value = item.description || '';
             document.getElementById('wireListOrderComments').value = item.orderComments || '';
             document.getElementById('wireListShipperComments').value = item.shipperComments || '';
-            document.getElementById('wireListFullPick').checked = !!item.isFullPick;
-            document.getElementById('wireListReReel').checked = !!item.isReReel;
+            document.getElementById('wireListFullPick').value = item.isFullPick ? 'yes' : 'no';
+            document.getElementById('wireListReReel').value = item.isReReel ? 'yes' : 'no';
         }
     } else {
         title.textContent = 'Add Wire Cut List Item';
@@ -461,8 +461,8 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListDescription').value = '';
         document.getElementById('wireListOrderComments').value = '';
         document.getElementById('wireListShipperComments').value = '';
-        document.getElementById('wireListFullPick').checked = false;
-        document.getElementById('wireListReReel').checked = false;
+        document.getElementById('wireListFullPick').value = 'no';
+        document.getElementById('wireListReReel').value = 'no';
     }
 
     modal.classList.remove('hidden');
@@ -499,8 +499,8 @@ async function saveWireListItem() {
         description: document.getElementById('wireListDescription').value.trim(),
         orderComments: document.getElementById('wireListOrderComments').value.trim(),
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
-        isFullPick: document.getElementById('wireListFullPick').checked,
-        isReReel: document.getElementById('wireListReReel').checked,
+        isFullPick: document.getElementById('wireListFullPick').value === 'yes',
+        isReReel: document.getElementById('wireListReReel').value === 'yes',
         timestamp: existing ? existing.timestamp : Date.now(),
         position: existing ? existing.position : wireCutList.length,
         color: existing ? existing.color : null,
