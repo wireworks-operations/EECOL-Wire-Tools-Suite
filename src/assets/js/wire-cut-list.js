@@ -9,6 +9,26 @@ let wireListEditingId = null;
 let currentContextMenuId = null;
 let draggedItemId = null;
 
+// Group styling palettes
+const GROUP_PALETTES = [
+    { border: 'border-2 border-purple-500', ring: 'ring-2 ring-purple-400', badgeBg: 'bg-purple-100', badgeText: 'text-purple-800', badgeBorder: 'border-purple-300' },
+    { border: 'border-2 border-indigo-500', ring: 'ring-2 ring-indigo-400', badgeBg: 'bg-indigo-100', badgeText: 'text-indigo-800', badgeBorder: 'border-indigo-300' },
+    { border: 'border-2 border-emerald-500', ring: 'ring-2 ring-emerald-400', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-800', badgeBorder: 'border-emerald-300' },
+    { border: 'border-2 border-sky-500', ring: 'ring-2 ring-sky-400', badgeBg: 'bg-sky-100', badgeText: 'text-sky-800', badgeBorder: 'border-sky-300' },
+    { border: 'border-2 border-rose-500', ring: 'ring-2 ring-rose-400', badgeBg: 'bg-rose-100', badgeText: 'text-rose-800', badgeBorder: 'border-rose-300' },
+    { border: 'border-2 border-teal-500', ring: 'ring-2 ring-teal-400', badgeBg: 'bg-teal-100', badgeText: 'text-teal-800', badgeBorder: 'border-teal-300' }
+];
+
+function getGroupStyle(groupName) {
+    if (!groupName) return null;
+    let hash = 0;
+    for (let i = 0; i < groupName.length; i++) {
+        hash = groupName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % GROUP_PALETTES.length;
+    return GROUP_PALETTES[index];
+}
+
 // Debounce utility for search input
 function debounce(func, wait) {
     let timeout;
@@ -107,7 +127,8 @@ function renderWireCutList() {
                 item.wireType,
                 item.description,
                 item.orderComments,
-                item.shipperComments
+                item.shipperComments,
+                item.groupName
             ].map(f => (f || '').toLowerCase());
 
             if (!searchFields.some(f => f.includes(searchTerm))) return false;
@@ -134,6 +155,13 @@ function renderWireCutList() {
         card.className = 'wire-list-card';
         if (item.isActive) {
             card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
+        }
+
+        if (item.groupName) {
+            const groupStyle = getGroupStyle(item.groupName);
+            if (groupStyle) {
+                card.classList.add(...groupStyle.border.split(' '));
+            }
         }
 
         if (item.color) {
@@ -168,6 +196,14 @@ function renderWireCutList() {
             activeBadge.className = 'px-1 bg-amber-100 text-amber-800 rounded text-[8px] uppercase border border-amber-300 font-black';
             activeBadge.textContent = '🌟 Active';
             orderLine.appendChild(activeBadge);
+        }
+
+        if (item.groupName) {
+            const groupStyle = getGroupStyle(item.groupName);
+            const groupBadge = document.createElement('span');
+            groupBadge.className = `px-1.5 py-0.5 rounded text-[8px] uppercase font-black border flex items-center gap-1 ${groupStyle ? `${groupStyle.badgeBg} ${groupStyle.badgeText} ${groupStyle.badgeBorder}` : 'bg-purple-100 text-purple-800 border-purple-300'}`;
+            groupBadge.textContent = `📁 ${item.groupName}`;
+            orderLine.appendChild(groupBadge);
         }
 
         if (item.urgency && item.urgency !== 'normal') {
@@ -389,6 +425,7 @@ function hideWireListItemModal() {
 }
 
 async function saveWireListItem() {
+    const existing = wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId) : null;
     const item = {
         id: wireListEditingId || crypto.randomUUID(),
         orderNumber: document.getElementById('wireListOrder').value.trim().toUpperCase(),
@@ -402,10 +439,12 @@ async function saveWireListItem() {
         description: document.getElementById('wireListDescription').value.trim(),
         orderComments: document.getElementById('wireListOrderComments').value.trim(),
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
-        timestamp: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).timestamp : Date.now(),
-        position: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).position : wireCutList.length,
-        color: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).color : null,
-        isActive: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).isActive : false
+        timestamp: existing ? existing.timestamp : Date.now(),
+        position: existing ? existing.position : wireCutList.length,
+        color: existing ? existing.color : null,
+        isActive: existing ? existing.isActive : false,
+        groupId: existing ? existing.groupId : null,
+        groupName: existing ? existing.groupName : null
     };
 
     try {
@@ -451,6 +490,117 @@ async function setActiveWireListItem(id) {
         }
     } catch (error) {
         console.error("Error setting active item:", error);
+    }
+}
+
+// Group Modal Management Logic
+function showGroupModal(id) {
+    currentContextMenuId = id;
+    const modal = document.getElementById('groupModal');
+    const modalContent = document.getElementById('groupModalContent');
+    const groupSelect = document.getElementById('groupSelect');
+    const existingContainer = document.getElementById('existingGroupContainer');
+    const groupNameInput = document.getElementById('groupNameInput');
+    const removeBtn = document.getElementById('removeFromGroupBtn');
+
+    groupSelect.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Choose Existing Group --';
+    groupSelect.appendChild(defaultOpt);
+
+    // Find unique existing groups
+    const uniqueGroups = [...new Set(wireCutList.map(item => item.groupName).filter(Boolean))];
+    if (uniqueGroups.length > 0) {
+        existingContainer.classList.remove('hidden');
+        uniqueGroups.forEach(gName => {
+            const opt = document.createElement('option');
+            opt.value = gName;
+            opt.textContent = `📁 ${gName}`;
+            groupSelect.appendChild(opt);
+        });
+    } else {
+        existingContainer.classList.add('hidden');
+    }
+
+    const item = wireCutList.find(i => i.id === id);
+    if (item && item.groupName) {
+        groupNameInput.value = item.groupName;
+        removeBtn.classList.remove('hidden');
+    } else {
+        groupNameInput.value = '';
+        removeBtn.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+        groupNameInput.focus();
+    }, 10);
+}
+
+function hideGroupModal() {
+    const modal = document.getElementById('groupModal');
+    const modalContent = document.getElementById('groupModalContent');
+
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+async function saveGroupAssignment() {
+    const inputVal = document.getElementById('groupNameInput').value.trim();
+    const selectVal = document.getElementById('groupSelect').value.trim();
+    const targetGroupName = inputVal || selectVal;
+
+    if (!targetGroupName) {
+        showAlert('Please select an existing group or type a new group name.', 'Group Name Required');
+        return;
+    }
+
+    const item = wireCutList.find(i => i.id === currentContextMenuId);
+    if (item) {
+        item.groupName = targetGroupName;
+        item.groupId = targetGroupName.toLowerCase().replace(/\s+/g, '_');
+        item.updatedAt = Date.now();
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                hideGroupModal();
+                showToast(`Order #${item.orderNumber || 'Item'} added to group "${targetGroupName}"`, 'success');
+            }
+        } catch (error) {
+            console.error("Error saving group assignment:", error);
+            showAlert("Failed to assign group.", "Error");
+        }
+    }
+}
+
+async function removeGroupAssignment() {
+    const item = wireCutList.find(i => i.id === currentContextMenuId);
+    if (item) {
+        const prevGroup = item.groupName;
+        item.groupName = null;
+        item.groupId = null;
+        item.updatedAt = Date.now();
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                hideGroupModal();
+                showToast(`Removed Order #${item.orderNumber || 'Item'} from group "${prevGroup}"`, 'warning');
+            }
+        } catch (error) {
+            console.error("Error removing group assignment:", error);
+            showAlert("Failed to remove from group.", "Error");
+        }
     }
 }
 
@@ -673,6 +823,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (confirmRemBtn) confirmRemBtn.addEventListener('click', saveRemovalWithReason);
     if (remBackdrop) remBackdrop.addEventListener('click', hideRemovalReasonModal);
 
+    // Group Modal events
+    const cancelGroupBtn = document.getElementById('cancelGroupBtn');
+    const saveGroupBtn = document.getElementById('saveGroupBtn');
+    const removeGroupBtn = document.getElementById('removeFromGroupBtn');
+    const groupModalBackdrop = document.getElementById('groupModalBackdrop');
+    const groupSelect = document.getElementById('groupSelect');
+
+    if (cancelGroupBtn) cancelGroupBtn.addEventListener('click', hideGroupModal);
+    if (saveGroupBtn) saveGroupBtn.addEventListener('click', saveGroupAssignment);
+    if (removeGroupBtn) removeGroupBtn.addEventListener('click', removeGroupAssignment);
+    if (groupModalBackdrop) groupModalBackdrop.addEventListener('click', hideGroupModal);
+
+    const groupNameInput = document.getElementById('groupNameInput');
+    if (groupNameInput) {
+        groupNameInput.addEventListener('input', (e) => {
+            if (groupSelect && groupSelect.value !== e.target.value) {
+                groupSelect.value = '';
+            }
+        });
+    }
+
+    if (groupSelect) {
+        groupSelect.addEventListener('change', (e) => {
+            if (e.target.value) {
+                document.getElementById('groupNameInput').value = e.target.value;
+            }
+        });
+    }
+
     // Context menu events
     document.addEventListener('click', hideWireListContextMenu);
     document.getElementById('ctxEdit').addEventListener('click', () => {
@@ -682,6 +861,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (currentContextMenuId) {
             await setActiveWireListItem(currentContextMenuId);
         }
+    });
+    document.getElementById('ctxGroup').addEventListener('click', () => {
+        if (currentContextMenuId) showGroupModal(currentContextMenuId);
     });
     document.getElementById('ctxRemove').addEventListener('click', async () => {
         if (currentContextMenuId) {
