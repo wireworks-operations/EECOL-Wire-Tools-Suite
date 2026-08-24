@@ -663,6 +663,11 @@ function printReelSizeResults() {
             return;
         }
         try {
+            printWindow.opener = null;
+        } catch (e) {
+            // ignore cross-browser quirks
+        }
+        try {
             printWindow.document.open();
             printWindow.document.write(printContent);
             printWindow.document.close();

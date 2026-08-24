@@ -35,3 +35,9 @@
 **Vulnerability:** Feature modules using legacy local print fallbacks (bypassing central utilities) were vulnerable to XSS and prone to document stream hanging.
 **Learning:** In a hybrid architecture where global utilities may occasionally fail to load or are bypassed, local fallbacks must be independently hardened. Relying on `window.open` without checking for popup blockers or failing to call `document.close()` can lead to poor UX and security gaps.
 **Prevention:** Use the "Hardened Print Fallback" pattern: (1) Check for `null` window return, (2) include a local `_esc` helper with regex-based escaping as defense-in-depth, and (3) always wrap `document.write` with `document.open()` and `document.close()` to ensure proper stream management.
+
+## 2026-08-03 - Mitigating Reverse Tabnabbing in Print and Fallback Windows
+
+**Vulnerability:** Newly opened browser windows via `window.open` lacked the `opener` restriction, allowing child windows to retain access to the parent tab/window via `window.opener`. This exposed users to reverse tabnabbing (phishing/tab redirection vulnerabilities) when printing.
+**Learning:** While target link anchors `target="_blank"` are often secured with `rel="noopener"`, programmatically created windows/tabs via `window.open` are frequently overlooked. If they do not explicitly require parent access (such as static print windows), they must have their `opener` reference severed.
+**Prevention:** Always implement an explicit `w.opener = null` safeguard immediately after calling `window.open` on any programmatic window/fallback dialog that does not require direct parent tab interaction, providing robust defense-in-depth against tab hijacking.

@@ -46,6 +46,12 @@ export function _openPrint(title, html) {
         alert('Unable to open print window. Please allow popups for this site.');
         return null;
     }
+    // Mitigate Reverse Tabnabbing by clearing window.opener
+    try {
+        w.opener = null;
+    } catch (e) {
+        // ignore cross-browser quirks
+    }
     try {
         w.document.title = title || 'Print';
     } catch (e) {

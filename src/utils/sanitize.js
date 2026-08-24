@@ -27,6 +27,13 @@
         return null;
       }
 
+      // Mitigate Reverse Tabnabbing by clearing window.opener
+      try {
+        w.opener = null;
+      } catch (e) {
+        // ignore cross-browser quirks
+      }
+
       // Give the window a title (for some browsers)
       try {
         w.document.title = title || 'Print';
