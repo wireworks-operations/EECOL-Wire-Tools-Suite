@@ -206,6 +206,16 @@
                         <option value="completed">Completed</option>
                     </select>
                 </div>
+                <div class="col-span-2 flex items-center gap-6 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                    <label class="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
+                        <input id="wireListFullPick" type="checkbox" class="w-4 h-4 text-blue-600 rounded">
+                        📦 Full Pick
+                    </label>
+                    <label class="flex items-center gap-2 text-xs font-bold text-purple-800 cursor-pointer">
+                        <input id="wireListReReel" type="checkbox" class="w-4 h-4 text-purple-600 rounded">
+                        🔄 Re-Reel
+                    </label>
+                </div>
             </div>
 
             <div class="mb-4">
@@ -332,6 +342,9 @@
     <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-52">
         <button id="ctxActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700">
             🌟 Make Active
+        </button>
+        <button id="ctxClearActive" class="w-full text-left px-4 py-2 hover:bg-orange-100 text-sm flex items-center font-bold text-orange-700">
+            🛑 Clear Active Status
         </button>
         <button id="ctxGroup" class="w-full text-left px-4 py-2 hover:bg-purple-100 text-sm flex items-center font-bold text-purple-800">
             📁 Add to Group...

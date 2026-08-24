@@ -199,6 +199,20 @@ function renderWireCutList() {
             orderLine.appendChild(activeBadge);
         }
 
+        if (item.isFullPick) {
+            const fpBadge = document.createElement('span');
+            fpBadge.className = 'px-1 bg-blue-100 text-blue-800 rounded text-[8px] uppercase border border-blue-300 font-black';
+            fpBadge.textContent = '📦 Full Pick';
+            orderLine.appendChild(fpBadge);
+        }
+
+        if (item.isReReel) {
+            const rrBadge = document.createElement('span');
+            rrBadge.className = 'px-1 bg-purple-100 text-purple-800 rounded text-[8px] uppercase border border-purple-300 font-black';
+            rrBadge.textContent = '🔄 Re-Reel';
+            orderLine.appendChild(rrBadge);
+        }
+
         if (item.groupName) {
             const groupStyle = getGroupStyle(item.groupName);
             const groupBadge = document.createElement('span');
@@ -273,7 +287,7 @@ function renderWireCutList() {
             actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
 
             const autoFillBtn = document.createElement('button');
-            autoFillBtn.className = 'px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold hover:bg-blue-700 transition shadow';
+            autoFillBtn.className = 'px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-md active:scale-95';
             autoFillBtn.textContent = '📥 AutoFill Cut';
             autoFillBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -281,7 +295,7 @@ function renderWireCutList() {
             };
 
             const completeBtn = document.createElement('button');
-            completeBtn.className = 'px-2 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold hover:bg-green-700 transition shadow';
+            completeBtn.className = 'px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-md active:scale-95';
             completeBtn.textContent = '✅ Complete';
             completeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -289,7 +303,7 @@ function renderWireCutList() {
             };
 
             const removeBtn = document.createElement('button');
-            removeBtn.className = 'px-2 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold hover:bg-red-700 transition shadow';
+            removeBtn.className = 'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition shadow-md active:scale-95';
             removeBtn.textContent = '❌ Remove';
             removeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -305,7 +319,7 @@ function renderWireCutList() {
             actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
 
             const restoreBtn = document.createElement('button');
-            restoreBtn.className = 'px-2 py-0.5 bg-yellow-600 text-white rounded text-[9px] font-bold hover:bg-yellow-700 transition shadow';
+            restoreBtn.className = 'px-3 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700 transition shadow-md active:scale-95';
             restoreBtn.textContent = '🔄 Restore';
             restoreBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -431,6 +445,8 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListDescription').value = item.description || '';
             document.getElementById('wireListOrderComments').value = item.orderComments || '';
             document.getElementById('wireListShipperComments').value = item.shipperComments || '';
+            document.getElementById('wireListFullPick').checked = !!item.isFullPick;
+            document.getElementById('wireListReReel').checked = !!item.isReReel;
         }
     } else {
         title.textContent = 'Add Wire Cut List Item';
@@ -445,6 +461,8 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListDescription').value = '';
         document.getElementById('wireListOrderComments').value = '';
         document.getElementById('wireListShipperComments').value = '';
+        document.getElementById('wireListFullPick').checked = false;
+        document.getElementById('wireListReReel').checked = false;
     }
 
     modal.classList.remove('hidden');
@@ -481,6 +499,8 @@ async function saveWireListItem() {
         description: document.getElementById('wireListDescription').value.trim(),
         orderComments: document.getElementById('wireListOrderComments').value.trim(),
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
+        isFullPick: document.getElementById('wireListFullPick').checked,
+        isReReel: document.getElementById('wireListReReel').checked,
         timestamp: existing ? existing.timestamp : Date.now(),
         position: existing ? existing.position : wireCutList.length,
         color: existing ? existing.color : null,
@@ -545,6 +565,22 @@ async function setActiveWireListItem(id) {
         }
     } catch (error) {
         console.error("Error setting active item:", error);
+    }
+}
+
+async function clearActiveWireListItem() {
+    wireCutList.forEach(item => {
+        item.isActive = false;
+    });
+
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
+            renderWireCutList();
+            showToast('Active status cleared for all items', 'warning');
+        }
+    } catch (error) {
+        console.error("Error clearing active status:", error);
     }
 }
 
@@ -920,6 +956,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             await setActiveWireListItem(currentContextMenuId);
         }
     });
+    const ctxClearActive = document.getElementById('ctxClearActive');
+    if (ctxClearActive) {
+        ctxClearActive.addEventListener('click', async () => {
+            await clearActiveWireListItem();
+        });
+    }
     document.getElementById('ctxGroup').addEventListener('click', () => {
         if (currentContextMenuId) showGroupModal(currentContextMenuId);
     });

@@ -556,6 +556,8 @@ function clearForm() {
     document.getElementById('fullPick').checked = false;
     document.getElementById('noMarks').checked = false;
     document.getElementById('systemCut').checked = false;
+    const reReelEl = document.getElementById('reReel');
+    if (reReelEl) reReelEl.checked = false;
     document.getElementById('lineCode').value = '';
     document.getElementById('turnedToLineCode').value = '';
     document.getElementById('cutterName').value = '';
@@ -618,6 +620,7 @@ async function saveSingleRecord() {
         const isNoMarks = document.getElementById('noMarks').checked;
         const isSystemCut = document.getElementById('systemCut').checked;
         const isCutInSystem = document.getElementById('cutInSystem').checked;
+        const isReReel = document.getElementById('reReel')?.checked || false;
         const now = Date.now();
         const existingRecord = editingId ? cutRecords.find(r => r.id === editingId) : null;
 
@@ -656,6 +659,7 @@ async function saveSingleRecord() {
             isNoMarks,
             isSystemCut,
             isCutInSystem,
+            isReReel,
             cutInSystemTimestamp,
             createdAt: existingRecord ? existingRecord.createdAt : now,
             updatedAt: now,
@@ -1080,6 +1084,8 @@ function editRecord(id) {
     document.getElementById('noMarks').checked = record.isNoMarks || false;
     document.getElementById('systemCut').checked = !!record.isSystemCut;
     document.getElementById('cutInSystem').checked = !!record.isCutInSystem;
+    const reReelEl = document.getElementById('reReel');
+    if (reReelEl) reReelEl.checked = !!record.isReReel;
     if (record.isFullPick || record.isNoMarks) {
         document.getElementById('startingMark').value = '';
         document.getElementById('startingMarkUnit').value = 'm';
@@ -3141,7 +3147,7 @@ function renderWireCutList() {
             actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
 
             const autoFillBtn = document.createElement('button');
-            autoFillBtn.className = 'px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold hover:bg-blue-700 transition';
+            autoFillBtn.className = 'px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-md active:scale-95';
             autoFillBtn.textContent = '📥 AutoFill Cut';
             autoFillBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -3149,7 +3155,7 @@ function renderWireCutList() {
             };
 
             const completeBtn = document.createElement('button');
-            completeBtn.className = 'px-2 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold hover:bg-green-700 transition';
+            completeBtn.className = 'px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-md active:scale-95';
             completeBtn.textContent = '✅ Complete';
             completeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -3157,7 +3163,7 @@ function renderWireCutList() {
             };
 
             const removeBtn = document.createElement('button');
-            removeBtn.className = 'px-2 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold hover:bg-red-700 transition';
+            removeBtn.className = 'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition shadow-md active:scale-95';
             removeBtn.textContent = '❌ Remove';
             removeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -3173,7 +3179,7 @@ function renderWireCutList() {
             actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
 
             const restoreBtn = document.createElement('button');
-            restoreBtn.className = 'px-2 py-0.5 bg-yellow-600 text-white rounded text-[9px] font-bold hover:bg-yellow-700 transition shadow';
+            restoreBtn.className = 'px-3 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700 transition shadow-md active:scale-95';
             restoreBtn.textContent = '🔄 Restore';
             restoreBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -3484,6 +3490,12 @@ async function autoFillCuttingForm(id) {
         // Default to coil if no reel size is specified in list
         coilOrReelSelect.value = 'coil';
         coilOrReelSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const reReelCheckbox = document.getElementById('reReel');
+    if (reReelCheckbox) {
+        reReelCheckbox.checked = !!item.isReReel;
+        reReelCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form
