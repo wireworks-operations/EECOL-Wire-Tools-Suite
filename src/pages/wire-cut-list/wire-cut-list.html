@@ -348,9 +348,18 @@
     </div>
 
     <!-- Right-click Context Menu -->
-    <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-52">
+    <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-56">
+        <!-- Group Context Actions -->
+        <button id="ctxGroupActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700 hidden">
+            🌟 Make Group Active
+        </button>
+        <button id="ctxDisbandGroup" class="w-full text-left px-4 py-2 hover:bg-purple-100 text-sm flex items-center font-bold text-purple-800 hidden">
+            📂 Disband Group
+        </button>
+
+        <!-- Item Context Actions -->
         <button id="ctxActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700">
-            🌟 Make Active
+            🌟 Make Item Active
         </button>
         <button id="ctxClearActive" class="w-full text-left px-4 py-2 hover:bg-orange-100 text-sm flex items-center font-bold text-orange-700">
             🛑 Clear Active Status
@@ -361,7 +370,7 @@
         <button id="ctxRemove" class="w-full text-left px-4 py-2 hover:bg-red-100 text-sm flex items-center">
             🗑️ Remove
         </button>
-        <div class="px-4 py-2 border-t border-gray-100">
+        <div id="pastelSection" class="px-4 py-2 border-t border-gray-100">
             <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Softer Colors</p>
             <div id="pastelPresets" class="grid grid-cols-4 gap-2 mb-2">
                 <!-- Preset buttons added by JS -->
