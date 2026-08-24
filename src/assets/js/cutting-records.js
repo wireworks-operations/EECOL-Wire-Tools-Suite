@@ -3036,7 +3036,8 @@ function renderWireCutList() {
         itemDiv.dataset.id = item.id;
 
         const card = document.createElement('div');
-        card.className = 'wire-list-card';
+        card.className = 'wire-list-card cursor-pointer transition hover:brightness-95';
+        card.onclick = () => showWireListItemModal(item.id);
         if (item.isActive) {
             card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
         }

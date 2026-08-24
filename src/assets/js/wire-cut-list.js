@@ -152,7 +152,8 @@ function renderWireCutList() {
         itemDiv.dataset.id = item.id;
 
         const card = document.createElement('div');
-        card.className = 'wire-list-card';
+        card.className = 'wire-list-card cursor-pointer transition hover:brightness-95';
+        card.onclick = () => showWireListItemModal(item.id);
         if (item.isActive) {
             card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
         }
@@ -908,9 +909,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Context menu events
     document.addEventListener('click', hideWireListContextMenu);
-    document.getElementById('ctxEdit').addEventListener('click', () => {
-        if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
-    });
+    const ctxEdit = document.getElementById('ctxEdit');
+    if (ctxEdit) {
+        ctxEdit.addEventListener('click', () => {
+            if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
+        });
+    }
     document.getElementById('ctxActive').addEventListener('click', async () => {
         if (currentContextMenuId) {
             await setActiveWireListItem(currentContextMenuId);
