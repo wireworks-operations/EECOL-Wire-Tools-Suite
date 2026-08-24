@@ -37,11 +37,23 @@ This application is designed as a **local-first** Progressive Web App (PWA). All
 
 ### Hardening Checklist
 
-- [x] **Content Security Policy (CSP)**: Strict policy implemented in `index.html` including fonts and CDN scripts.
-- [x] **Secure by Default Rendering**: Strict use of `.textContent` over `innerHTML` for user-controllable data.
-- [x] **Sanitization Layer**: Manual escaping using `window.escapeHTML` where necessary.
-- [x] **Subresource Integrity (SRI)**: Integrity hashes used for CDN dependencies.
-- [x] **Reverse Tabnabbing Protection**: `rel="noopener noreferrer"` used on all external links.
+- [x] **Content Security Policy (CSP)**: Strict policy implemented via HTML `meta` tags across primary landing pages:
+
+  ```html
+  <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'">
+  ```
+
+- [x] **Secure by Default Rendering**: Strict and exclusive use of native `.textContent` or `document.createElement` over `innerHTML` for user-controlled data fields (e.g., Wire IDs, Customer Names, operator comments) to eliminate standard Cross-Site Scripting (XSS) vectors.
+- [x] **Sanitization Layer**: Explicit manual escaping using `window.escapeHTML` where raw template interpolation is necessary.
+- [x] **Subresource Integrity (SRI)**: Integrity hashes used for CDN-delivered CSS/JS libraries.
+- [x] **Reverse Tabnabbing Protection**: Enforced on all external hyperlinks using `rel="noopener noreferrer"`. Additionally, all central print and export utilities programmatically break the window back-reference immediately following a `window.open` call:
+
+  ```javascript
+  const w = window.open(url, target);
+  if (w) w.opener = null;
+  ```
+
 - [ ] **Automated Dependency Scanning**: (Planned).
 
 ### Attack Vector Analysis

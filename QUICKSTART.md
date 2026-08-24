@@ -26,8 +26,9 @@ npm run dev
 
 ## 3) Access App
 
-- **App URL**: [http://localhost:3000](http://localhost:3000)
-- **Database**: [http://localhost:3000/src/pages/database-config/database-config.html](http://localhost:3000/src/pages/database-config/database-config.html)
+- **App Landing Page**: [http://localhost:3000](http://localhost:3000)
+- **Wire Cut List Workspace**: [http://localhost:3000/src/pages/wire-cut-list/wire-cut-list.html](http://localhost:3000/src/pages/wire-cut-list/wire-cut-list.html)
+- **Database Configuration**: [http://localhost:3000/src/pages/database-config/database-config.html](http://localhost:3000/src/pages/database-config/database-config.html)
 
 ## 4) Verify
 
