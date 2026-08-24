@@ -45,9 +45,14 @@
         <h1 class="text-3xl font-black mb-3 text-center header-gradient">
             🗂️ Standalone Wire Cut List
         </h1>
-        <p class="mb-5 text-center text-sm font-medium header-gradient">
+        <p class="mb-3 text-center text-sm font-medium header-gradient">
             Manage cutting list items, update urgency, trigger autofill, and synchronize real-time updates.
         </p>
+        <div class="flex justify-center mb-4">
+            <span id="connectionBadge" class="px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-gray-100 text-gray-800 border-gray-300">
+                🔍 Checking connection...
+            </span>
+        </div>
 
         <!-- Controls Section -->
         <div class="mb-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl shadow-md">
@@ -179,7 +184,7 @@
                     <input id="wireListWireType" type="text" placeholder="TK6/3CU"
                         class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                 </div>
-                <div class="flex gap-2">
+                <div class="col-span-2 flex gap-2">
                     <div class="flex-1">
                         <label class="block text-xs font-semibold mb-1">Length (Z)</label>
                         <input id="wireListLength" type="text" placeholder="44"
@@ -190,8 +195,22 @@
                         <input id="wireListReelSize" type="number" placeholder="40"
                             class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                     </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Re-Reel</label>
+                        <select id="wireListReReel" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Full Pick</label>
+                        <select id="wireListFullPick" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
+                <div class="col-span-1 col-start-1">
                     <label class="block text-xs font-semibold mb-1">Urgency</label>
                     <select id="wireListUrgency" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                         <option value="normal">Normal</option>
@@ -199,7 +218,7 @@
                         <option value="critical">🚨 CRITICAL</option>
                     </select>
                 </div>
-                <div>
+                <div class="col-span-1 col-start-1">
                     <label class="block text-xs font-semibold mb-1">Status</label>
                     <select id="wireListStatus" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                         <option value="active">Active</option>
@@ -330,9 +349,6 @@
 
     <!-- Right-click Context Menu -->
     <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-52">
-        <button id="ctxEdit" class="w-full text-left px-4 py-2 hover:bg-blue-100 text-sm flex items-center">
-            ✏️ Edit
-        </button>
         <button id="ctxActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700">
             🌟 Make Active
         </button>
@@ -351,7 +367,7 @@
         </div>
     </div>
 
-    <script src="../../assets/js/wire-cut-list.js"></script>
+    <script type="module" src="../../assets/js/wire-cut-list.js"></script>
 </body>
 
 </html>

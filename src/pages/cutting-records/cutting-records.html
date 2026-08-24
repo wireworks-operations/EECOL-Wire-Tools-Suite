@@ -142,6 +142,10 @@
                                 class="px-3 py-2 bg-blue-700 text-white rounded-xl shadow-lg text-sm hover:bg-blue-800 transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-700 focus:ring-opacity-50">
                                 Clear Filters
                             </button>
+                            <button id="clearFormBtn"
+                                class="px-3 py-2 bg-gray-600 text-white rounded-xl shadow-lg text-sm hover:bg-gray-700 transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-gray-600 focus:ring-opacity-50 font-bold">
+                                🧹 Clear Form
+                            </button>
                         </div>
                     </div>
 
@@ -278,6 +282,14 @@
                             </label>
                             <p class="text-xs text-gray-500 mt-1">Check for cuts that are part of the overall wire
                                 cutting system.</p>
+                        </div>
+                        <div class="shadow-md rounded-xl p-2 bg-white">
+                            <label class="flex items-center space-x-2">
+                                <input id="reReel" type="checkbox"
+                                    class="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500" />
+                                <span class="text-xs font-semibold header-gradient">Re-Reel</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Check if this is a re-reel cut.</p>
                         </div>
                         <div class="shadow-md rounded-xl p-2 bg-white">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -899,7 +911,7 @@
         </div>
     </div>
 
-    <script src="../../assets/js/cutting-records.js"></script>
+    <script type="module" src="../../assets/js/cutting-records.js"></script>
 </body>
 
 </html>

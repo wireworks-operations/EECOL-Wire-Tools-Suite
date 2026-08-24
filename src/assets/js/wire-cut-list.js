@@ -1,3 +1,5 @@
+import { WireCutLinker } from '../../core/modules/WireCutLinker.js';
+
 /**
  * Dedicated Wire Cut List Workspace - JavaScript Module
  * Enterprise PWA
@@ -166,12 +168,12 @@ function renderWireCutList() {
 
         if (item.color) {
             card.style.backgroundColor = item.color;
-            card.style.borderColor = 'rgba(0,0,0,0.1)';
+            card.style.borderColor = isDarkBackground ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
         }
 
         // Header Labels
         const headerRow = document.createElement('div');
-        headerRow.className = 'flex justify-between items-start border-b border-black/10 pb-1 mb-1 font-bold text-[10px] uppercase';
+        headerRow.className = `flex justify-between items-start border-b pb-1 mb-1 font-bold text-[10px] uppercase ${borderColorClass}`;
 
         ['ORDER / LINE CUSTOMER', 'ORDER COMMENTS', 'SHIPPER COMMENTS'].forEach(text => {
             const div = document.createElement('div');
@@ -221,17 +223,24 @@ function renderWireCutList() {
         meta.textContent = `${dateStr} @ ${item.customerName || 'N/A'}`;
 
         const highlightBox = document.createElement('div');
-        highlightBox.className = 'mt-2 bg-black/5 border border-black/10 p-1 rounded italic font-black text-xs';
+        highlightBox.className = `mt-2 p-1 rounded italic font-black text-xs ${highlightBoxBgClass} ${highlightBoxBorderClass}`;
 
         const typeLength = document.createElement('div');
         let typeLengthText = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
         if (item.reelSize) {
             typeLengthText += ` \u00A0\u00A0 [RLS: ${item.reelSize}\"]`;
         }
+        if (item.isReReel) {
+            typeLengthText += ` \u00A0\u00A0 [🔄 RE-REEL]`;
+        }
+        if (item.isFullPick) {
+            typeLengthText += ` \u00A0\u00A0 [⚡ FULL PICK]`;
+        }
         typeLength.textContent = typeLengthText;
 
         const desc = document.createElement('span');
         desc.className = 'text-[9px] font-normal';
+        desc.style.color = isDarkBackground ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)';
         desc.textContent = item.description || '';
 
         highlightBox.appendChild(typeLength);
@@ -243,12 +252,12 @@ function renderWireCutList() {
 
         // Middle Column (Order Comments)
         const orderCommentsCol = document.createElement('div');
-        orderCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+        orderCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
         orderCommentsCol.textContent = item.orderComments || '';
 
         // Right Column (Shipper Comments)
         const shipperCommentsCol = document.createElement('div');
-        shipperCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+        shipperCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
         shipperCommentsCol.textContent = item.shipperComments || '';
 
         bodyRow.appendChild(detailsCol);
@@ -261,7 +270,7 @@ function renderWireCutList() {
         // Removal Reason
         if (item.status === 'removed' && item.removalReason) {
             const reasonDiv = document.createElement('div');
-            reasonDiv.className = 'mt-1 p-1 bg-red-100/50 border border-red-200 rounded text-[9px] italic';
+            reasonDiv.className = `mt-1 p-1 border rounded text-[9px] italic ${isDarkBackground ? 'bg-red-900/40 border-red-500/30' : 'bg-red-100/50 border-red-200'}`;
             reasonDiv.textContent = `Removal Reason: ${item.removalReason}`;
             card.appendChild(reasonDiv);
         }
@@ -269,7 +278,7 @@ function renderWireCutList() {
         // Action Buttons (only for active items)
         if (item.status === 'active') {
             const actionsRow = document.createElement('div');
-            actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+            actionsRow.className = `flex justify-end gap-2 mt-2 pt-1 border-t ${isDarkBackground ? 'border-white/10' : 'border-black/5'}`;
 
             const autoFillBtn = document.createElement('button');
             autoFillBtn.className = 'px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold hover:bg-blue-700 transition shadow';
@@ -304,6 +313,10 @@ function renderWireCutList() {
         itemDiv.appendChild(card);
 
         // Events
+        itemDiv.addEventListener('click', () => {
+            showWireListItemModal(item.id);
+        });
+
         itemDiv.addEventListener('contextmenu', e => {
             e.preventDefault();
             showWireListContextMenu(e, item.id);
@@ -322,13 +335,39 @@ function renderWireCutList() {
     });
 }
 
-// Trigger AutoFill via localStorage communication
+// Trigger AutoFill via localStorage communication using WireCutLinker
 async function triggerAutoFill(id) {
     const item = wireCutList.find(i => i.id === id);
     if (!item) return;
 
-    // Set localStorage key to trigger the storage listener in the Cutting Records tab
-    localStorage.setItem('eecolWireListAutofillId', id);
+    const linker = WireCutLinker.getInstance();
+    const result = await linker.requestAutofill(item);
+
+    if (result.status === 'DISCONNECTED') {
+        const confirmOpen = await showConfirm(
+            "The Cutting Records tool is not open or active in another tab. Open it now?",
+            "Cutting Records Inactive"
+        );
+        if (confirmOpen) {
+            window.open('../cutting-records/cutting-records.html', '_blank');
+        }
+        return;
+    }
+
+    if (result.status === 'CONFIRM_OVERWRITE') {
+        const confirmOverwrite = await showConfirm(
+            `The Cutting Records form already contains active cut data:\n\n` +
+            `Order: ${result.formState.orderNumber || 'N/A'}\n` +
+            `Customer: ${result.formState.customerName || 'N/A'}\n` +
+            `Wire: ${result.formState.wireId || 'N/A'}\n\n` +
+            `Do you want to overwrite it with this item's details (Order #${item.orderNumber})?`,
+            "Unsaved Data Conflict"
+        );
+        if (!confirmOverwrite) return;
+    }
+
+    // Trigger autofill safely
+    await linker.triggerAutofill(item.id);
 
     // Attempt to focus parent/opener window
     if (window.opener) {
@@ -384,6 +423,10 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
             document.getElementById('wireListReelSize').value = item.reelSize || '';
+            const reReelEl = document.getElementById('wireListReReel');
+            if (reReelEl) reReelEl.value = item.isReReel ? 'yes' : 'no';
+            const fullPickEl = document.getElementById('wireListFullPick');
+            if (fullPickEl) fullPickEl.value = item.isFullPick ? 'yes' : 'no';
             document.getElementById('wireListUrgency').value = item.urgency || 'normal';
             document.getElementById('wireListStatus').value = item.status || 'active';
             document.getElementById('wireListDescription').value = item.description || '';
@@ -398,6 +441,10 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
         document.getElementById('wireListReelSize').value = '';
+        const reReelEl = document.getElementById('wireListReReel');
+        if (reReelEl) reReelEl.value = 'no';
+        const fullPickEl = document.getElementById('wireListFullPick');
+        if (fullPickEl) fullPickEl.value = 'no';
         document.getElementById('wireListUrgency').value = 'normal';
         document.getElementById('wireListStatus').value = 'active';
         document.getElementById('wireListDescription').value = '';
@@ -434,6 +481,8 @@ async function saveWireListItem() {
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
         lengthZ: document.getElementById('wireListLength').value.trim(),
         reelSize: document.getElementById('wireListReelSize').value.trim(),
+        isReReel: document.getElementById('wireListReReel') ? document.getElementById('wireListReReel').value === 'yes' : false,
+        isFullPick: document.getElementById('wireListFullPick') ? document.getElementById('wireListFullPick').value === 'yes' : false,
         urgency: document.getElementById('wireListUrgency').value,
         status: document.getElementById('wireListStatus').value,
         description: document.getElementById('wireListDescription').value.trim(),
@@ -486,7 +535,7 @@ async function setActiveWireListItem(id) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
-            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'info');
+            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'success');
         }
     } catch (error) {
         console.error("Error setting active item:", error);
@@ -683,10 +732,31 @@ function showWireListContextMenu(e, id) {
     menu.classList.remove('hidden');
 
     const item = wireCutList.find(i => i.id === id);
-    if (item && item.color) {
-        document.getElementById('ctxColorPicker').value = item.color;
-    } else {
-        document.getElementById('ctxColorPicker').value = '#fef08a';
+    const ctxActive = document.getElementById('ctxActive');
+    const ctxDeactivate = document.getElementById('ctxDeactivate');
+
+    if (item) {
+        if (item.color) {
+            document.getElementById('ctxColorPicker').value = item.color;
+        } else {
+            document.getElementById('ctxColorPicker').value = '#fef08a';
+        }
+
+        // Conditionally show/hide Active/Deactivate options
+        if (ctxActive && ctxDeactivate) {
+            if (item.status === 'active') {
+                if (item.isActive) {
+                    ctxActive.classList.add('hidden');
+                    ctxDeactivate.classList.remove('hidden');
+                } else {
+                    ctxActive.classList.remove('hidden');
+                    ctxDeactivate.classList.add('hidden');
+                }
+            } else {
+                ctxActive.classList.add('hidden');
+                ctxDeactivate.classList.add('hidden');
+            }
+        }
     }
 }
 
@@ -740,6 +810,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         initModalSystem();
     }
 
+    function updateConnectionBadge() {
+        const badge = document.getElementById('connectionBadge');
+        if (!badge) return;
+
+        const linker = WireCutLinker.getInstance();
+        const isActive = linker.isCuttingRecordsActive();
+
+        if (isActive) {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-green-100 text-green-800 border-green-300 animate-pulse';
+            badge.textContent = '🟢 Cutting Records: Connected';
+        } else {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-red-100 text-red-800 border-red-300';
+            badge.textContent = '🔴 Cutting Records: Disconnected';
+        }
+    }
+
+    // Run connection status update periodically
+    setInterval(updateConnectionBadge, 1500);
+    updateConnectionBadge();
+
     // Direct Add Button event
     const addBtnDirect = document.getElementById('addWireListItemBtnDirect');
     if (addBtnDirect) addBtnDirect.addEventListener('click', () => showWireListItemModal());
@@ -757,18 +847,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         searchInput.addEventListener('input', debounce(renderWireCutList, 250));
     }
 
-    // Initialize Pastel Presets
+    // Initialize Pastel Presets (exactly the 6 soft colors: Yellow, Red, Green, Blue, Purple, Orange)
     const pastelPresets = document.getElementById('pastelPresets');
     if (pastelPresets) {
         const softColors = [
-            '#eff6ff', // Soft Blue
-            '#ecfdf5', // Soft Green
-            '#fffbeb', // Soft Yellow
-            '#fef2f2', // Soft Red
-            '#f5f3ff', // Soft Purple
-            '#faf5ff', // Soft Pink
-            '#f0fdf4', // Soft Emerald
-            '#fff7ed'  // Soft Orange
+            '#fef08a', // Soft Yellow
+            '#fee2e2', // Soft Red
+            '#d1fae5', // Soft Green
+            '#dbeafe', // Soft Blue
+            '#f3e8ff', // Soft Purple
+            '#ffedd5'  // Soft Orange
         ];
 
         softColors.forEach(color => {
@@ -854,9 +942,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Context menu events
     document.addEventListener('click', hideWireListContextMenu);
-    document.getElementById('ctxEdit').addEventListener('click', () => {
-        if (currentContextMenuId) showWireListItemModal(currentContextMenuId);
-    });
     document.getElementById('ctxActive').addEventListener('click', async () => {
         if (currentContextMenuId) {
             await setActiveWireListItem(currentContextMenuId);
