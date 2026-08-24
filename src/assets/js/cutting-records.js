@@ -3167,6 +3167,20 @@ function renderWireCutList() {
             actionsRow.appendChild(completeBtn);
             actionsRow.appendChild(removeBtn);
             card.appendChild(actionsRow);
+        } else if (item.status === 'completed' || item.status === 'removed') {
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+
+            const restoreBtn = document.createElement('button');
+            restoreBtn.className = 'px-2 py-0.5 bg-yellow-600 text-white rounded text-[9px] font-bold hover:bg-yellow-700 transition shadow';
+            restoreBtn.textContent = '🔄 Restore';
+            restoreBtn.onclick = (e) => {
+                e.stopPropagation();
+                restoreWireListItem(item.id);
+            };
+
+            actionsRow.appendChild(restoreBtn);
+            card.appendChild(actionsRow);
         }
 
         itemDiv.appendChild(card);
@@ -3313,6 +3327,29 @@ async function setActiveWireListItem(id) {
         }
     } catch (error) {
         console.error("Error setting active item:", error);
+    }
+}
+
+async function restoreWireListItem(id) {
+    let item = wireCutList.find(i => i.id === id);
+    if (!item && window.eecolDB && await window.eecolDB.isReady()) {
+        item = await window.eecolDB.get('wireCutList', id);
+    }
+    if (item) {
+        item.status = 'active';
+        item.updatedAt = Date.now();
+        delete item.removalReason;
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                showToast(`Order #${item.orderNumber || 'Item'} restored to active list`, 'success');
+            }
+        } catch (error) {
+            console.error("Error restoring wire list item:", error);
+            showToast("Failed to restore item", "error");
+        }
     }
 }
 

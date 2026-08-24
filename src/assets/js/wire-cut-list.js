@@ -299,6 +299,20 @@ function renderWireCutList() {
             actionsRow.appendChild(completeBtn);
             actionsRow.appendChild(removeBtn);
             card.appendChild(actionsRow);
+        } else if (item.status === 'completed' || item.status === 'removed') {
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+
+            const restoreBtn = document.createElement('button');
+            restoreBtn.className = 'px-2 py-0.5 bg-yellow-600 text-white rounded text-[9px] font-bold hover:bg-yellow-700 transition shadow';
+            restoreBtn.textContent = '🔄 Restore';
+            restoreBtn.onclick = (e) => {
+                e.stopPropagation();
+                restoreWireListItem(item.id);
+            };
+
+            actionsRow.appendChild(restoreBtn);
+            card.appendChild(actionsRow);
         }
 
         itemDiv.appendChild(card);
@@ -340,6 +354,33 @@ async function triggerAutoFill(id) {
     }
 
     showToast(`Autofilled details for Order #${item.orderNumber}! Please focus Cutting Records.`, 'success');
+}
+
+// Restore Wire List Item
+async function restoreWireListItem(id) {
+    const item = wireCutList.find(i => i.id === id);
+    if (item) {
+        item.status = 'active';
+        item.updatedAt = Date.now();
+        delete item.removalReason;
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+
+                const statusFilter = document.getElementById('wireListStatusFilter');
+                if (statusFilter && statusFilter.value !== 'all' && statusFilter.value !== 'active') {
+                    statusFilter.value = 'active';
+                }
+
+                await loadWireCutList();
+                showToast(`Order #${item.orderNumber || 'Item'} restored to active list`, 'success');
+            }
+        } catch (error) {
+            console.error("Error restoring wire list item:", error);
+            showToast("Failed to restore item", "error");
+        }
+    }
 }
 
 // Complete Wire List Item
