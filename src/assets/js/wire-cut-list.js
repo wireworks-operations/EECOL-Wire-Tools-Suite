@@ -538,7 +538,7 @@ function showWireListItemModal(id = null) {
     } else {
         title.textContent = 'Add Wire Cut List Item';
         document.getElementById('wireListOrder').value = '';
-        document.getElementById('wireListLine').value = '1';
+        document.getElementById('wireListLine').value = '001';
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
