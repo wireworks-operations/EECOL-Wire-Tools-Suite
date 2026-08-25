@@ -20,6 +20,7 @@
     <script src="../../core/database/indexeddb.js"></script>
     <script src="../../utils/modals.js"></script>
     <script src="../../utils/mobile-menu.js"></script>
+    <script src="../../assets/js/wire-cut-linker.js"></script>
 </head>
 
 <body class="p-3 sm:p-6 h-screen flex flex-col eecol-blue-bg relative">
@@ -110,6 +111,20 @@
                                 📂 Open Wire List
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Active Order Banner -->
+                    <div id="activeOrderBanner" class="hidden mb-4 p-3 bg-gradient-to-r from-amber-50 to-yellow-100 border-2 border-amber-400 rounded-xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🌟</span>
+                            <div>
+                                <p class="text-xs font-bold text-amber-900 uppercase tracking-wide">Active Cut List Order</p>
+                                <p id="activeOrderBannerText" class="text-sm font-black text-amber-950"></p>
+                            </div>
+                        </div>
+                        <button id="activeOrderAutofillBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow transition active:scale-95 flex items-center gap-1">
+                            📥 AutoFill Cut
+                        </button>
                     </div>
 
                     <h3 class="text-lg font-bold mb-3 text-center header-gradient">Record Wire Cut</h3>

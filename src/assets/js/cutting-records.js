@@ -2278,6 +2278,64 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize button states
     updateButtonStates();
 
+    // Initialize WireCutLinker communication
+    let activeItemForBanner = null;
+    if (typeof WireCutLinker !== 'undefined') {
+        window.wireCutLinker = new WireCutLinker();
+        window.wireCutLinker.startHeartbeatBroadcast();
+
+        window.wireCutLinker.onMessage(async (data) => {
+            if (data.type === 'trigger_autofill' && data.itemId) {
+                console.log('📡 AutoFill payload received via Linker for item ID:', data.itemId);
+                await autoFillCuttingForm(data.itemId);
+                window.wireCutLinker.send({
+                    type: 'autofill_ack',
+                    orderNumber: data.orderNumber || 'Item',
+                    sender: 'cutting_records'
+                });
+            } else if (data.type === 'active_order_update') {
+                updateActiveOrderBanner(data.activeItem);
+            }
+        });
+    }
+
+    async function checkActiveOrderState() {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            const list = await window.eecolDB.getAll('wireCutList');
+            const activeItem = list.find(i => i.isActive || i.isGroupActive);
+            updateActiveOrderBanner(activeItem);
+        }
+    }
+
+    function updateActiveOrderBanner(activeItem) {
+        const banner = document.getElementById('activeOrderBanner');
+        const text = document.getElementById('activeOrderBannerText');
+        const autofillBtn = document.getElementById('activeOrderAutofillBtn');
+
+        if (!banner || !text || !autofillBtn) return;
+
+        if (activeItem) {
+            activeItemForBanner = activeItem;
+            if (activeItem.isGroupActive) {
+                text.textContent = `📁 Group: "${activeItem.groupName}"`;
+            } else {
+                text.textContent = `Order #${activeItem.orderNumber || 'N/A'} - ${activeItem.customerName || 'N/A'} (${activeItem.wireType || 'N/A'} - ${activeItem.lengthZ || 0} Z)`;
+            }
+            banner.classList.remove('hidden');
+
+            autofillBtn.onclick = () => {
+                if (activeItemForBanner && activeItemForBanner.id) {
+                    autoFillCuttingForm(activeItemForBanner.id);
+                }
+            };
+        } else {
+            activeItemForBanner = null;
+            banner.classList.add('hidden');
+        }
+    }
+
+    await checkActiveOrderState();
+
     // Wire Cut List initialization
     initWireCutList();
 

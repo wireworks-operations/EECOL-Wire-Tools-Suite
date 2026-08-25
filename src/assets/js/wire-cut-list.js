@@ -429,13 +429,22 @@ function renderWireCutList() {
     });
 }
 
-// Trigger AutoFill via localStorage communication
+// Trigger AutoFill via localStorage communication & WireCutLinker
 async function triggerAutoFill(id) {
     const item = wireCutList.find(i => i.id === id);
     if (!item) return;
 
-    // Set localStorage key to trigger the storage listener in the Cutting Records tab
+    // Trigger storage event fallback
     localStorage.setItem('eecolWireListAutofillId', id);
+
+    // Send via WireCutLinker
+    if (window.wireCutLinker) {
+        window.wireCutLinker.send({
+            type: 'trigger_autofill',
+            itemId: id,
+            orderNumber: item.orderNumber || 'Item'
+        });
+    }
 
     // Attempt to focus parent/opener window
     if (window.opener) {
@@ -641,6 +650,9 @@ async function setActiveWireListItem(id) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
+            if (window.wireCutLinker) {
+                window.wireCutLinker.send({ type: 'active_order_update', activeItem: item || null });
+            }
             showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'info');
         }
     } catch (error) {
@@ -654,10 +666,15 @@ async function setActiveGroup(groupName) {
         item.isGroupActive = (item.groupName === groupName);
     });
 
+    const activeItem = wireCutList.find(i => i.isGroupActive);
+
     try {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
+            if (window.wireCutLinker) {
+                window.wireCutLinker.send({ type: 'active_order_update', activeItem: activeItem || null });
+            }
             showToast(`Group "${groupName}" set as Active Group`, 'info');
         }
     } catch (error) {
@@ -675,6 +692,9 @@ async function clearActiveWireListItem() {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
+            if (window.wireCutLinker) {
+                window.wireCutLinker.send({ type: 'active_order_update', activeItem: null });
+            }
             showToast('Active status cleared for all items & groups', 'warning');
         }
     } catch (error) {
@@ -980,9 +1000,43 @@ async function saveWireListOrder() {
     wireCutList = records.sort((a, b) => (a.position || 0) - (b.position || 0));
 }
 
+// Initialize Linker and Connection Badge
+function initLinkerConnection() {
+    if (typeof WireCutLinker === 'undefined') return;
+
+    window.wireCutLinker = new WireCutLinker();
+
+    const badge = document.getElementById('connectionBadge');
+
+    function updateBadge(connected) {
+        if (!badge) return;
+        if (connected) {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-green-100 text-green-800 border-green-300';
+            badge.textContent = '🟢 Connected to Cutting Records';
+        } else {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-red-100 text-red-800 border-red-300';
+            badge.textContent = '🔴 Cutting Records Not Detected';
+        }
+    }
+
+    window.wireCutLinker.onMessage((data) => {
+        if (data.type === 'heartbeat') {
+            updateBadge(true);
+        } else if (data.type === 'autofill_ack') {
+            showToast(`✅ Cutting Records received AutoFill for Order #${data.orderNumber}`, 'success');
+        }
+    });
+
+    // Heartbeat check loop
+    setInterval(() => {
+        updateBadge(window.wireCutLinker.isConnected());
+    }, 2000);
+}
+
 // Event Listeners Initialization
 document.addEventListener('DOMContentLoaded', async function() {
     await initDatabase();
+    initLinkerConnection();
 
     if (typeof initModalSystem === 'function') {
         initModalSystem();
