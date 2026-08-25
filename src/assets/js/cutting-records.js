@@ -2040,6 +2040,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderCutRecords();
         });
     }
+
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    if (clearFormBtn) {
+        clearFormBtn.addEventListener('click', () => {
+            clearForm();
+            showToast('Form cleared', 'info');
+        });
+    }
     const dateFrom = document.getElementById('dateFrom');
     if (dateFrom) {
         dateFrom.addEventListener('change', () => {
