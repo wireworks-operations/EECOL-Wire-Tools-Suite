@@ -1,5 +1,3 @@
-import { WireCutLinker } from '../../core/modules/WireCutLinker.js';
-
 /**
  * Dedicated Wire Cut List Workspace - JavaScript Module
  * Enterprise PWA
@@ -9,40 +7,28 @@ import { WireCutLinker } from '../../core/modules/WireCutLinker.js';
 let wireCutList = [];
 let wireListEditingId = null;
 let currentContextMenuId = null;
-let draggedItemId = null;
+let currentContextMenuType = 'item'; // 'item' or 'group'
+let draggedElementId = null;
 
-/**
- * Calculates whether black or white text has better contrast on a given background hex color.
- * Uses the standard WCAG relative luminance formula.
- * @param {string} hexColor - The background color in hexadecimal (e.g. "#ffffff" or "ffffff")
- * @returns {string} - "#ffffff" (white) for dark backgrounds, or "#1f2937" (dark gray) for light backgrounds
- */
-function getContrastColor(hexColor) {
-    if (!hexColor) return '#1f2937'; // Default text color is dark gray
+// Group styling palettes (Distinct Thin Borders & High Contrast Colors)
+const GROUP_PALETTES = [
+    { border: 'border-2 border-purple-500', headerBg: 'bg-purple-100', headerText: 'text-purple-900', badgeBorder: 'border-purple-400' },
+    { border: 'border-2 border-indigo-500', headerBg: 'bg-indigo-100', headerText: 'text-indigo-900', badgeBorder: 'border-indigo-400' },
+    { border: 'border-2 border-emerald-500', headerBg: 'bg-emerald-100', headerText: 'text-emerald-900', badgeBorder: 'border-emerald-400' },
+    { border: 'border-2 border-sky-500', headerBg: 'bg-sky-100', headerText: 'text-sky-900', badgeBorder: 'border-sky-400' },
+    { border: 'border-2 border-rose-500', headerBg: 'bg-rose-100', headerText: 'text-rose-900', badgeBorder: 'border-rose-400' },
+    { border: 'border-2 border-teal-500', headerBg: 'bg-teal-100', headerText: 'text-teal-900', badgeBorder: 'border-teal-400' },
+    { border: 'border-2 border-amber-500', headerBg: 'bg-amber-100', headerText: 'text-amber-900', badgeBorder: 'border-amber-400' }
+];
 
-    // Clean hex color string
-    let color = hexColor.replace('#', '');
-    if (color.length === 3) {
-        color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
+function getGroupStyle(groupName) {
+    if (!groupName) return GROUP_PALETTES[0];
+    let hash = 0;
+    for (let i = 0; i < groupName.length; i++) {
+        hash = groupName.charCodeAt(i) + ((hash << 5) - hash);
     }
-
-    if (color.length !== 6) return '#1f2937';
-
-    // Parse r, g, b
-    const r = parseInt(color.substring(0, 2), 16) / 255;
-    const g = parseInt(color.substring(2, 4), 16) / 255;
-    const b = parseInt(color.substring(4, 6), 16) / 255;
-
-    // Convert sRGB to linear RGB
-    const rL = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
-    const gL = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
-    const bL = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
-
-    // Calculate relative luminance
-    const L = 0.2126 * rL + 0.7152 * gL + 0.0722 * bL;
-
-    // Return dark color for light backgrounds and white for dark backgrounds
-    return L > 0.179 ? '#1f2937' : '#ffffff';
+    const index = Math.abs(hash) % GROUP_PALETTES.length;
+    return GROUP_PALETTES[index];
 }
 
 // Debounce utility for search input
@@ -97,10 +83,10 @@ function showToast(message, type = 'info') {
 
 // Initialize database
 async function initDatabase() {
-    if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
+    if (typeof EECOLIndexedDB !== 'undefined') {
         try {
             window.eecolDB = EECOLIndexedDB.getInstance();
-            await window.eecolDB.ready;
+            await window.eecolDB.isReady();
         } catch (error) {
             console.error('Failed to initialize database:', error);
             await showAlert("Failed to initialize database. Please refresh the page.", "Database Error");
@@ -121,12 +107,190 @@ async function loadWireCutList() {
     }
 }
 
-// Render Wire Cut List
+// Render Single Card Helper
+function renderSingleItemCard(item) {
+    const card = document.createElement('div');
+    card.className = 'wire-list-card cursor-pointer transition hover:brightness-95 p-3 rounded-lg border shadow-sm relative';
+    card.onclick = () => showWireListItemModal(item.id);
+
+    if (item.isActive) {
+        card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
+    }
+
+    if (item.color) {
+        card.style.backgroundColor = item.color;
+        card.style.borderColor = 'rgba(0,0,0,0.1)';
+    } else {
+        card.style.backgroundColor = '#ffffff';
+    }
+
+    // Header Labels
+    const headerRow = document.createElement('div');
+    headerRow.className = 'flex justify-between items-start border-b border-black/10 pb-1 mb-1 font-bold text-[10px] uppercase';
+
+    ['ORDER / LINE CUSTOMER', 'ORDER COMMENTS', 'SHIPPER COMMENTS'].forEach(text => {
+        const div = document.createElement('div');
+        div.textContent = text;
+        headerRow.appendChild(div);
+    });
+
+    // Content Row
+    const bodyRow = document.createElement('div');
+    bodyRow.className = 'flex gap-2';
+
+    // Left Column (Details)
+    const detailsCol = document.createElement('div');
+    detailsCol.className = 'w-1/3';
+
+    const orderLine = document.createElement('div');
+    orderLine.className = 'font-bold text-sm flex items-center gap-2 flex-wrap';
+    orderLine.textContent = `${item.orderNumber || 'N/A'} / ${item.lineNumber || '1'}`;
+
+    if (item.isActive) {
+        const activeBadge = document.createElement('span');
+        activeBadge.className = 'px-1 bg-amber-100 text-amber-800 rounded text-[8px] uppercase border border-amber-300 font-black';
+        activeBadge.textContent = '🌟 Active';
+        orderLine.appendChild(activeBadge);
+    }
+
+    if (item.isFullPick) {
+        const fpBadge = document.createElement('span');
+        fpBadge.className = 'px-1 bg-blue-100 text-blue-800 rounded text-[8px] uppercase border border-blue-300 font-black';
+        fpBadge.textContent = '📦 Full Pick';
+        orderLine.appendChild(fpBadge);
+    }
+
+    if (item.isReReel) {
+        const rrBadge = document.createElement('span');
+        rrBadge.className = 'px-1 bg-purple-100 text-purple-800 rounded text-[8px] uppercase border border-purple-300 font-black';
+        rrBadge.textContent = '🔄 Re-Reel';
+        orderLine.appendChild(rrBadge);
+    }
+
+    if (item.urgency && item.urgency !== 'normal') {
+        const urgencyBadge = document.createElement('span');
+        urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
+        urgencyBadge.textContent = item.urgency;
+        orderLine.appendChild(urgencyBadge);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'text-[9px] font-bold';
+    const dateStr = new Date(item.timestamp).toLocaleString('en-US', {
+        month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+    }).toUpperCase();
+    meta.textContent = `${dateStr} @ ${item.customerName || 'N/A'}`;
+
+    const highlightBox = document.createElement('div');
+    highlightBox.className = 'mt-2 bg-black/5 border border-black/10 p-1 rounded italic font-black text-xs';
+
+    const typeLength = document.createElement('div');
+    let typeLengthText = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
+    if (item.reelSize) {
+        typeLengthText += ` \u00A0\u00A0 [RLS: ${item.reelSize}\"]`;
+    }
+    typeLength.textContent = typeLengthText;
+
+    const desc = document.createElement('span');
+    desc.className = 'text-[9px] font-normal';
+    desc.textContent = item.description || '';
+
+    highlightBox.appendChild(typeLength);
+    highlightBox.appendChild(desc);
+
+    detailsCol.appendChild(orderLine);
+    detailsCol.appendChild(meta);
+    detailsCol.appendChild(highlightBox);
+
+    // Middle Column (Order Comments)
+    const orderCommentsCol = document.createElement('div');
+    orderCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+    orderCommentsCol.textContent = item.orderComments || '';
+
+    // Right Column (Shipper Comments)
+    const shipperCommentsCol = document.createElement('div');
+    shipperCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+    shipperCommentsCol.textContent = item.shipperComments || '';
+
+    bodyRow.appendChild(detailsCol);
+    bodyRow.appendChild(orderCommentsCol);
+    bodyRow.appendChild(shipperCommentsCol);
+
+    card.appendChild(headerRow);
+    card.appendChild(bodyRow);
+
+    // Removal Reason
+    if (item.status === 'removed' && item.removalReason) {
+        const reasonDiv = document.createElement('div');
+        reasonDiv.className = 'mt-1 p-1 bg-red-100/50 border border-red-200 rounded text-[9px] italic';
+        reasonDiv.textContent = `Removal Reason: ${item.removalReason}`;
+        card.appendChild(reasonDiv);
+    }
+
+    // Action Buttons (only for active items)
+    if (item.status === 'active') {
+        const actionsRow = document.createElement('div');
+        actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+
+        const autoFillBtn = document.createElement('button');
+        autoFillBtn.className = 'px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-md active:scale-95';
+        autoFillBtn.textContent = '📥 AutoFill Cut';
+        autoFillBtn.onclick = (e) => {
+            e.stopPropagation();
+            triggerAutoFill(item.id);
+        };
+
+        const completeBtn = document.createElement('button');
+        completeBtn.className = 'px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-md active:scale-95';
+        completeBtn.textContent = '✅ Complete';
+        completeBtn.onclick = (e) => {
+            e.stopPropagation();
+            completeWireListItem(item.id);
+        };
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition shadow-md active:scale-95';
+        removeBtn.textContent = '❌ Remove';
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            showRemovalReasonModal(item.id);
+        };
+
+        actionsRow.appendChild(autoFillBtn);
+        actionsRow.appendChild(completeBtn);
+        actionsRow.appendChild(removeBtn);
+        card.appendChild(actionsRow);
+    } else if (item.status === 'completed' || item.status === 'removed') {
+        const actionsRow = document.createElement('div');
+        actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+
+        const restoreBtn = document.createElement('button');
+        restoreBtn.className = 'px-3 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700 transition shadow-md active:scale-95';
+        restoreBtn.textContent = '🔄 Restore';
+        restoreBtn.onclick = (e) => {
+            e.stopPropagation();
+            restoreWireListItem(item.id);
+        };
+
+        actionsRow.appendChild(restoreBtn);
+        card.appendChild(actionsRow);
+    }
+
+    card.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        showWireListContextMenu(e, item.id, 'item');
+    });
+
+    return card;
+}
+
+// Render Wire Cut List (With Merged Groups)
 function renderWireCutList() {
     const container = document.getElementById('wireCutListItems');
     if (!container) return;
 
-    const filter = document.getElementById('wireListStatusFilter').value;
+    const filter = document.getElementById('wireListStatusFilter')?.value || 'active';
     const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
 
     container.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
@@ -143,7 +307,8 @@ function renderWireCutList() {
                 item.wireType,
                 item.description,
                 item.orderComments,
-                item.shipperComments
+                item.shipperComments,
+                item.groupName
             ].map(f => (f || '').toLowerCase());
 
             if (!searchFields.some(f => f.includes(searchTerm))) return false;
@@ -160,219 +325,126 @@ function renderWireCutList() {
         return;
     }
 
+    // Grouping entries for merged display while respecting global order
+    const renderBlocks = [];
+    const processedGroupNames = new Set();
+
     filtered.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'wire-list-item';
-        itemDiv.draggable = true;
-        itemDiv.dataset.id = item.id;
-
-        const card = document.createElement('div');
-        card.className = 'wire-list-card';
-        if (item.isActive) {
-            card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
+        if (item.groupName) {
+            if (!processedGroupNames.has(item.groupName)) {
+                processedGroupNames.add(item.groupName);
+                const groupItems = filtered.filter(i => i.groupName === item.groupName);
+                renderBlocks.push({ type: 'group', name: item.groupName, items: groupItems, position: item.position || 0 });
+            }
+        } else {
+            renderBlocks.push({ type: 'single', item: item, position: item.position || 0 });
         }
+    });
 
-        const textColor = getContrastColor(item.color);
-        const isDarkBackground = (textColor === '#ffffff');
-        const borderColorClass = isDarkBackground ? 'border-white/20' : 'border-black/10';
-        const highlightBoxBgClass = isDarkBackground ? 'bg-white/10' : 'bg-black/5';
-        const highlightBoxBorderClass = isDarkBackground ? 'border-white/20' : 'border-black/10';
+    renderBlocks.forEach(block => {
+        if (block.type === 'single') {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'wire-list-item';
+            itemDiv.draggable = true;
+            itemDiv.dataset.id = block.item.id;
+            itemDiv.dataset.type = 'single';
 
-        card.style.color = textColor;
-        if (item.color) {
-            card.style.backgroundColor = item.color;
-            card.style.borderColor = isDarkBackground ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
-        }
+            const card = renderSingleItemCard(block.item);
+            itemDiv.appendChild(card);
 
-        // Header Labels
-        const headerRow = document.createElement('div');
-        headerRow.className = `flex justify-between items-start border-b pb-1 mb-1 font-bold text-[10px] uppercase ${borderColorClass}`;
+            itemDiv.addEventListener('dragstart', () => {
+                itemDiv.classList.add('dragging');
+                draggedElementId = block.item.id;
+            });
 
-        ['ORDER / LINE CUSTOMER', 'ORDER COMMENTS', 'SHIPPER COMMENTS'].forEach(text => {
-            const div = document.createElement('div');
-            div.textContent = text;
-            headerRow.appendChild(div);
-        });
+            itemDiv.addEventListener('dragend', () => {
+                itemDiv.classList.remove('dragging');
+            });
 
-        // Content Row
-        const bodyRow = document.createElement('div');
-        bodyRow.className = 'flex gap-2';
+            container.appendChild(itemDiv);
+        } else if (block.type === 'group') {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'wire-list-item wire-group-container my-3 rounded-xl overflow-hidden shadow-md transition-all duration-200';
+            groupDiv.draggable = true;
+            groupDiv.dataset.groupName = block.name;
+            groupDiv.dataset.type = 'group';
 
-        // Left Column (Details)
-        const detailsCol = document.createElement('div');
-        detailsCol.className = 'w-1/3';
+            const groupStyle = getGroupStyle(block.name);
 
-        const orderLine = document.createElement('div');
-        orderLine.className = 'font-bold text-sm flex items-center gap-2';
-        orderLine.textContent = `${item.orderNumber || 'N/A'} / ${item.lineNumber || '1'}`;
+            // Check if group is active (if all items or any item marked isGroupActive)
+            const isGroupActive = block.items.some(i => i.isGroupActive);
+            if (isGroupActive) {
+                groupDiv.className += ' animate-pulse ring-4 ring-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.6)]';
+            }
 
-        if (item.isActive) {
-            const activeBadge = document.createElement('span');
-            activeBadge.className = 'px-1 bg-amber-100 text-amber-800 rounded text-[8px] uppercase border border-amber-300 font-black';
-            activeBadge.textContent = '🌟 Active';
-            orderLine.appendChild(activeBadge);
-        }
+            // Group Outer Border (Thin colored line)
+            groupDiv.classList.add(...groupStyle.border.split(' '));
 
-        if (item.urgency && item.urgency !== 'normal') {
-            const urgencyBadge = document.createElement('span');
-            urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
-            urgencyBadge.textContent = item.urgency;
-            orderLine.appendChild(urgencyBadge);
-        }
+            // Group Header Bar
+            const headerBar = document.createElement('div');
+            headerBar.className = `p-2.5 ${groupStyle.headerBg} ${groupStyle.headerText} flex justify-between items-center cursor-pointer font-bold border-b ${groupStyle.badgeBorder}`;
 
-        const meta = document.createElement('div');
-        meta.className = 'text-[9px] font-bold';
-        const dateStr = new Date(item.timestamp).toLocaleString('en-US', {
-            month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
-        }).toUpperCase();
-        meta.textContent = `${dateStr} @ ${item.customerName || 'N/A'}`;
+            const headerTitle = document.createElement('div');
+            headerTitle.className = 'flex items-center gap-2 text-xs uppercase tracking-wide';
+            headerTitle.innerHTML = `<span>📁 Group: <strong>${block.name}</strong></span> <span class="px-2 py-0.5 rounded-full bg-white/70 text-[10px] font-black shadow-xs">${block.items.length} Items</span>`;
 
-        const highlightBox = document.createElement('div');
-        highlightBox.className = `mt-2 p-1 rounded italic font-black text-xs ${highlightBoxBgClass} ${highlightBoxBorderClass}`;
+            if (isGroupActive) {
+                const groupActiveBadge = document.createElement('span');
+                groupActiveBadge.className = 'px-2 py-0.5 bg-amber-500 text-white rounded text-[9px] font-black uppercase shadow animate-bounce';
+                groupActiveBadge.textContent = '🌟 Active Group';
+                headerTitle.appendChild(groupActiveBadge);
+            }
 
-        const typeLength = document.createElement('div');
-        let typeLengthText = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
-        if (item.reelSize) {
-            typeLengthText += ` \u00A0\u00A0 [RLS: ${item.reelSize}\"]`;
-        }
-        if (item.isReReel) {
-            typeLengthText += ` \u00A0\u00A0 [🔄 RE-REEL]`;
-        }
-        if (item.isFullPick) {
-            typeLengthText += ` \u00A0\u00A0 [⚡ FULL PICK]`;
-        }
-        typeLength.textContent = typeLengthText;
+            headerBar.appendChild(headerTitle);
 
-        const desc = document.createElement('span');
-        desc.className = 'text-[9px] font-normal';
-        desc.style.color = isDarkBackground ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)';
-        desc.textContent = item.description || '';
-
-        highlightBox.appendChild(typeLength);
-        highlightBox.appendChild(desc);
-
-        detailsCol.appendChild(orderLine);
-        detailsCol.appendChild(meta);
-        detailsCol.appendChild(highlightBox);
-
-        // Middle Column (Order Comments)
-        const orderCommentsCol = document.createElement('div');
-        orderCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
-        orderCommentsCol.textContent = item.orderComments || '';
-
-        // Right Column (Shipper Comments)
-        const shipperCommentsCol = document.createElement('div');
-        shipperCommentsCol.className = `w-1/3 border-l pl-2 text-xs whitespace-pre-wrap ${borderColorClass}`;
-        shipperCommentsCol.textContent = item.shipperComments || '';
-
-        bodyRow.appendChild(detailsCol);
-        bodyRow.appendChild(orderCommentsCol);
-        bodyRow.appendChild(shipperCommentsCol);
-
-        card.appendChild(headerRow);
-        card.appendChild(bodyRow);
-
-        // Removal Reason
-        if (item.status === 'removed' && item.removalReason) {
-            const reasonDiv = document.createElement('div');
-            reasonDiv.className = `mt-1 p-1 border rounded text-[9px] italic ${isDarkBackground ? 'bg-red-900/40 border-red-500/30' : 'bg-red-100/50 border-red-200'}`;
-            reasonDiv.textContent = `Removal Reason: ${item.removalReason}`;
-            card.appendChild(reasonDiv);
-        }
-
-        // Action Buttons (only for active items)
-        if (item.status === 'active') {
-            const actionsRow = document.createElement('div');
-            actionsRow.className = `flex justify-end gap-2 mt-2 pt-1 border-t ${isDarkBackground ? 'border-white/10' : 'border-black/5'}`;
-
-            const autoFillBtn = document.createElement('button');
-            autoFillBtn.className = 'px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold hover:bg-blue-700 transition shadow';
-            autoFillBtn.textContent = '📥 AutoFill Cut';
-            autoFillBtn.onclick = (e) => {
+            headerBar.addEventListener('contextmenu', e => {
+                e.preventDefault();
                 e.stopPropagation();
-                triggerAutoFill(item.id);
-            };
+                showWireListContextMenu(e, block.name, 'group');
+            });
 
-            const completeBtn = document.createElement('button');
-            completeBtn.className = 'px-2 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold hover:bg-green-700 transition shadow';
-            completeBtn.textContent = '✅ Complete';
-            completeBtn.onclick = (e) => {
-                e.stopPropagation();
-                completeWireListItem(item.id);
-            };
+            // Group Items Body Container
+            const itemsContainer = document.createElement('div');
+            itemsContainer.className = 'p-2 space-y-2 bg-gray-50/50';
 
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'px-2 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold hover:bg-red-700 transition shadow';
-            removeBtn.textContent = '❌ Remove';
-            removeBtn.onclick = (e) => {
-                e.stopPropagation();
-                showRemovalReasonModal(item.id);
-            };
+            block.items.forEach(gItem => {
+                const subCard = renderSingleItemCard(gItem);
+                itemsContainer.appendChild(subCard);
+            });
 
-            actionsRow.appendChild(autoFillBtn);
-            actionsRow.appendChild(completeBtn);
-            actionsRow.appendChild(removeBtn);
-            card.appendChild(actionsRow);
+            groupDiv.appendChild(headerBar);
+            groupDiv.appendChild(itemsContainer);
+
+            groupDiv.addEventListener('dragstart', () => {
+                groupDiv.classList.add('dragging');
+                draggedElementId = block.name;
+            });
+
+            groupDiv.addEventListener('dragend', () => {
+                groupDiv.classList.remove('dragging');
+            });
+
+            container.appendChild(groupDiv);
         }
-
-        itemDiv.appendChild(card);
-
-        // Events
-        itemDiv.addEventListener('click', () => {
-            showWireListItemModal(item.id);
-        });
-
-        itemDiv.addEventListener('contextmenu', e => {
-            e.preventDefault();
-            showWireListContextMenu(e, item.id);
-        });
-
-        itemDiv.addEventListener('dragstart', () => {
-            itemDiv.classList.add('dragging');
-            draggedItemId = item.id;
-        });
-
-        itemDiv.addEventListener('dragend', () => {
-            itemDiv.classList.remove('dragging');
-        });
-
-        container.appendChild(itemDiv);
     });
 }
 
-// Trigger AutoFill via localStorage communication using WireCutLinker
+// Trigger AutoFill via localStorage communication & WireCutLinker
 async function triggerAutoFill(id) {
     const item = wireCutList.find(i => i.id === id);
     if (!item) return;
 
-    const linker = WireCutLinker.getInstance();
-    const result = await linker.requestAutofill(item);
+    // Trigger storage event fallback
+    localStorage.setItem('eecolWireListAutofillId', id);
 
-    if (result.status === 'DISCONNECTED') {
-        const confirmOpen = await showConfirm(
-            "The Cutting Records tool is not open or active in another tab. Open it now?",
-            "Cutting Records Inactive"
-        );
-        if (confirmOpen) {
-            window.open('../cutting-records/cutting-records.html', '_blank');
-        }
-        return;
+    // Send via WireCutLinker
+    if (window.wireCutLinker) {
+        window.wireCutLinker.send({
+            type: 'trigger_autofill',
+            itemId: id,
+            orderNumber: item.orderNumber || 'Item'
+        });
     }
-
-    if (result.status === 'CONFIRM_OVERWRITE') {
-        const confirmOverwrite = await showConfirm(
-            `The Cutting Records form already contains active cut data:\n\n` +
-            `Order: ${result.formState.orderNumber || 'N/A'}\n` +
-            `Customer: ${result.formState.customerName || 'N/A'}\n` +
-            `Wire: ${result.formState.wireId || 'N/A'}\n\n` +
-            `Do you want to overwrite it with this item's details (Order #${item.orderNumber})?`,
-            "Unsaved Data Conflict"
-        );
-        if (!confirmOverwrite) return;
-    }
-
-    // Trigger autofill safely
-    await linker.triggerAutofill(item.id);
 
     // Attempt to focus parent/opener window
     if (window.opener) {
@@ -384,6 +456,33 @@ async function triggerAutoFill(id) {
     }
 
     showToast(`Autofilled details for Order #${item.orderNumber}! Please focus Cutting Records.`, 'success');
+}
+
+// Restore Wire List Item
+async function restoreWireListItem(id) {
+    const item = wireCutList.find(i => i.id === id);
+    if (item) {
+        item.status = 'active';
+        item.updatedAt = Date.now();
+        delete item.removalReason;
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+
+                const statusFilter = document.getElementById('wireListStatusFilter');
+                if (statusFilter && statusFilter.value !== 'all' && statusFilter.value !== 'active') {
+                    statusFilter.value = 'active';
+                }
+
+                await loadWireCutList();
+                showToast(`Order #${item.orderNumber || 'Item'} restored to active list`, 'success');
+            }
+        } catch (error) {
+            console.error("Error restoring wire list item:", error);
+            showToast("Failed to restore item", "error");
+        }
+    }
 }
 
 // Complete Wire List Item
@@ -428,33 +527,29 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
             document.getElementById('wireListReelSize').value = item.reelSize || '';
-            const reReelEl = document.getElementById('wireListReReel');
-            if (reReelEl) reReelEl.value = item.isReReel ? 'yes' : 'no';
-            const fullPickEl = document.getElementById('wireListFullPick');
-            if (fullPickEl) fullPickEl.value = item.isFullPick ? 'yes' : 'no';
             document.getElementById('wireListUrgency').value = item.urgency || 'normal';
             document.getElementById('wireListStatus').value = item.status || 'active';
             document.getElementById('wireListDescription').value = item.description || '';
             document.getElementById('wireListOrderComments').value = item.orderComments || '';
             document.getElementById('wireListShipperComments').value = item.shipperComments || '';
+            document.getElementById('wireListFullPick').value = item.isFullPick ? 'yes' : 'no';
+            document.getElementById('wireListReReel').value = item.isReReel ? 'yes' : 'no';
         }
     } else {
         title.textContent = 'Add Wire Cut List Item';
         document.getElementById('wireListOrder').value = '';
-        document.getElementById('wireListLine').value = '1';
+        document.getElementById('wireListLine').value = '001';
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
         document.getElementById('wireListReelSize').value = '';
-        const reReelEl = document.getElementById('wireListReReel');
-        if (reReelEl) reReelEl.value = 'no';
-        const fullPickEl = document.getElementById('wireListFullPick');
-        if (fullPickEl) fullPickEl.value = 'no';
         document.getElementById('wireListUrgency').value = 'normal';
         document.getElementById('wireListStatus').value = 'active';
         document.getElementById('wireListDescription').value = '';
         document.getElementById('wireListOrderComments').value = '';
         document.getElementById('wireListShipperComments').value = '';
+        document.getElementById('wireListFullPick').value = 'no';
+        document.getElementById('wireListReReel').value = 'no';
     }
 
     modal.classList.remove('hidden');
@@ -477,6 +572,7 @@ function hideWireListItemModal() {
 }
 
 async function saveWireListItem() {
+    const existing = wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId) : null;
     const item = {
         id: wireListEditingId || crypto.randomUUID(),
         orderNumber: document.getElementById('wireListOrder').value.trim().toUpperCase(),
@@ -485,22 +581,38 @@ async function saveWireListItem() {
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
         lengthZ: document.getElementById('wireListLength').value.trim(),
         reelSize: document.getElementById('wireListReelSize').value.trim(),
-        isReReel: document.getElementById('wireListReReel') ? document.getElementById('wireListReReel').value === 'yes' : false,
-        isFullPick: document.getElementById('wireListFullPick') ? document.getElementById('wireListFullPick').value === 'yes' : false,
         urgency: document.getElementById('wireListUrgency').value,
         status: document.getElementById('wireListStatus').value,
         description: document.getElementById('wireListDescription').value.trim(),
         orderComments: document.getElementById('wireListOrderComments').value.trim(),
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
-        timestamp: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).timestamp : Date.now(),
-        position: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).position : wireCutList.length,
-        color: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).color : null,
-        isActive: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).isActive : false
+        isFullPick: document.getElementById('wireListFullPick').value === 'yes',
+        isReReel: document.getElementById('wireListReReel').value === 'yes',
+        timestamp: existing ? existing.timestamp : Date.now(),
+        position: existing ? existing.position : wireCutList.length,
+        color: existing ? existing.color : null,
+        isActive: existing ? existing.isActive : false,
+        isGroupActive: existing ? existing.isGroupActive : false,
+        groupId: existing ? existing.groupId : null,
+        groupName: existing ? existing.groupName : null
     };
 
     try {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.update('wireCutList', item);
+
+            // Ensure status filter shows the saved item
+            const statusFilter = document.getElementById('wireListStatusFilter');
+            if (statusFilter && statusFilter.value !== 'all' && statusFilter.value !== item.status) {
+                statusFilter.value = item.status;
+            }
+
+            // Clear search filter if active to avoid accidentally filtering out newly added item
+            const searchInput = document.getElementById('wireListSearch');
+            if (searchInput && searchInput.value.trim()) {
+                searchInput.value = '';
+            }
+
             await loadWireCutList();
             hideWireListItemModal();
             showToast("Item saved successfully", "success");
@@ -526,6 +638,7 @@ async function deleteWireListItem(id) {
 async function setActiveWireListItem(id) {
     wireCutList.forEach(item => {
         item.isActive = false;
+        item.isGroupActive = false;
     });
 
     const item = wireCutList.find(i => i.id === id);
@@ -537,27 +650,188 @@ async function setActiveWireListItem(id) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
-            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'success');
+            if (window.wireCutLinker) {
+                window.wireCutLinker.send({ type: 'active_order_update', activeItem: item || null });
+            }
+            showToast(`Order #${item?.orderNumber || 'Unknown'} set as Active`, 'info');
         }
     } catch (error) {
         console.error("Error setting active item:", error);
     }
 }
 
-async function clearActiveWireListItem(id) {
-    const item = wireCutList.find(i => i.id === id);
-    if (item) {
+async function setActiveGroup(groupName) {
+    wireCutList.forEach(item => {
         item.isActive = false;
-    }
+        item.isGroupActive = (item.groupName === groupName);
+    });
+
+    const activeItem = wireCutList.find(i => i.isGroupActive);
 
     try {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
             renderWireCutList();
-            showToast(`Order #${item?.orderNumber || 'Unknown'} active status removed`, 'warning');
+            if (window.wireCutLinker) {
+                window.wireCutLinker.send({ type: 'active_order_update', activeItem: activeItem || null });
+            }
+            showToast(`Group "${groupName}" set as Active Group`, 'info');
         }
     } catch (error) {
-        console.error("Error clearing active item:", error);
+        console.error("Error setting active group:", error);
+    }
+}
+
+async function clearActiveWireListItem() {
+    wireCutList.forEach(item => {
+        item.isActive = false;
+        item.isGroupActive = false;
+    });
+
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.bulkPut('wireCutList', wireCutList, false);
+            renderWireCutList();
+            if (window.wireCutLinker) {
+                window.wireCutLinker.send({ type: 'active_order_update', activeItem: null });
+            }
+            showToast('Active status cleared for all items & groups', 'warning');
+        }
+    } catch (error) {
+        console.error("Error clearing active status:", error);
+    }
+}
+
+async function disbandGroup(groupName) {
+    const itemsToUpdate = wireCutList.filter(item => item.groupName === groupName);
+    itemsToUpdate.forEach(item => {
+        item.groupName = null;
+        item.groupId = null;
+        item.isGroupActive = false;
+        item.updatedAt = Date.now();
+    });
+
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.bulkPut('wireCutList', itemsToUpdate, false);
+            await loadWireCutList();
+            showToast(`Disbanded group "${groupName}"`, 'warning');
+        }
+    } catch (error) {
+        console.error("Error disbanding group:", error);
+        showAlert("Failed to disband group.", "Error");
+    }
+}
+
+// Group Modal Management Logic
+function showGroupModal(id) {
+    currentContextMenuId = id;
+    const modal = document.getElementById('groupModal');
+    const modalContent = document.getElementById('groupModalContent');
+    const groupSelect = document.getElementById('groupSelect');
+    const existingContainer = document.getElementById('existingGroupContainer');
+    const groupNameInput = document.getElementById('groupNameInput');
+    const removeBtn = document.getElementById('removeFromGroupBtn');
+
+    groupSelect.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Choose Existing Group --';
+    groupSelect.appendChild(defaultOpt);
+
+    // Find unique existing groups
+    const uniqueGroups = [...new Set(wireCutList.map(item => item.groupName).filter(Boolean))];
+    if (uniqueGroups.length > 0) {
+        existingContainer.classList.remove('hidden');
+        uniqueGroups.forEach(gName => {
+            const opt = document.createElement('option');
+            opt.value = gName;
+            opt.textContent = `📁 ${gName}`;
+            groupSelect.appendChild(opt);
+        });
+    } else {
+        existingContainer.classList.add('hidden');
+    }
+
+    const item = wireCutList.find(i => i.id === id);
+    if (item && item.groupName) {
+        groupNameInput.value = item.groupName;
+        removeBtn.classList.remove('hidden');
+    } else {
+        groupNameInput.value = '';
+        removeBtn.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+        groupNameInput.focus();
+    }, 10);
+}
+
+function hideGroupModal() {
+    const modal = document.getElementById('groupModal');
+    const modalContent = document.getElementById('groupModalContent');
+
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+async function saveGroupAssignment() {
+    const inputVal = document.getElementById('groupNameInput').value.trim();
+    const selectVal = document.getElementById('groupSelect').value.trim();
+    const targetGroupName = inputVal || selectVal;
+
+    if (!targetGroupName) {
+        showAlert('Please select an existing group or type a new group name.', 'Group Name Required');
+        return;
+    }
+
+    const item = wireCutList.find(i => i.id === currentContextMenuId);
+    if (item) {
+        item.groupName = targetGroupName;
+        item.groupId = targetGroupName.toLowerCase().replace(/\s+/g, '_');
+        item.updatedAt = Date.now();
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                hideGroupModal();
+                showToast(`Order #${item.orderNumber || 'Item'} added to group "${targetGroupName}"`, 'success');
+            }
+        } catch (error) {
+            console.error("Error saving group assignment:", error);
+            showAlert("Failed to assign group.", "Error");
+        }
+    }
+}
+
+async function removeGroupAssignment() {
+    const item = wireCutList.find(i => i.id === currentContextMenuId);
+    if (item) {
+        const prevGroup = item.groupName;
+        item.groupName = null;
+        item.groupId = null;
+        item.isGroupActive = false;
+        item.updatedAt = Date.now();
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                hideGroupModal();
+                showToast(`Removed Order #${item.orderNumber || 'Item'} from group "${prevGroup}"`, 'warning');
+            }
+        } catch (error) {
+            console.error("Error removing group assignment:", error);
+            showAlert("Failed to remove from group.", "Error");
+        }
     }
 }
 
@@ -631,39 +905,44 @@ async function updateWireListItemColor(id, color) {
 }
 
 // Context Menu Logic
-function showWireListContextMenu(e, id) {
+function showWireListContextMenu(e, idOrGroupName, type = 'item') {
     const menu = document.getElementById('wireListContextMenu');
-    currentContextMenuId = id;
+    currentContextMenuId = idOrGroupName;
+    currentContextMenuType = type;
 
     menu.style.top = `${e.pageY}px`;
     menu.style.left = `${e.pageX}px`;
     menu.classList.remove('hidden');
 
-    const item = wireCutList.find(i => i.id === id);
-    const ctxActive = document.getElementById('ctxActive');
-    const ctxDeactivate = document.getElementById('ctxDeactivate');
+    const groupActiveBtn = document.getElementById('ctxGroupActive');
+    const disbandGroupBtn = document.getElementById('ctxDisbandGroup');
+    const itemActiveBtn = document.getElementById('ctxActive');
+    const addGroupBtn = document.getElementById('ctxGroup');
+    const removeBtn = document.getElementById('ctxRemove');
+    const pastelSection = document.getElementById('pastelSection');
 
-    if (item) {
-        if (item.color) {
+    if (type === 'group') {
+        if (groupActiveBtn) groupActiveBtn.classList.remove('hidden');
+        if (disbandGroupBtn) disbandGroupBtn.classList.remove('hidden');
+
+        if (itemActiveBtn) itemActiveBtn.classList.add('hidden');
+        if (addGroupBtn) addGroupBtn.classList.add('hidden');
+        if (removeBtn) removeBtn.classList.add('hidden');
+        if (pastelSection) pastelSection.classList.add('hidden');
+    } else {
+        if (groupActiveBtn) groupActiveBtn.classList.add('hidden');
+        if (disbandGroupBtn) disbandGroupBtn.classList.add('hidden');
+
+        if (itemActiveBtn) itemActiveBtn.classList.remove('hidden');
+        if (addGroupBtn) addGroupBtn.classList.remove('hidden');
+        if (removeBtn) removeBtn.classList.remove('hidden');
+        if (pastelSection) pastelSection.classList.remove('hidden');
+
+        const item = wireCutList.find(i => i.id === idOrGroupName);
+        if (item && item.color) {
             document.getElementById('ctxColorPicker').value = item.color;
         } else {
             document.getElementById('ctxColorPicker').value = '#fef08a';
-        }
-
-        // Conditionally show/hide Active/Deactivate options
-        if (ctxActive && ctxDeactivate) {
-            if (item.status === 'active') {
-                if (item.isActive) {
-                    ctxActive.classList.add('hidden');
-                    ctxDeactivate.classList.remove('hidden');
-                } else {
-                    ctxActive.classList.remove('hidden');
-                    ctxDeactivate.classList.add('hidden');
-                }
-            } else {
-                ctxActive.classList.add('hidden');
-                ctxDeactivate.classList.add('hidden');
-            }
         }
     }
 }
@@ -690,17 +969,28 @@ function getDragAfterElement(container, y) {
 
 async function saveWireListOrder() {
     const container = document.getElementById('wireCutListItems');
-    const items = [...container.querySelectorAll('.wire-list-item')];
+    const elements = [...container.querySelectorAll('.wire-list-item')];
     const itemsToUpdate = [];
+    let currentPos = 0;
 
-    for (let i = 0; i < items.length; i++) {
-        const id = items[i].dataset.id;
-        const item = wireCutList.find(item => item.id === id);
-        if (item) {
-            item.position = i;
-            itemsToUpdate.push(item);
+    elements.forEach(el => {
+        const type = el.dataset.type;
+        if (type === 'single') {
+            const id = el.dataset.id;
+            const item = wireCutList.find(i => i.id === id);
+            if (item) {
+                item.position = currentPos++;
+                itemsToUpdate.push(item);
+            }
+        } else if (type === 'group') {
+            const groupName = el.dataset.groupName;
+            const groupItems = wireCutList.filter(i => i.groupName === groupName);
+            groupItems.forEach(item => {
+                item.position = currentPos++;
+                itemsToUpdate.push(item);
+            });
         }
-    }
+    });
 
     if (itemsToUpdate.length > 0 && window.eecolDB && await window.eecolDB.isReady()) {
         await window.eecolDB.bulkPut('wireCutList', itemsToUpdate, false);
@@ -710,33 +1000,47 @@ async function saveWireListOrder() {
     wireCutList = records.sort((a, b) => (a.position || 0) - (b.position || 0));
 }
 
+// Initialize Linker and Connection Badge
+function initLinkerConnection() {
+    if (typeof WireCutLinker === 'undefined') return;
+
+    window.wireCutLinker = new WireCutLinker();
+
+    const badge = document.getElementById('connectionBadge');
+
+    function updateBadge(connected) {
+        if (!badge) return;
+        if (connected) {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-green-100 text-green-800 border-green-300';
+            badge.textContent = '🟢 Connected to Cutting Records';
+        } else {
+            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-red-100 text-red-800 border-red-300';
+            badge.textContent = '🔴 Cutting Records Not Detected';
+        }
+    }
+
+    window.wireCutLinker.onMessage((data) => {
+        if (data.type === 'heartbeat') {
+            updateBadge(true);
+        } else if (data.type === 'autofill_ack') {
+            showToast(`✅ Cutting Records received AutoFill for Order #${data.orderNumber}`, 'success');
+        }
+    });
+
+    // Heartbeat check loop
+    setInterval(() => {
+        updateBadge(window.wireCutLinker.isConnected());
+    }, 2000);
+}
+
 // Event Listeners Initialization
 document.addEventListener('DOMContentLoaded', async function() {
     await initDatabase();
+    initLinkerConnection();
 
     if (typeof initModalSystem === 'function') {
         initModalSystem();
     }
-
-    function updateConnectionBadge() {
-        const badge = document.getElementById('connectionBadge');
-        if (!badge) return;
-
-        const linker = WireCutLinker.getInstance();
-        const isActive = linker.isCuttingRecordsActive();
-
-        if (isActive) {
-            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-green-100 text-green-800 border-green-300 animate-pulse';
-            badge.textContent = '🟢 Cutting Records: Connected';
-        } else {
-            badge.className = 'px-3 py-1 text-xs font-bold rounded-full shadow-md border flex items-center gap-1.5 transition-all duration-300 bg-red-100 text-red-800 border-red-300';
-            badge.textContent = '🔴 Cutting Records: Disconnected';
-        }
-    }
-
-    // Run connection status update periodically
-    setInterval(updateConnectionBadge, 1500);
-    updateConnectionBadge();
 
     // Direct Add Button event
     const addBtnDirect = document.getElementById('addWireListItemBtnDirect');
@@ -755,16 +1059,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         searchInput.addEventListener('input', debounce(renderWireCutList, 250));
     }
 
-    // Initialize Pastel Presets (exactly the 6 soft colors: Yellow, Red, Green, Blue, Purple, Orange)
+    // Initialize Pastel Presets
     const pastelPresets = document.getElementById('pastelPresets');
     if (pastelPresets) {
         const softColors = [
-            '#fef08a', // Soft Yellow
-            '#fee2e2', // Soft Red
-            '#d1fae5', // Soft Green
-            '#dbeafe', // Soft Blue
-            '#f3e8ff', // Soft Purple
-            '#ffedd5'  // Soft Orange
+            '#eff6ff', // Soft Blue
+            '#ecfdf5', // Soft Green
+            '#fffbeb', // Soft Yellow
+            '#fef2f2', // Soft Red
+            '#f5f3ff', // Soft Purple
+            '#faf5ff', // Soft Pink
+            '#f0fdf4', // Soft Emerald
+            '#fff7ed'  // Soft Orange
         ];
 
         softColors.forEach(color => {
@@ -773,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             btn.style.backgroundColor = color;
             btn.onclick = (e) => {
                 e.stopPropagation();
-                if (currentContextMenuId) {
+                if (currentContextMenuId && currentContextMenuType === 'item') {
                     updateWireListItemColor(currentContextMenuId, color);
                 }
             };
@@ -785,7 +1091,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const ctxColorPicker = document.getElementById('ctxColorPicker');
     if (ctxColorPicker) {
         ctxColorPicker.addEventListener('input', (e) => {
-            if (currentContextMenuId) {
+            if (currentContextMenuId && currentContextMenuType === 'item') {
                 updateWireListItemColor(currentContextMenuId, e.target.value);
             }
         });
@@ -819,20 +1125,78 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (confirmRemBtn) confirmRemBtn.addEventListener('click', saveRemovalWithReason);
     if (remBackdrop) remBackdrop.addEventListener('click', hideRemovalReasonModal);
 
+    // Group Modal events
+    const cancelGroupBtn = document.getElementById('cancelGroupBtn');
+    const saveGroupBtn = document.getElementById('saveGroupBtn');
+    const removeGroupBtn = document.getElementById('removeFromGroupBtn');
+    const groupModalBackdrop = document.getElementById('groupModalBackdrop');
+    const groupSelect = document.getElementById('groupSelect');
+
+    if (cancelGroupBtn) cancelGroupBtn.addEventListener('click', hideGroupModal);
+    if (saveGroupBtn) saveGroupBtn.addEventListener('click', saveGroupAssignment);
+    if (removeGroupBtn) removeGroupBtn.addEventListener('click', removeGroupAssignment);
+    if (groupModalBackdrop) groupModalBackdrop.addEventListener('click', hideGroupModal);
+
+    const groupNameInput = document.getElementById('groupNameInput');
+    if (groupNameInput) {
+        groupNameInput.addEventListener('input', (e) => {
+            if (groupSelect && groupSelect.value !== e.target.value) {
+                groupSelect.value = '';
+            }
+        });
+    }
+
+    if (groupSelect) {
+        groupSelect.addEventListener('change', (e) => {
+            if (e.target.value) {
+                document.getElementById('groupNameInput').value = e.target.value;
+            }
+        });
+    }
+
     // Context menu events
     document.addEventListener('click', hideWireListContextMenu);
+
+    const ctxGroupActive = document.getElementById('ctxGroupActive');
+    if (ctxGroupActive) {
+        ctxGroupActive.addEventListener('click', async () => {
+            if (currentContextMenuId && currentContextMenuType === 'group') {
+                await setActiveGroup(currentContextMenuId);
+            }
+        });
+    }
+
+    const ctxDisbandGroup = document.getElementById('ctxDisbandGroup');
+    if (ctxDisbandGroup) {
+        ctxDisbandGroup.addEventListener('click', async () => {
+            if (currentContextMenuId && currentContextMenuType === 'group') {
+                const confirm = await showConfirm(`Disband group "${currentContextMenuId}"?`, 'Disband Group');
+                if (confirm) {
+                    await disbandGroup(currentContextMenuId);
+                }
+            }
+        });
+    }
+
     document.getElementById('ctxActive').addEventListener('click', async () => {
-        if (currentContextMenuId) {
+        if (currentContextMenuId && currentContextMenuType === 'item') {
             await setActiveWireListItem(currentContextMenuId);
         }
     });
-    document.getElementById('ctxDeactivate').addEventListener('click', async () => {
-        if (currentContextMenuId) {
-            await clearActiveWireListItem(currentContextMenuId);
-        }
+
+    const ctxClearActive = document.getElementById('ctxClearActive');
+    if (ctxClearActive) {
+        ctxClearActive.addEventListener('click', async () => {
+            await clearActiveWireListItem();
+        });
+    }
+
+    document.getElementById('ctxGroup').addEventListener('click', () => {
+        if (currentContextMenuId && currentContextMenuType === 'item') showGroupModal(currentContextMenuId);
     });
+
     document.getElementById('ctxRemove').addEventListener('click', async () => {
-        if (currentContextMenuId) {
+        if (currentContextMenuId && currentContextMenuType === 'item') {
             const confirm = await showConfirm('Remove this item from the list?', 'Remove Item');
             if (confirm) {
                 await deleteWireListItem(currentContextMenuId);
@@ -847,10 +1211,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             e.preventDefault();
             const afterElement = getDragAfterElement(container, e.clientY);
             const dragging = document.querySelector('.dragging');
-            if (afterElement == null) {
-                container.appendChild(dragging);
-            } else {
-                container.insertBefore(dragging, afterElement);
+            if (dragging) {
+                if (afterElement == null) {
+                    container.appendChild(dragging);
+                } else {
+                    container.insertBefore(dragging, afterElement);
+                }
             }
         });
 

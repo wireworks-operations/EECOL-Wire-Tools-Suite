@@ -1,5 +1,3 @@
-import { WireCutLinker } from '../../core/modules/WireCutLinker.js';
-
 /**
  * EECOL Wire Cut Records Tool - JavaScript Module
  * Modern IndexedDB implementation with P2P sync capability
@@ -7,27 +5,6 @@ import { WireCutLinker } from '../../core/modules/WireCutLinker.js';
 
 // Global variables
 let cutRecords = [];
-
-// Function to update shared form state via WireCutLinker ES6 module
-function updateSharedFormState() {
-    const linker = WireCutLinker.getInstance();
-    const state = {
-        orderNumber: document.getElementById('orderNumber')?.value.trim() || '',
-        customerName: document.getElementById('customerName')?.value.trim() || '',
-        wireId: document.getElementById('wireId')?.value.trim() || '',
-        cutLength: document.getElementById('cutLength')?.value.trim() || '',
-        reelSize: document.getElementById('reelSize')?.value.trim() || '',
-        coilOrReel: document.getElementById('coilOrReel')?.value || '',
-        pendingAutoFillId: pendingAutoFillId,
-        isDirty: !!(
-            document.getElementById('orderNumber')?.value.trim() ||
-            document.getElementById('customerName')?.value.trim() ||
-            document.getElementById('wireId')?.value.trim() ||
-            document.getElementById('cutLength')?.value.trim()
-        )
-    };
-    linker.updateFormState(state);
-}
 
 /**
  * BOLT OPTIMIZATION: High-performance date formatters
@@ -579,6 +556,8 @@ function clearForm() {
     document.getElementById('fullPick').checked = false;
     document.getElementById('noMarks').checked = false;
     document.getElementById('systemCut').checked = false;
+    const reReelEl = document.getElementById('reReel');
+    if (reReelEl) reReelEl.checked = false;
     document.getElementById('lineCode').value = '';
     document.getElementById('turnedToLineCode').value = '';
     document.getElementById('cutterName').value = '';
@@ -596,7 +575,6 @@ function clearForm() {
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
     document.getElementById('noMarks').dispatchEvent(new Event('change'));
     document.getElementById('systemCut').dispatchEvent(new Event('change'));
-    updateSharedFormState();
 }
 
 async function saveCutRecord() {
@@ -642,7 +620,7 @@ async function saveSingleRecord() {
         const isNoMarks = document.getElementById('noMarks').checked;
         const isSystemCut = document.getElementById('systemCut').checked;
         const isCutInSystem = document.getElementById('cutInSystem').checked;
-        const isReReel = document.getElementById('reReel') ? document.getElementById('reReel').checked : false;
+        const isReReel = document.getElementById('reReel')?.checked || false;
         const now = Date.now();
         const existingRecord = editingId ? cutRecords.find(r => r.id === editingId) : null;
 
@@ -1106,8 +1084,8 @@ function editRecord(id) {
     document.getElementById('noMarks').checked = record.isNoMarks || false;
     document.getElementById('systemCut').checked = !!record.isSystemCut;
     document.getElementById('cutInSystem').checked = !!record.isCutInSystem;
-    const reReelCheckbox = document.getElementById('reReel');
-    if (reReelCheckbox) reReelCheckbox.checked = !!record.isReReel;
+    const reReelEl = document.getElementById('reReel');
+    if (reReelEl) reReelEl.checked = !!record.isReReel;
     if (record.isFullPick || record.isNoMarks) {
         document.getElementById('startingMark').value = '';
         document.getElementById('startingMarkUnit').value = 'm';
@@ -1135,8 +1113,6 @@ function editRecord(id) {
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
     document.getElementById('noMarks').dispatchEvent(new Event('change'));
     document.getElementById('systemCut').dispatchEvent(new Event('change'));
-    if (reReelCheckbox) reReelCheckbox.dispatchEvent(new Event('change'));
-    updateSharedFormState();
 }
 
 function getFilteredRecords() {
@@ -1316,12 +1292,6 @@ function renderCutRecords() {
         cutInSystemSpan.className = 'font-bold';
         cutInSystemSpan.textContent = ` | Cut In System: ${record.isCutInSystem ? 'Yes' : 'No'}`;
         cutterP.appendChild(cutInSystemSpan);
-        if (record.isReReel) {
-            const reReelSpan = document.createElement('span');
-            reReelSpan.className = 'font-bold text-emerald-600';
-            reReelSpan.textContent = ' | Re-Reel';
-            cutterP.appendChild(reReelSpan);
-        }
         recordDiv.appendChild(cutterP);
 
         const commentsP = document.createElement('p');
@@ -1903,29 +1873,22 @@ document.addEventListener('DOMContentLoaded', async function() {
         initModalSystem();
     }
 
-    const linker = WireCutLinker.getInstance();
+    // Listen for storage events (AutoFill Cut from the other tab)
+    window.addEventListener('storage', async function(e) {
+        if (e.key === 'eecolWireListAutofillId' && e.newValue) {
+            const id = e.newValue;
+            console.log('📡 Autofill event detected for item ID:', id);
 
-    // Start heartbeat immediately on page load
-    linker.startHeartbeat();
+            // Clear autofill ID from localStorage to allow subsequent triggers
+            localStorage.removeItem('eecolWireListAutofillId');
 
-    // Listen for AutoFill Cut requests from the other tab/workspace
-    linker.listenForAutofill(async (id) => {
-        console.log('📡 Autofill event detected from WireCutLinker for item ID:', id);
-        // Attempt to focus this window
-        window.focus();
-        // AutoFill form
-        await autoFillCuttingForm(id);
+            // Attempt to focus this window
+            window.focus();
+
+            // AutoFill form
+            await autoFillCuttingForm(id);
+        }
     });
-
-    // Listen to input and change events inside recordsPage to update shared form state
-    ['input', 'change'].forEach(eventType => {
-        document.getElementById('recordsPage')?.addEventListener(eventType, () => {
-            updateSharedFormState();
-        });
-    });
-
-    // Initial call to sync initial form state (which is empty/clean)
-    updateSharedFormState();
 
     // Batch Entry Mode toggle
     const batchEntryModeCheckbox = document.getElementById('batchEntryMode');
@@ -2077,6 +2040,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderCutRecords();
         });
     }
+
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    if (clearFormBtn) {
+        clearFormBtn.addEventListener('click', () => {
+            clearForm();
+            showToast('Form cleared', 'info');
+        });
+    }
     const dateFrom = document.getElementById('dateFrom');
     if (dateFrom) {
         dateFrom.addEventListener('change', () => {
@@ -2104,13 +2075,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (dateTo) dateTo.value = '';
             displayedRecordsCount = 0;
             renderCutRecords();
-        });
-    }
-
-    const clearFormBtn = document.getElementById('clearFormBtn');
-    if (clearFormBtn) {
-        clearFormBtn.addEventListener('click', () => {
-            clearForm();
         });
     }
 
@@ -2282,12 +2246,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (exportJSONBtn) exportJSONBtn.addEventListener('click', exportJSONBackup);
     const importJSONBtn = document.getElementById('importJSONBtn');
     if (importJSONBtn) {
-        const jsonFileInput = document.getElementById('jsonFileInput');
         importJSONBtn.addEventListener('click', () => {
+            jsonFileInput = document.getElementById('jsonFileInput');
             if (jsonFileInput) jsonFileInput.click();
         });
 
         // Add the missing change event listener
+        jsonFileInput = document.getElementById('jsonFileInput');
         if (jsonFileInput) jsonFileInput.addEventListener('change', importJSONBackup);
     }
 
@@ -2320,6 +2285,64 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Initialize button states
     updateButtonStates();
+
+    // Initialize WireCutLinker communication
+    let activeItemForBanner = null;
+    if (typeof WireCutLinker !== 'undefined') {
+        window.wireCutLinker = new WireCutLinker();
+        window.wireCutLinker.startHeartbeatBroadcast();
+
+        window.wireCutLinker.onMessage(async (data) => {
+            if (data.type === 'trigger_autofill' && data.itemId) {
+                console.log('📡 AutoFill payload received via Linker for item ID:', data.itemId);
+                await autoFillCuttingForm(data.itemId);
+                window.wireCutLinker.send({
+                    type: 'autofill_ack',
+                    orderNumber: data.orderNumber || 'Item',
+                    sender: 'cutting_records'
+                });
+            } else if (data.type === 'active_order_update') {
+                updateActiveOrderBanner(data.activeItem);
+            }
+        });
+    }
+
+    async function checkActiveOrderState() {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            const list = await window.eecolDB.getAll('wireCutList');
+            const activeItem = list.find(i => i.isActive || i.isGroupActive);
+            updateActiveOrderBanner(activeItem);
+        }
+    }
+
+    function updateActiveOrderBanner(activeItem) {
+        const banner = document.getElementById('activeOrderBanner');
+        const text = document.getElementById('activeOrderBannerText');
+        const autofillBtn = document.getElementById('activeOrderAutofillBtn');
+
+        if (!banner || !text || !autofillBtn) return;
+
+        if (activeItem) {
+            activeItemForBanner = activeItem;
+            if (activeItem.isGroupActive) {
+                text.textContent = `📁 Group: "${activeItem.groupName}"`;
+            } else {
+                text.textContent = `Order #${activeItem.orderNumber || 'N/A'} - ${activeItem.customerName || 'N/A'} (${activeItem.wireType || 'N/A'} - ${activeItem.lengthZ || 0} Z)`;
+            }
+            banner.classList.remove('hidden');
+
+            autofillBtn.onclick = () => {
+                if (activeItemForBanner && activeItemForBanner.id) {
+                    autoFillCuttingForm(activeItemForBanner.id);
+                }
+            };
+        } else {
+            activeItemForBanner = null;
+            banner.classList.add('hidden');
+        }
+    }
+
+    await checkActiveOrderState();
 
     // Wire Cut List initialization
     initWireCutList();
@@ -3043,7 +3066,8 @@ async function loadWireCutList() {
 function renderWireCutList() {
     const container = document.getElementById('wireCutListItems');
     if (!container) return;
-    const filter = document.getElementById('wireListStatusFilter')?.value || 'all';
+
+    const filter = document.getElementById('wireListStatusFilter')?.value || 'active';
     const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
 
     container.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
@@ -3084,7 +3108,8 @@ function renderWireCutList() {
         itemDiv.dataset.id = item.id;
 
         const card = document.createElement('div');
-        card.className = 'wire-list-card';
+        card.className = 'wire-list-card cursor-pointer transition hover:brightness-95';
+        card.onclick = () => showWireListItemModal(item.id);
         if (item.isActive) {
             card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
         }
@@ -3188,7 +3213,7 @@ function renderWireCutList() {
             actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
 
             const autoFillBtn = document.createElement('button');
-            autoFillBtn.className = 'px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold hover:bg-blue-700 transition';
+            autoFillBtn.className = 'px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-md active:scale-95';
             autoFillBtn.textContent = '📥 AutoFill Cut';
             autoFillBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -3196,7 +3221,7 @@ function renderWireCutList() {
             };
 
             const completeBtn = document.createElement('button');
-            completeBtn.className = 'px-2 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold hover:bg-green-700 transition';
+            completeBtn.className = 'px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-md active:scale-95';
             completeBtn.textContent = '✅ Complete';
             completeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -3204,7 +3229,7 @@ function renderWireCutList() {
             };
 
             const removeBtn = document.createElement('button');
-            removeBtn.className = 'px-2 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold hover:bg-red-700 transition';
+            removeBtn.className = 'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition shadow-md active:scale-95';
             removeBtn.textContent = '❌ Remove';
             removeBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -3214,6 +3239,20 @@ function renderWireCutList() {
             actionsRow.appendChild(autoFillBtn);
             actionsRow.appendChild(completeBtn);
             actionsRow.appendChild(removeBtn);
+            card.appendChild(actionsRow);
+        } else if (item.status === 'completed' || item.status === 'removed') {
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+
+            const restoreBtn = document.createElement('button');
+            restoreBtn.className = 'px-3 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700 transition shadow-md active:scale-95';
+            restoreBtn.textContent = '🔄 Restore';
+            restoreBtn.onclick = (e) => {
+                e.stopPropagation();
+                restoreWireListItem(item.id);
+            };
+
+            actionsRow.appendChild(restoreBtn);
             card.appendChild(actionsRow);
         }
 
@@ -3364,6 +3403,29 @@ async function setActiveWireListItem(id) {
     }
 }
 
+async function restoreWireListItem(id) {
+    let item = wireCutList.find(i => i.id === id);
+    if (!item && window.eecolDB && await window.eecolDB.isReady()) {
+        item = await window.eecolDB.get('wireCutList', id);
+    }
+    if (item) {
+        item.status = 'active';
+        item.updatedAt = Date.now();
+        delete item.removalReason;
+
+        try {
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.update('wireCutList', item);
+                await loadWireCutList();
+                showToast(`Order #${item.orderNumber || 'Item'} restored to active list`, 'success');
+            }
+        } catch (error) {
+            console.error("Error restoring wire list item:", error);
+            showToast("Failed to restore item", "error");
+        }
+    }
+}
+
 async function completeWireListItem(id, silent = false) {
     let item = wireCutList.find(i => i.id === id);
     if (!item && window.eecolDB && await window.eecolDB.isReady()) {
@@ -3496,24 +3558,17 @@ async function autoFillCuttingForm(id) {
         coilOrReelSelect.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    const reReelCheckbox = document.getElementById('reReel');
+    if (reReelCheckbox) {
+        reReelCheckbox.checked = !!item.isReReel;
+        reReelCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
     // Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form
     const batchMode = document.getElementById('batchEntryMode');
     if (batchMode && batchMode.checked) {
         batchMode.checked = false;
         batchMode.dispatchEvent(new Event('change'));
-    }
-
-    // Handle Re-Reel and Full Pick integration
-    const reReelCheckbox = document.getElementById('reReel');
-    if (reReelCheckbox) {
-        reReelCheckbox.checked = !!(item.isReReel || item.reReel === 'yes');
-        reReelCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-
-    const fullPickCheckbox = document.getElementById('fullPick');
-    if (fullPickCheckbox) {
-        fullPickCheckbox.checked = !!(item.isFullPick || item.fullPick === 'yes');
-        fullPickCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Track this ID for automatic completion after record save
@@ -3524,8 +3579,6 @@ async function autoFillCuttingForm(id) {
 
     // Scroll to the form
     document.getElementById('recordsPage').scrollIntoView({ behavior: 'smooth' });
-
-    updateSharedFormState();
 }
 
 async function updateWireListItemColor(id, color) {

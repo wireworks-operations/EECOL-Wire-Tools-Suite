@@ -172,15 +172,11 @@ body {
 
 /* Wire Cut List Styles */
 .wire-list-item {
-    cursor: pointer;
+    cursor: grab;
     transition: all 0.2s ease;
     user-select: none;
     position: relative;
     border: 2px solid transparent;
-}
-
-.wire-list-item:hover {
-    filter: brightness(0.95);
 }
 
 .wire-list-item:active {
