@@ -31,6 +31,46 @@ function getGroupStyle(groupName) {
     return GROUP_PALETTES[index];
 }
 
+/**
+ * Calculates contrast color (dark gray '#1f2937' or white '#ffffff') based on WCAG relative luminance.
+ */
+function getContrastColor(color) {
+    if (!color) return '#1f2937';
+    let r = 0, g = 0, b = 0;
+    if (color.startsWith('#')) {
+        let hex = color.replace('#', '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(c => c + c).join('');
+        }
+        if (hex.length === 6) {
+            r = parseInt(hex.substring(0, 2), 16) / 255;
+            g = parseInt(hex.substring(2, 4), 16) / 255;
+            b = parseInt(hex.substring(4, 6), 16) / 255;
+        } else {
+            return '#1f2937';
+        }
+    } else if (color.startsWith('rgb')) {
+        const parts = color.match(/\d+/g);
+        if (parts && parts.length >= 3) {
+            r = parseInt(parts[0], 10) / 255;
+            g = parseInt(parts[1], 10) / 255;
+            b = parseInt(parts[2], 10) / 255;
+        } else {
+            return '#1f2937';
+        }
+    } else {
+        return '#1f2937';
+    }
+
+    const aR = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+    const aG = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+    const aB = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+
+    const luminance = 0.2126 * aR + 0.7152 * aG + 0.0722 * aB;
+
+    return luminance > 0.179 ? '#1f2937' : '#ffffff';
+}
+
 // Debounce utility for search input
 function debounce(func, wait) {
     let timeout;
@@ -117,16 +157,17 @@ function renderSingleItemCard(item) {
         card.classList.add('animate-pulse', 'ring-2', 'ring-amber-400', 'shadow-[0_0_15px_rgba(251,191,36,0.5)]');
     }
 
-    if (item.color) {
-        card.style.backgroundColor = item.color;
-        card.style.borderColor = 'rgba(0,0,0,0.1)';
-    } else {
-        card.style.backgroundColor = '#ffffff';
-    }
+    const bgColor = item.color || '#ffffff';
+    const textColor = getContrastColor(bgColor);
+    const isDarkBg = textColor === '#ffffff';
+
+    card.style.backgroundColor = bgColor;
+    card.style.color = textColor;
+    card.style.borderColor = isDarkBg ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
 
     // Header Labels
     const headerRow = document.createElement('div');
-    headerRow.className = 'flex justify-between items-start border-b border-black/10 pb-1 mb-1 font-bold text-[10px] uppercase';
+    headerRow.className = `flex justify-between items-start border-b ${isDarkBg ? 'border-white/20' : 'border-black/10'} pb-1 mb-1 font-bold text-[10px] uppercase`;
 
     ['ORDER / LINE CUSTOMER', 'ORDER COMMENTS', 'SHIPPER COMMENTS'].forEach(text => {
         const div = document.createElement('div');
@@ -175,14 +216,14 @@ function renderSingleItemCard(item) {
     }
 
     const meta = document.createElement('div');
-    meta.className = 'text-[9px] font-bold';
+    meta.className = `text-[9px] font-bold ${isDarkBg ? 'text-white/80' : 'text-gray-700'}`;
     const dateStr = new Date(item.timestamp).toLocaleString('en-US', {
         month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
     }).toUpperCase();
     meta.textContent = `${dateStr} @ ${item.customerName || 'N/A'}`;
 
     const highlightBox = document.createElement('div');
-    highlightBox.className = 'mt-2 bg-black/5 border border-black/10 p-1 rounded italic font-black text-xs';
+    highlightBox.className = `mt-2 ${isDarkBg ? 'bg-white/10 border-white/20' : 'bg-black/5 border-black/10'} p-1 rounded italic font-black text-xs`;
 
     const typeLength = document.createElement('div');
     let typeLengthText = `${item.lengthZ || '0'} Z \u00A0\u00A0 ${item.wireType || 'N/A'}`;
@@ -192,7 +233,7 @@ function renderSingleItemCard(item) {
     typeLength.textContent = typeLengthText;
 
     const desc = document.createElement('span');
-    desc.className = 'text-[9px] font-normal';
+    desc.className = `text-[9px] font-normal ${isDarkBg ? 'text-white/90' : 'text-gray-800'}`;
     desc.textContent = item.description || '';
 
     highlightBox.appendChild(typeLength);
@@ -204,12 +245,12 @@ function renderSingleItemCard(item) {
 
     // Middle Column (Order Comments)
     const orderCommentsCol = document.createElement('div');
-    orderCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+    orderCommentsCol.className = `w-1/3 border-l ${isDarkBg ? 'border-white/20' : 'border-black/10'} pl-2 text-[10px] whitespace-pre-wrap`;
     orderCommentsCol.textContent = item.orderComments || '';
 
     // Right Column (Shipper Comments)
     const shipperCommentsCol = document.createElement('div');
-    shipperCommentsCol.className = 'w-1/3 border-l border-black/10 pl-2 text-[10px] whitespace-pre-wrap';
+    shipperCommentsCol.className = `w-1/3 border-l ${isDarkBg ? 'border-white/20' : 'border-black/10'} pl-2 text-[10px] whitespace-pre-wrap`;
     shipperCommentsCol.textContent = item.shipperComments || '';
 
     bodyRow.appendChild(detailsCol);
@@ -222,7 +263,7 @@ function renderSingleItemCard(item) {
     // Removal Reason
     if (item.status === 'removed' && item.removalReason) {
         const reasonDiv = document.createElement('div');
-        reasonDiv.className = 'mt-1 p-1 bg-red-100/50 border border-red-200 rounded text-[9px] italic';
+        reasonDiv.className = `mt-1 p-1 ${isDarkBg ? 'bg-red-900/40 border-red-400 text-red-100' : 'bg-red-100/50 border-red-200 text-red-900'} border rounded text-[9px] italic`;
         reasonDiv.textContent = `Removal Reason: ${item.removalReason}`;
         card.appendChild(reasonDiv);
     }
@@ -230,7 +271,7 @@ function renderSingleItemCard(item) {
     // Action Buttons (only for active items)
     if (item.status === 'active') {
         const actionsRow = document.createElement('div');
-        actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+        actionsRow.className = `flex justify-end gap-2 mt-2 pt-1 border-t ${isDarkBg ? 'border-white/20' : 'border-black/10'}`;
 
         const autoFillBtn = document.createElement('button');
         autoFillBtn.className = 'px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-md active:scale-95';
@@ -262,7 +303,7 @@ function renderSingleItemCard(item) {
         card.appendChild(actionsRow);
     } else if (item.status === 'completed' || item.status === 'removed') {
         const actionsRow = document.createElement('div');
-        actionsRow.className = 'flex justify-end gap-2 mt-2 pt-1 border-t border-black/5';
+        actionsRow.className = `flex justify-end gap-2 mt-2 pt-1 border-t ${isDarkBg ? 'border-white/20' : 'border-black/10'}`;
 
         const restoreBtn = document.createElement('button');
         restoreBtn.className = 'px-3 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-bold hover:bg-yellow-700 transition shadow-md active:scale-95';
@@ -490,11 +531,18 @@ async function completeWireListItem(id, silent = false) {
     const item = wireCutList.find(i => i.id === id);
     if (item) {
         item.status = 'completed';
+        item.isActive = false;
+        item.isGroupActive = false;
         item.updatedAt = Date.now();
         try {
             if (window.eecolDB && await window.eecolDB.isReady()) {
                 await window.eecolDB.update('wireCutList', item);
                 await loadWireCutList();
+
+                if (window.wireCutLinker) {
+                    const activeItem = wireCutList.find(i => (i.status === 'active' || !i.status) && (i.isActive || i.isGroupActive));
+                    window.wireCutLinker.send({ type: 'active_order_update', activeItem: activeItem || null });
+                }
 
                 if (silent) {
                     showToast(`Order #${item.orderNumber} completed`, 'success');
@@ -628,6 +676,12 @@ async function deleteWireListItem(id) {
         if (window.eecolDB && await window.eecolDB.isReady()) {
             await window.eecolDB.delete('wireCutList', id);
             await loadWireCutList();
+
+            if (window.wireCutLinker) {
+                const activeItem = wireCutList.find(i => (i.status === 'active' || !i.status) && (i.isActive || i.isGroupActive));
+                window.wireCutLinker.send({ type: 'active_order_update', activeItem: activeItem || null });
+            }
+
             showToast("Item deleted", "success");
         }
     } catch (error) {
@@ -873,12 +927,20 @@ async function saveRemovalWithReason() {
     const item = wireCutList.find(i => i.id === currentContextMenuId);
     if (item) {
         item.status = 'removed';
+        item.isActive = false;
+        item.isGroupActive = false;
         item.removalReason = reason;
         item.updatedAt = Date.now();
         try {
             if (window.eecolDB && await window.eecolDB.isReady()) {
                 await window.eecolDB.update('wireCutList', item);
                 await loadWireCutList();
+
+                if (window.wireCutLinker) {
+                    const activeItem = wireCutList.find(i => (i.status === 'active' || !i.status) && (i.isActive || i.isGroupActive));
+                    window.wireCutLinker.send({ type: 'active_order_update', activeItem: activeItem || null });
+                }
+
                 hideRemovalReasonModal();
                 await showAlert('Item archived with reason.', 'Removed');
             }
