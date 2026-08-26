@@ -712,19 +712,34 @@
 
     <!-- Context Menu -->
     <div id="wireListContextMenu" class="fixed z-50 hidden bg-white border border-gray-300 rounded shadow-xl py-2 w-56">
-        <button id="contextMakeActiveBtn" type="button" class="w-full text-left px-4 py-2 hover:bg-amber-50 text-xs font-semibold text-amber-900 flex items-center gap-2">
-            🌟 Make Active Order
+        <!-- Group Context Actions -->
+        <button id="ctxGroupActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700 hidden">
+            🌟 Make Group Active
         </button>
-        <button id="contextEditItemBtn" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-xs text-gray-700 flex items-center gap-2">
-            ✏️ Edit Item
+        <button id="ctxDisbandGroup" class="w-full text-left px-4 py-2 hover:bg-purple-100 text-sm flex items-center font-bold text-purple-800 hidden">
+            📂 Disband Group
         </button>
-        <button id="contextCompleteItemBtn" type="button" class="w-full text-left px-4 py-2 hover:bg-green-50 text-xs text-green-700 flex items-center gap-2">
-            ✅ Complete Item
+
+        <!-- Item Context Actions -->
+        <button id="ctxActive" class="w-full text-left px-4 py-2 hover:bg-yellow-100 text-sm flex items-center font-bold text-amber-700">
+            🌟 Make Item Active
         </button>
-        <div class="border-t border-gray-200 my-1"></div>
-        <button id="contextRemoveItemBtn" type="button" class="w-full text-left px-4 py-2 hover:bg-red-50 text-xs text-red-700 flex items-center gap-2">
-            🗑️ Remove Item
+        <button id="ctxClearActive" class="w-full text-left px-4 py-2 hover:bg-orange-100 text-sm flex items-center font-bold text-orange-700">
+            🛑 Clear Active Status
         </button>
+        <button id="ctxGroup" class="w-full text-left px-4 py-2 hover:bg-purple-100 text-sm flex items-center font-bold text-purple-800">
+            📁 Add to Group...
+        </button>
+        <button id="ctxRemove" class="w-full text-left px-4 py-2 hover:bg-red-100 text-sm flex items-center">
+            🗑️ Remove
+        </button>
+        <div id="pastelSection" class="px-4 py-2 border-t border-gray-100">
+            <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Softer Colors</p>
+            <div id="pastelPresets" class="grid grid-cols-4 gap-2 mb-2">
+                <!-- Preset buttons added by JS -->
+            </div>
+            <input type="color" id="ctxColorPicker" class="w-full h-6 cursor-pointer border-none p-0 opacity-50" title="Custom color (Softness advised)">
+        </div>
     </div>
 
     <script src="../../assets/js/cutting-records.js"></script>

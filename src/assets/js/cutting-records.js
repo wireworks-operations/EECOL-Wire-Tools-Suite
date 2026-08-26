@@ -2000,6 +2000,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
 
+            // Toggle reel details panel visibility
+            const reelPanel = document.getElementById('reelDetailsPanel');
+            if (reelPanel) {
+                if (isReel) {
+                    reelPanel.classList.remove('hidden');
+                } else {
+                    reelPanel.classList.add('hidden');
+                }
+            }
+
             // Enable/disable import button
             const importBtn = document.getElementById('importFromEstimatorBtn');
             if (importBtn) {
