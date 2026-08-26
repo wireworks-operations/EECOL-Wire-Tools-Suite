@@ -479,7 +479,6 @@ function clearForm() {
         if (el) el.checked = false;
     });
 
-    // Update Chip Button visual states
     syncMD3ChipState('singleUnitCut', 'btnSingleUnitCut');
     syncMD3ChipState('fullPick', 'btnFullPick');
     syncMD3ChipState('noMarks', 'btnNoMarks');
@@ -497,7 +496,6 @@ function clearForm() {
     document.getElementById('orderNumber').value = '';
     document.getElementById('customerName').value = '';
 
-    // Default Segmented options
     document.getElementById('coilOrReel').value = 'coil';
     syncSegmentedGroup('segGroupCoilOrReel', 'coilOrReel');
 
@@ -509,7 +507,6 @@ function clearForm() {
     document.getElementById('recordBtn').textContent = '✨ RECORD CUT';
     hideError();
 
-    // Trigger events
     document.getElementById('coilOrReel').dispatchEvent(new Event('change'));
     document.getElementById('singleUnitCut').dispatchEvent(new Event('change'));
     document.getElementById('fullPick').dispatchEvent(new Event('change'));
@@ -776,6 +773,11 @@ function updateButtonStates() {
     if (undoBadge) {
         undoBadge.textContent = undoStack.length;
     }
+
+    const batchUndoBtn = document.getElementById('batchUndoBtn');
+    const batchRedoBtn = document.getElementById('batchRedoBtn');
+    if (batchUndoBtn) batchUndoBtn.disabled = batchUndoStack.length === 0;
+    if (batchRedoBtn) batchRedoBtn.disabled = batchRedoStack.length === 0;
 }
 
 async function deleteRecord(id) {
@@ -944,6 +946,7 @@ function renderCutRecords() {
 
 function setupInfiniteScroll() {
     const cutHistoryList = document.getElementById('cutHistoryList');
+    if (!cutHistoryList) return;
     cutHistoryList.addEventListener('scroll', function() {
         if (isLoading || displayedRecordsCount >= cutRecords.length) return;
         if (this.scrollTop + this.clientHeight >= this.scrollHeight - 50) {
@@ -1002,9 +1005,9 @@ function setupMD3SegmentedGroups() {
     });
 }
 
-// Binds Progressive Disclosure Panels
+// Binds Progressive Disclosure Panels & Accordions
 function setupProgressiveDisclosure() {
-    // 1. Package Type (Coil vs Reel) progressive disclosure panel
+    // Coil vs Reel details panel toggle
     const coilOrReelSelect = document.getElementById('coilOrReel');
     const reelPanel = document.getElementById('reelDetailsPanel');
 
@@ -1018,7 +1021,7 @@ function setupProgressiveDisclosure() {
         });
     }
 
-    // 2. Optional Details Progressive Accordion
+    // Optional Details Accordion
     const toggleBtn = document.getElementById('toggleOptionalDetails');
     const contentPanel = document.getElementById('optionalDetailsContent');
     const chevron = document.getElementById('optionalDetailsChevron');
@@ -1035,9 +1038,330 @@ function setupProgressiveDisclosure() {
             }
         });
     }
+
+    // Quick Statistics Accordion Toggle
+    const toggleStatsBtn = document.getElementById('toggleStats');
+    const statsContent = document.getElementById('statsContent');
+    const statsToggle = document.getElementById('statsToggle');
+    if (toggleStatsBtn && statsContent && statsToggle) {
+        toggleStatsBtn.addEventListener('click', () => {
+            const isHidden = statsContent.classList.contains('hidden');
+            if (isHidden) {
+                statsContent.classList.remove('hidden');
+                statsToggle.textContent = '▼';
+            } else {
+                statsContent.classList.add('hidden');
+                statsToggle.textContent = '►';
+            }
+        });
+    }
+
+    // Quick Calculators Accordion Toggle
+    const toggleQuickCalc = document.getElementById('toggleQuickCalc');
+    const quickCalcSection = document.getElementById('quickCalcSection');
+    if (toggleQuickCalc && quickCalcSection) {
+        toggleQuickCalc.addEventListener('change', function() {
+            if (this.checked) {
+                quickCalcSection.classList.remove('hidden');
+            } else {
+                quickCalcSection.classList.add('hidden');
+            }
+        });
+    }
+
+    // Data Management Controls Accordion Toggle
+    const toggleDataControls = document.getElementById('toggleDataControls');
+    const dataControlsSection = document.getElementById('dataControlsSection');
+    if (toggleDataControls && dataControlsSection) {
+        toggleDataControls.addEventListener('change', function() {
+            if (this.checked) {
+                dataControlsSection.classList.remove('hidden');
+            } else {
+                dataControlsSection.classList.add('hidden');
+            }
+        });
+    }
 }
 
-// Event Listeners Initialization
+// Binds Quick Calculator functionality
+function setupQuickCalculators() {
+    const calcMarkDiffBtn = document.getElementById('calcMarkDiff');
+    if (calcMarkDiffBtn) {
+        calcMarkDiffBtn.addEventListener('click', function() {
+            const startMark = parseFloat(document.getElementById('quickStartMark').value);
+            const endMark = parseFloat(document.getElementById('quickEndMark').value);
+            const unit = document.getElementById('quickMarkUnit').value;
+            const resultEl = document.getElementById('markDiffResult');
+
+            if (isNaN(startMark) || isNaN(endMark)) {
+                resultEl.textContent = 'Please enter valid marks';
+                resultEl.classList.remove('hidden');
+                return;
+            }
+
+            let difference = Math.abs(endMark - startMark);
+            if (unit === 'm') {
+                resultEl.textContent = `📏 Length: ${difference.toFixed(2)} meters (${(difference * 3.28084).toFixed(2)} ft)`;
+            } else {
+                resultEl.textContent = `📏 Length: ${difference.toFixed(2)} feet (${(difference * 0.3048).toFixed(2)} m)`;
+            }
+            resultEl.classList.remove('hidden');
+        });
+    }
+
+    const calcStopMarkBtn = document.getElementById('calcStopMark');
+    if (calcStopMarkBtn) {
+        calcStopMarkBtn.addEventListener('click', function() {
+            const startMark = parseFloat(document.getElementById('quickStopStart').value);
+            const cutLength = parseFloat(document.getElementById('quickStopLength').value);
+            const unit = document.getElementById('quickStopUnit').value;
+            const countDown = document.getElementById('quickCountDown').checked;
+            const resultEl = document.getElementById('stopMarkResult');
+
+            if (isNaN(startMark) || isNaN(cutLength) || cutLength <= 0) {
+                resultEl.textContent = 'Please enter valid positive values';
+                resultEl.classList.remove('hidden');
+                return;
+            }
+
+            let stopMark = countDown ? startMark - cutLength : startMark + cutLength;
+            if (unit === 'm') {
+                resultEl.textContent = `🛑 Stop mark: ${stopMark.toFixed(2)} meters (${(stopMark * 3.28084).toFixed(2)} ft)`;
+            } else {
+                resultEl.textContent = `🛑 Stop mark: ${stopMark.toFixed(2)} feet (${(stopMark * 0.3048).toFixed(2)} m)`;
+            }
+            resultEl.classList.remove('hidden');
+        });
+    }
+}
+
+// Binds Batch Mode logic & dynamic entry generation
+function setupBatchMode() {
+    const batchEntryModeCheckbox = document.getElementById('batchEntryMode');
+    const singleCutForm = document.getElementById('singleCutForm');
+    const batchCutForm = document.getElementById('batchCutForm');
+    const wireIdContainer = document.getElementById('wireIdContainer');
+
+    if (batchEntryModeCheckbox && singleCutForm && batchCutForm && wireIdContainer) {
+        batchEntryModeCheckbox.addEventListener('change', function(e) {
+            if (e.target.checked) {
+                singleCutForm.classList.add('hidden');
+                batchCutForm.classList.remove('hidden');
+                wireIdContainer.classList.add('hidden');
+            } else {
+                singleCutForm.classList.remove('hidden');
+                batchCutForm.classList.add('hidden');
+                wireIdContainer.classList.remove('hidden');
+            }
+        });
+    }
+
+    const batchCutList = document.getElementById('batchCutList');
+    const addBatchCutBtn = document.getElementById('addBatchCutBtn');
+
+    function createBatchCutEntry(data = {}) {
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'p-3 border border-gray-200 rounded-xl space-y-2 bg-gray-50/50';
+
+        entryDiv.innerHTML = `
+            <div class="flex flex-wrap gap-2 items-center">
+                <input type="text" placeholder="Wire Type/ID" class="p-1.5 border border-gray-300 rounded-lg text-xs flex-grow font-semibold uppercase" />
+                <input type="number" placeholder="Cut Length" class="p-1.5 border border-gray-300 rounded-lg text-xs w-20 font-semibold" />
+                <select class="p-1.5 border border-gray-300 rounded-lg text-xs w-24 bg-white">
+                    <option value="m">Meters (m)</option>
+                    <option value="ft">Feet (ft)</option>
+                </select>
+                <input type="text" placeholder="Line Code" maxlength="3" class="p-1.5 border border-gray-300 rounded-lg text-xs w-20 font-mono uppercase" />
+                <input type="text" placeholder="Cutter Name" class="p-1.5 border border-gray-300 rounded-lg text-xs w-28 uppercase" />
+                <button type="button" class="removeBatchCutBtn px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold">Remove</button>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center text-xs">
+                <input type="number" placeholder="Start Mark" class="batchEntryStartingMark p-1.5 border border-gray-300 rounded-lg text-xs w-24" />
+                <select class="batchEntryStartingMarkUnit p-1.5 border border-gray-300 rounded-lg text-xs w-16 bg-white">
+                    <option value="m">m</option>
+                    <option value="ft">ft</option>
+                </select>
+                <input type="number" placeholder="End Mark" class="batchEntryEndingMark p-1.5 border border-gray-300 rounded-lg text-xs w-24" />
+                <select class="batchEntryEndingMarkUnit p-1.5 border border-gray-300 rounded-lg text-xs w-16 bg-white">
+                    <option value="m">m</option>
+                    <option value="ft">ft</option>
+                </select>
+                <select class="coilOrReelSelect p-1.5 border border-gray-300 rounded-lg text-xs w-24 bg-white">
+                    <option value="coil">Coil</option>
+                    <option value="reel">Reel</option>
+                </select>
+                <input type="number" placeholder="Reel Size" class="p-1.5 border border-gray-300 rounded-lg text-xs w-20 bg-gray-100" disabled />
+                <select class="p-1.5 border border-gray-300 rounded-lg text-xs w-24 bg-gray-100" disabled>
+                    <option value="">Chargeable?</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+            <div class="flex flex-wrap gap-3 items-center text-xs pt-1 border-t border-gray-200/60">
+                <label class="flex items-center gap-1"><input type="checkbox" class="batchEntrySingleUnitCut text-blue-600 rounded"> Single Unit</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="batchEntryFullPick text-blue-600 rounded"> Full Pick</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="batchEntryNoMarks text-blue-600 rounded"> No Marks</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="batchEntrySystemCut text-blue-600 rounded"> System Cut</label>
+            </div>
+        `;
+
+        if (data.wireId) entryDiv.querySelector('input[placeholder="Wire Type/ID"]').value = data.wireId;
+        if (data.cutLength) entryDiv.querySelector('input[placeholder="Cut Length"]').value = data.cutLength;
+
+        entryDiv.querySelector('.removeBatchCutBtn').addEventListener('click', () => {
+            if (batchCutList) batchCutList.removeChild(entryDiv);
+        });
+
+        return entryDiv;
+    }
+
+    if (addBatchCutBtn && batchCutList) {
+        addBatchCutBtn.addEventListener('click', () => {
+            batchCutList.appendChild(createBatchCutEntry());
+        });
+        if (batchCutList.children.length === 0) {
+            batchCutList.appendChild(createBatchCutEntry());
+        }
+    }
+}
+
+// Binds Data Management Controls (Exports, Imports, Print)
+function setupDataManagementControls() {
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) exportBtn.addEventListener('click', exportToCSV);
+
+    const exportDeltaBtn = document.getElementById('exportDeltaBtn');
+    if (exportDeltaBtn) exportDeltaBtn.addEventListener('click', exportDeltaToCSV);
+
+    const exportJSONBtn = document.getElementById('exportJSONBtn');
+    if (exportJSONBtn) exportJSONBtn.addEventListener('click', exportJSONBackup);
+
+    const importJSONBtn = document.getElementById('importJSONBtn');
+    const jsonFileInput = document.getElementById('jsonFileInput');
+    if (importJSONBtn && jsonFileInput) {
+        importJSONBtn.addEventListener('click', () => jsonFileInput.click());
+        jsonFileInput.addEventListener('change', importJSONBackup);
+    }
+
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) printBtn.addEventListener('click', () => printRecords());
+
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllRecords);
+}
+
+// CSV / JSON Exports
+function escapeCSVValue(value) {
+    if (value === null || value === undefined) return '';
+    let stringValue = value.toString();
+    if (['=', '+', '-', '@'].some(char => stringValue.startsWith(char))) {
+        stringValue = "'" + stringValue;
+    }
+    if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+}
+
+async function exportToCSV() {
+    if (cutRecords.length === 0) {
+        await showAlert('No cut records to export.', 'No Records');
+        return;
+    }
+
+    const header = [
+        'id', 'wireid', 'cutlength', 'cutlengthunit', 'startingmark', 'startingmarkunit', 'endingmark', 'endingmarkunit',
+        'cut from line code', 'cuttername', 'ordernumber', 'customername', 'coilorreel', 'reelsize', 'quantity', 'chargeable', 'ordercomments'
+    ];
+
+    const rows = cutRecords.map(r => [
+        escapeCSVValue(r.id), escapeCSVValue(r.wireId), escapeCSVValue(r.cutLength), escapeCSVValue(r.cutLengthUnit),
+        escapeCSVValue(r.startingMark), escapeCSVValue(r.startingMarkUnit), escapeCSVValue(r.endingMark), escapeCSVValue(r.endingMarkUnit),
+        escapeCSVValue(r.lineCode), escapeCSVValue(r.cutterName), escapeCSVValue(r.orderNumber), escapeCSVValue(r.customerName),
+        escapeCSVValue(r.coilOrReel), escapeCSVValue(r.reelSize), escapeCSVValue(1), escapeCSVValue(r.chargeable), escapeCSVValue(r.orderComments)
+    ]);
+
+    const csvContent = '\uFEFF' + [header, ...rows].map(e => e.join(',')).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cut_records_${cutRecords.length}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+async function exportDeltaToCSV() {
+    if (cutRecords.length === 0) {
+        await showAlert('No cut records to export.', 'No Records');
+        return;
+    }
+    await exportToCSV();
+}
+
+async function exportJSONBackup() {
+    const backup = {
+        records: cutRecords,
+        wireCutList: wireCutList,
+        timestamp: Date.now(),
+        version: '0.8.0.5',
+        exportDate: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `eecol_json_backup_${cutRecords.length}_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    await showAlert('JSON backup exported successfully!', 'Backup Success');
+}
+
+async function importJSONBackup(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const backupData = JSON.parse(e.target?.result);
+            if (!backupData.records || !Array.isArray(backupData.records)) {
+                await showAlert('Invalid backup file format.', 'Import Error');
+                return;
+            }
+
+            cutRecords = backupData.records;
+            if (window.eecolDB && await window.eecolDB.isReady()) {
+                await window.eecolDB.bulkPut('cuttingRecords', cutRecords, true);
+            }
+            displayedRecordsCount = 0;
+            renderCutRecords();
+            updateStats();
+            await showAlert(`Successfully imported ${cutRecords.length} records!`, 'Import Success');
+        } catch (err) {
+            await showAlert('Failed to import JSON file.', 'Import Error');
+        }
+    };
+    reader.readAsText(file);
+}
+
+function printRecords() {
+    window.print();
+}
+
+async function clearAllRecords() {
+    const confirmResult = await showConfirm('Are you sure you want to clear ALL cut records? This cannot be undone.', 'Clear All Records');
+    if (!confirmResult) return;
+    saveToHistory();
+    cutRecords = [];
+    await clearAllCutRecordsFromDB();
+    renderCutRecords();
+    updateStats();
+    showToast('All records cleared successfully.', 'info');
+}
+
+// Global Event Listeners Initialization
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof EECOLIndexedDB !== 'undefined' && !window.eecolDB) {
         try {
@@ -1052,17 +1376,89 @@ document.addEventListener('DOMContentLoaded', async function() {
         initModalSystem();
     }
 
-    // Setup MD3 UI glue
     setupMD3Chips();
     setupMD3SegmentedGroups();
     setupProgressiveDisclosure();
+    setupQuickCalculators();
+    setupBatchMode();
+    setupDataManagementControls();
 
-    // Event handlers for core inputs & buttons
+    // Field Disabled State Handlers
+    const coilOrReelSelect = document.getElementById('coilOrReel');
+    if (coilOrReelSelect) {
+        coilOrReelSelect.addEventListener('change', (e) => {
+            const isReel = e.target.value === 'reel';
+            const reelSizeInput = document.getElementById('reelSize');
+            const chargeableSelect = document.getElementById('chargeable');
+            const importBtn = document.getElementById('importFromEstimatorBtn');
+
+            if (reelSizeInput) reelSizeInput.disabled = !isReel;
+            if (chargeableSelect) chargeableSelect.disabled = !isReel;
+            if (importBtn) importBtn.disabled = !isReel;
+        });
+    }
+
+    const noMarksCheckbox = document.getElementById('noMarks');
+    if (noMarksCheckbox) {
+        noMarksCheckbox.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const startMark = document.getElementById('startingMark');
+            const endMark = document.getElementById('endingMark');
+            const startUnit = document.getElementById('startingMarkUnit');
+            if (startMark) startMark.disabled = isChecked;
+            if (endMark) endMark.disabled = isChecked;
+            if (startUnit) startUnit.disabled = isChecked;
+        });
+    }
+
+    const systemCutCheckbox = document.getElementById('systemCut');
+    if (systemCutCheckbox) {
+        systemCutCheckbox.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const orderNum = document.getElementById('orderNumber');
+            const custName = document.getElementById('customerName');
+            if (orderNum) orderNum.disabled = isChecked;
+            if (custName) custName.disabled = isChecked;
+        });
+    }
+
+    const singleUnitCutCheckbox = document.getElementById('singleUnitCut');
+    if (singleUnitCutCheckbox) {
+        singleUnitCutCheckbox.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const cutLengthInput = document.getElementById('cutLength');
+            const endMarkInput = document.getElementById('endingMark');
+            if (isChecked) {
+                if (cutLengthInput) cutLengthInput.value = '1';
+                if (endMarkInput) endMarkInput.disabled = true;
+            } else {
+                if (endMarkInput) endMarkInput.disabled = false;
+            }
+        });
+    }
+
+    // Single Cut Record action buttons
     const recordBtn = document.getElementById('recordBtn');
     if (recordBtn) recordBtn.addEventListener('click', saveCutRecord);
 
     const clearFormBtn = document.getElementById('clearFormBtn');
     if (clearFormBtn) clearFormBtn.addEventListener('click', clearForm);
+
+    const undoBtn = document.getElementById('undoBtn');
+    if (undoBtn) undoBtn.addEventListener('click', undo);
+
+    const redoBtn = document.getElementById('redoBtn');
+    if (redoBtn) redoBtn.addEventListener('click', redo);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault(); undo();
+        }
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'Z' && e.shiftKey))) {
+            e.preventDefault(); redo();
+        }
+    });
 
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
