@@ -46,6 +46,31 @@ body {
     color: var(--md-sys-color-primary);
 }
 
+/* MD3 Input Field with Icon Support */
+.md3-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.md3-input-icon {
+    position: absolute;
+    left: 0.875rem;
+    color: #64748b;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.md3-input-field-icon {
+    padding-left: 2.6rem !important;
+}
+
+.md3-input-field-icon:focus + .md3-input-icon,
+.md3-input-wrapper:focus-within .md3-input-icon {
+    color: var(--md-sys-color-primary);
+}
+
 /* MD3 Inputs and Controls */
 .md3-input-field {
     background-color: #ffffff;
@@ -71,6 +96,76 @@ body {
     cursor: not-allowed;
 }
 
+/* MD3 Chip Buttons (Replacing Raw Checkboxes) */
+.md3-chip-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 9999px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.md3-chip-btn:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.md3-chip-btn.active {
+    background-color: #e0f2fe;
+    border-color: #0284c7;
+    color: #0369a1;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(2, 132, 199, 0.2);
+}
+
+.md3-chip-btn.purple-active.active {
+    background-color: #f3e8ff;
+    border-color: #9333ea;
+    color: #6b21a8;
+    box-shadow: 0 1px 3px rgba(147, 51, 234, 0.2);
+}
+
+/* MD3 Segmented Toggle Button Group */
+.md3-segmented-group {
+    display: inline-flex;
+    background-color: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: var(--md-shape-corner-medium);
+    border: 1px solid #e2e8f0;
+    width: 100%;
+}
+
+.md3-segmented-btn {
+    flex: 1;
+    padding: 0.4rem 0.75rem;
+    border: none;
+    background-color: transparent;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: var(--md-shape-corner-small);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    text-align: center;
+}
+
+.md3-segmented-btn.active {
+    background-color: #ffffff;
+    color: var(--md-sys-color-primary);
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 /* MD3 Card Surface Container */
 .md3-card {
     background-color: #ffffff;
@@ -90,18 +185,24 @@ body {
     border: 1px solid var(--md-sys-color-surface-container);
 }
 
+/* Progressive Disclosure Animation */
+.md3-disclosure-panel {
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    overflow: hidden;
+}
+
 /* MD3 Buttons */
 .md3-btn-filled {
     background-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
     border-radius: var(--md-shape-corner-large);
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .md3-btn-filled:hover:not(:disabled) {
     background-color: #004690;
-    box-shadow: var(--md-elevation-1);
+    box-shadow: var(--md-elevation-2);
 }
 
 .md3-btn-tonal {

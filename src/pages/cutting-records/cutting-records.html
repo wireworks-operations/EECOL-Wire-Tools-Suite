@@ -27,11 +27,11 @@
 
     <!-- Main MD3 Container Surface -->
     <div id="recordsPage"
-        class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-6xl xl:max-w-7xl bg-white p-5 sm:p-8 rounded-[28px] shadow-sm hover:shadow-md transition-shadow duration-300 mx-auto border border-gray-100 flex flex-col mb-16 relative">
+        class="flex-1 w-full max-w-md md:max-w-xl lg:max-w-5xl xl:max-w-6xl bg-white p-5 sm:p-8 rounded-[28px] shadow-sm hover:shadow-md transition-shadow duration-300 mx-auto border border-gray-100 flex flex-col mb-16 relative">
 
         <!-- Header -->
         <div class="flex flex-col items-center mb-6">
-            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 shadow-sm border border-blue-100/50">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 shadow-xs border border-blue-100/50">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                     class="text-[#0058B3]">
                     <circle cx="12" cy="12" r="11.35" fill="white" stroke="currentColor" stroke-width="2" />
@@ -54,8 +54,8 @@
         <div class="flex-1 overflow-y-auto pr-1">
             <div class="flex flex-col pb-4 space-y-6">
 
-                <!-- Auth Status Banner (MD3 Tonal Style) -->
-                <div class="p-4 bg-amber-50/80 border border-amber-200/60 rounded-2xl shadow-sm">
+                <!-- Auth Status Banner -->
+                <div class="p-4 bg-amber-50/80 border border-amber-200/60 rounded-2xl shadow-xs">
                     <div class="flex items-center gap-2 mb-1">
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                         <p class="text-xs font-semibold text-amber-900 tracking-wide uppercase">IndexedDB Mode — Enhanced Persistence</p>
@@ -69,14 +69,14 @@
 
                 <!-- Export Status Notification -->
                 <div id="exportNotification"
-                    class="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl shadow-sm">
+                    class="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl shadow-xs">
                     <p class="text-xs font-semibold text-blue-900 uppercase tracking-wide">Last Export Status</p>
                     <p class="text-xs text-blue-700 mt-1 mb-1 font-medium">→ Click status link below to export standard CSV / JSON backups</p>
                     <p class="text-xs text-gray-700">JSON Export: <span id="lastJsonExport" class="font-semibold text-blue-800">Never exported</span></p>
                 </div>
 
-                <!-- Quick Statistics Section (MD3 Tonal Accordion Card) -->
-                <div class="bg-gray-50/80 border border-gray-200/70 rounded-2xl shadow-sm overflow-hidden transition-all duration-200">
+                <!-- Quick Statistics Section -->
+                <div class="bg-gray-50/80 border border-gray-200/70 rounded-2xl shadow-xs overflow-hidden transition-all duration-200">
                     <button id="toggleStats"
                         class="w-full p-4 text-left font-semibold text-gray-800 flex justify-between items-center hover:bg-gray-100/50 transition">
                         <span class="flex items-center gap-2 text-sm font-bold text-gray-700">
@@ -115,7 +115,7 @@
                 </div>
 
                 <!-- Wire Cut List Actions -->
-                <div class="p-4 bg-amber-50/50 border border-amber-200/80 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-3 justify-between items-center">
+                <div class="p-4 bg-amber-50/50 border border-amber-200/80 rounded-2xl shadow-xs flex flex-col sm:flex-row gap-3 justify-between items-center">
                     <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wide">
                         🗂️ Wire Cut List Workspace
                     </span>
@@ -148,15 +148,16 @@
                 <!-- Form Section Header -->
                 <div class="pt-2">
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight text-center">Record Wire Cut</h3>
-                    <p class="text-xs text-gray-500 text-center mt-0.5">Fill in the details below to log a single or batch cut record</p>
+                    <p class="text-xs text-gray-500 text-center mt-0.5">Fill in essential details below to log a single or batch cut record</p>
                 </div>
 
-                <!-- Search & Filter Card (MD3 Outlined Container) -->
+                <!-- Search & Filter Card -->
                 <div class="p-4 bg-gray-50/60 border border-gray-200/80 rounded-2xl shadow-2xs space-y-3">
                     <div class="flex flex-wrap gap-2.5">
-                        <div class="flex-1 min-w-56">
+                        <div class="flex-1 min-w-56 md3-input-wrapper">
+                            <span class="md3-input-icon">🔍</span>
                             <input id="searchInput" type="text" placeholder="Search by wire ID, order number, cutter..."
-                                class="w-full md3-input-field" />
+                                class="w-full md3-input-field md3-input-field-icon" />
                         </div>
                         <select id="filterByField" class="md3-input-field bg-white">
                             <option value="all">All Fields</option>
@@ -193,40 +194,44 @@
                     </div>
                 </div>
 
-                <!-- Entry Form Card Surface -->
+                <!-- Modern MD3 Entry Form Card Surface -->
                 <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-4">
 
-                    <!-- Order Number / IBT -->
-                    <div class="space-y-1">
-                        <label for="orderNumber" class="block text-xs font-semibold text-gray-700">
-                            Order Number / IBT Number
-                        </label>
-                        <input id="orderNumber" type="text" placeholder="1234567" maxlength="7"
-                            class="w-full md3-input-field tracking-wide font-mono" />
-                        <label class="inline-flex items-center mt-2 cursor-pointer">
-                            <input type="checkbox" id="batchEntryMode"
-                                class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                            <span class="ml-2 text-xs font-medium text-gray-800">Batch Entry Mode (Multiple Cuts)</span>
-                        </label>
+                    <!-- Core Inputs Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Order Number / IBT -->
+                        <div class="space-y-1">
+                            <label for="orderNumber" class="block text-xs font-semibold text-gray-700">
+                                Order Number / IBT Number
+                            </label>
+                            <div class="md3-input-wrapper">
+                                <span class="md3-input-icon">📋</span>
+                                <input id="orderNumber" type="text" placeholder="1234567" maxlength="7"
+                                    class="w-full md3-input-field md3-input-field-icon tracking-wide font-mono" />
+                            </div>
+                        </div>
+
+                        <!-- Customer Name -->
+                        <div class="space-y-1">
+                            <label for="customerName" class="block text-xs font-semibold text-gray-700">
+                                Customer Name / Branch
+                            </label>
+                            <div class="md3-input-wrapper">
+                                <span class="md3-input-icon">🏢</span>
+                                <input id="customerName" type="text" placeholder="EECOL Customer Name / EECOL Branch"
+                                    class="w-full md3-input-field md3-input-field-icon" />
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Customer Name -->
-                    <div class="space-y-1">
-                        <label for="customerName" class="block text-xs font-semibold text-gray-700">
-                            Customer Name / Branch
-                        </label>
-                        <input id="customerName" type="text" placeholder="EECOL Customer Name / EECOL Branch"
-                            class="w-full md3-input-field" />
-                    </div>
-
-                    <!-- Order Comments -->
-                    <div class="space-y-1">
-                        <label for="orderComments" class="block text-xs font-semibold text-gray-700">
-                            Order Comments
-                        </label>
-                        <input id="orderComments" type="text"
-                            placeholder="e.g., Damaged Wire, Under Shipment / Over Shipment"
-                            class="w-full md3-input-field" />
+                    <!-- Batch Entry Mode Chip Button -->
+                    <div class="pt-0.5">
+                        <button type="button" id="btnBatchEntryMode" class="md3-chip-btn">
+                            <span class="chip-icon">📄</span>
+                            <span>Batch Entry Mode (Multiple Cuts)</span>
+                        </button>
+                        <!-- Hidden native checkbox synced with button -->
+                        <input type="checkbox" id="batchEntryMode" class="hidden" />
                     </div>
 
                     <!-- Wire Type / ID -->
@@ -234,51 +239,65 @@
                         <label for="wireId" class="block text-xs font-semibold text-gray-700">
                             Wire Type / ID
                         </label>
-                        <input id="wireId" type="text" placeholder="TK6/3CU 1KV / ACWU90 6/3 AL"
-                            class="w-full md3-input-field font-semibold"
-                            list="wireIdOptions" required />
+                        <div class="md3-input-wrapper">
+                            <span class="md3-input-icon">⚡</span>
+                            <input id="wireId" type="text" placeholder="TK6/3CU 1KV / ACWU90 6/3 AL"
+                                class="w-full md3-input-field md3-input-field-icon font-semibold"
+                                list="wireIdOptions" required />
+                        </div>
                         <datalist id="wireIdOptions"></datalist>
                     </div>
 
-                    <!-- Cut Details Form -->
-                    <div id="singleCutForm" class="space-y-4 pt-2">
-                        <!-- Cut Length -->
-                        <div class="space-y-1">
-                            <label for="cutLength" class="block text-xs font-semibold text-gray-700">
-                                Length Cut
-                            </label>
-                            <div class="flex gap-2">
-                                <input id="cutLength" type="number" placeholder="Enter length value" value=""
-                                    class="flex-1 md3-input-field font-semibold text-base"
-                                    required />
-                                <select id="cutLengthUnit"
-                                    class="w-32 md3-input-field font-medium bg-white">
+                    <!-- Single Cut Form Details -->
+                    <div id="singleCutForm" class="space-y-4 pt-1">
+
+                        <!-- Cut Length with MD3 Segmented Unit Switch -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                            <div class="sm:col-span-2 space-y-1">
+                                <label for="cutLength" class="block text-xs font-semibold text-gray-700">
+                                    Length Cut
+                                </label>
+                                <div class="md3-input-wrapper">
+                                    <span class="md3-input-icon">📏</span>
+                                    <input id="cutLength" type="number" placeholder="Enter cut length" value=""
+                                        class="w-full md3-input-field md3-input-field-icon font-semibold text-base"
+                                        required />
+                                </div>
+                            </div>
+
+                            <!-- Unit Segmented Button Group -->
+                            <div>
+                                <label class="block text-[11px] font-medium text-gray-500 mb-1">Unit</label>
+                                <div class="md3-segmented-group" id="segGroupLengthUnit">
+                                    <button type="button" class="md3-segmented-btn active" data-value="m">Meters (m)</button>
+                                    <button type="button" class="md3-segmented-btn" data-value="ft">Feet (ft)</button>
+                                </div>
+                                <select id="cutLengthUnit" class="hidden">
                                     <option value="m">Meters (m)</option>
                                     <option value="ft">Feet (ft)</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Marks Container Card -->
-                        <div class="p-4 bg-gray-50/70 border border-gray-200/60 rounded-xl space-y-3">
+                        <!-- Marking Information Container Card -->
+                        <div class="p-4 bg-gray-50/70 border border-gray-200/60 rounded-2xl space-y-3">
                             <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-bold text-gray-700">Marking Information</span>
+                                <span class="text-xs font-bold text-gray-800">Marking Information</span>
                                 <button id="importFromCalculatorBtn"
                                     type="button"
-                                    class="px-3 py-1 bg-emerald-600 text-white text-xs font-medium rounded-lg hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition">
+                                    class="px-3 py-1 bg-emerald-600 text-white text-xs font-medium rounded-xl hover:bg-emerald-700 transition">
                                     📥 Import Marks
                                 </button>
                             </div>
 
-                            <!-- Starting Mark -->
+                            <!-- Starting & Ending Marks -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label for="startingMark" class="block text-[11px] font-medium text-gray-600 mb-1">Starting Mark</label>
                                     <div class="flex gap-1">
                                         <input id="startingMark" type="number" placeholder="Start unit" value=""
                                             class="w-full md3-input-field" />
-                                        <select id="startingMarkUnit"
-                                            class="md3-input-field bg-white text-xs">
+                                        <select id="startingMarkUnit" class="md3-input-field bg-white text-xs">
                                             <option value="m">m</option>
                                             <option value="ft">ft</option>
                                         </select>
@@ -289,8 +308,7 @@
                                     <div class="flex gap-1">
                                         <input id="endingMark" type="number" placeholder="End unit" value=""
                                             class="w-full md3-input-field" />
-                                        <select id="endingMarkUnit"
-                                            class="md3-input-field bg-gray-100 text-xs" disabled>
+                                        <select id="endingMarkUnit" class="md3-input-field bg-gray-100 text-xs" disabled>
                                             <option value="m">m</option>
                                             <option value="ft">ft</option>
                                         </select>
@@ -299,112 +317,149 @@
                             </div>
                         </div>
 
-                        <!-- Checkbox Toggles Group (MD3 Chip List style) -->
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
-                            <label class="p-2.5 border border-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition">
-                                <input id="singleUnitCut" type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span class="text-xs font-medium text-gray-800">Single Unit</span>
-                            </label>
-                            <label class="p-2.5 border border-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition">
-                                <input id="fullPick" type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span class="text-xs font-medium text-gray-800">Full Pick</span>
-                            </label>
-                            <label class="p-2.5 border border-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition">
-                                <input id="noMarks" type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span class="text-xs font-medium text-gray-800">No Marks</span>
-                            </label>
-                            <label class="p-2.5 border border-gray-200 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition">
-                                <input id="systemCut" type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                                <span class="text-xs font-medium text-gray-800">System Cut</span>
-                            </label>
-                            <label class="p-2.5 border border-purple-200 bg-purple-50/40 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-purple-50 transition">
-                                <input id="cutInSystem" type="checkbox" class="w-4 h-4 text-purple-600 rounded border-purple-300 focus:ring-purple-500" />
-                                <span class="text-xs font-medium text-purple-900">Cut In System</span>
-                            </label>
-                            <label class="p-2.5 border border-purple-200 bg-purple-50/40 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-purple-50 transition">
-                                <input id="reReel" type="checkbox" class="w-4 h-4 text-purple-600 rounded border-purple-300 focus:ring-purple-500" />
-                                <span class="text-xs font-medium text-purple-900">Re-Reel</span>
-                            </label>
+                        <!-- Modern Interactive Button Chips (Replacing Checkboxes) -->
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Options & Flags</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" id="btnSingleUnitCut" class="md3-chip-btn">
+                                    <span class="chip-icon">🔢</span>
+                                    <span>Single Unit</span>
+                                </button>
+                                <input type="checkbox" id="singleUnitCut" class="hidden" />
+
+                                <button type="button" id="btnFullPick" class="md3-chip-btn">
+                                    <span class="chip-icon">📦</span>
+                                    <span>Full Pick</span>
+                                </button>
+                                <input type="checkbox" id="fullPick" class="hidden" />
+
+                                <button type="button" id="btnNoMarks" class="md3-chip-btn">
+                                    <span class="chip-icon">🚫</span>
+                                    <span>No Marks</span>
+                                </button>
+                                <input type="checkbox" id="noMarks" class="hidden" />
+
+                                <button type="button" id="btnSystemCut" class="md3-chip-btn">
+                                    <span class="chip-icon">💻</span>
+                                    <span>System Cut</span>
+                                </button>
+                                <input type="checkbox" id="systemCut" class="hidden" />
+
+                                <button type="button" id="btnCutInSystem" class="md3-chip-btn purple-active">
+                                    <span class="chip-icon">⚙️</span>
+                                    <span>Cut In System</span>
+                                </button>
+                                <input type="checkbox" id="cutInSystem" class="hidden" />
+
+                                <button type="button" id="btnReReel" class="md3-chip-btn purple-active">
+                                    <span class="chip-icon">🔄</span>
+                                    <span>Re-Reel</span>
+                                </button>
+                                <input type="checkbox" id="reReel" class="hidden" />
+                            </div>
                         </div>
 
-                        <!-- Line Codes -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <!-- Line Code & Cutter Name -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                             <div>
                                 <label for="lineCode" class="block text-xs font-semibold text-gray-700 mb-1">
                                     Cut From Line Code
                                 </label>
-                                <input id="lineCode" type="text" placeholder="001 or A" maxlength="3"
-                                    class="w-full md3-input-field font-mono" required />
+                                <div class="md3-input-wrapper">
+                                    <span class="md3-input-icon">📍</span>
+                                    <input id="lineCode" type="text" placeholder="001 or A" maxlength="3"
+                                        class="w-full md3-input-field md3-input-field-icon font-mono" required />
+                                </div>
                             </div>
                             <div>
-                                <label for="turnedToLineCode" class="block text-xs font-semibold text-gray-700 mb-1">
-                                    Turned To Line Code
+                                <label for="cutterName" class="block text-xs font-semibold text-gray-700 mb-1">
+                                    Cutter Name
                                 </label>
-                                <input id="turnedToLineCode" type="text" placeholder="001 or A" maxlength="3"
-                                    class="w-full md3-input-field font-mono" required />
+                                <div class="md3-input-wrapper">
+                                    <span class="md3-input-icon">🧑‍🔧</span>
+                                    <input id="cutterName" type="text" placeholder="Employee Name"
+                                        class="w-full md3-input-field md3-input-field-icon" required />
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Cutter Name -->
-                        <div>
-                            <label for="cutterName" class="block text-xs font-semibold text-gray-700 mb-1">
-                                Cutter Name
-                            </label>
-                            <input id="cutterName" type="text" placeholder="Employee Name"
-                                class="w-full md3-input-field" required />
-                        </div>
-
-                        <!-- Reel / Coil Configuration -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- Package Type Segmented Button & Progressive Disclosure -->
+                        <div class="p-4 bg-gray-50/70 border border-gray-200/60 rounded-2xl space-y-3">
                             <div>
-                                <label for="coilOrReel" class="block text-xs font-semibold text-gray-700 mb-1">Package Type</label>
-                                <select id="coilOrReel" class="w-full md3-input-field bg-white">
+                                <label class="block text-xs font-bold text-gray-800 mb-1.5">Package Type</label>
+                                <div class="md3-segmented-group" id="segGroupCoilOrReel">
+                                    <button type="button" class="md3-segmented-btn active" data-value="coil">Coil</button>
+                                    <button type="button" class="md3-segmented-btn" data-value="reel">Reel</button>
+                                </div>
+                                <select id="coilOrReel" class="hidden">
                                     <option value="coil">Coil</option>
                                     <option value="reel">Reel</option>
                                 </select>
                             </div>
-                            <div>
-                                <label for="reelSize" class="block text-xs font-semibold text-gray-700 mb-1">Reel Size (in)</label>
-                                <div class="flex gap-1">
-                                    <input id="reelSize" type="number" placeholder="40" min="0" step="1"
-                                        class="w-full md3-input-field" disabled />
+
+                            <!-- Progressive Disclosure Reel Fields Panel -->
+                            <div id="reelDetailsPanel" class="hidden md3-disclosure-panel pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-gray-200/80">
+                                <div>
+                                    <label for="reelSize" class="block text-xs font-semibold text-gray-700 mb-1">Reel Size (in)</label>
+                                    <input id="reelSize" type="number" placeholder="40" min="0" step="1" class="w-full md3-input-field" disabled />
+                                    <button id="importFromEstimatorBtn" type="button"
+                                        class="mt-1.5 text-[11px] font-medium text-emerald-700 hover:underline disabled:text-gray-400 disabled:no-underline">
+                                        📥 Import Flange Size
+                                    </button>
                                 </div>
-                                <button id="importFromEstimatorBtn" type="button"
-                                    class="mt-1 text-[11px] font-medium text-emerald-700 hover:underline disabled:text-gray-400 disabled:no-underline">
-                                    📥 Import Flange Size
-                                </button>
-                            </div>
-                            <div>
-                                <label for="chargeable" class="block text-xs font-semibold text-gray-700 mb-1">Chargeable</label>
-                                <select id="chargeable" class="w-full md3-input-field" disabled>
-                                    <option value="">Select...</option>
-                                    <option value="yes">Yes</option>
-                                    <option value="no">No</option>
-                                </select>
+                                <div>
+                                    <label for="chargeable" class="block text-xs font-semibold text-gray-700 mb-1">Chargeable</label>
+                                    <select id="chargeable" class="w-full md3-input-field bg-white" disabled>
+                                        <option value="">Select...</option>
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Optional Details Progressive Disclosure Accordion -->
+                        <div class="border border-gray-200/70 rounded-2xl overflow-hidden bg-gray-50/40">
+                            <button type="button" id="toggleOptionalDetails" class="w-full p-3.5 text-left text-xs font-bold text-gray-700 flex justify-between items-center hover:bg-gray-100/50 transition">
+                                <span class="flex items-center gap-1.5">
+                                    ⚙️ Additional Details & Comments
+                                </span>
+                                <span id="optionalDetailsChevron" class="text-[10px] text-gray-400">►</span>
+                            </button>
+
+                            <div id="optionalDetailsContent" class="hidden p-4 space-y-3 bg-white border-t border-gray-200/70">
+                                <div>
+                                    <label for="turnedToLineCode" class="block text-xs font-semibold text-gray-700 mb-1">
+                                        Turned To Line Code
+                                    </label>
+                                    <input id="turnedToLineCode" type="text" placeholder="001 or A" maxlength="3" class="w-full md3-input-field font-mono" />
+                                </div>
+
+                                <div>
+                                    <label for="orderComments" class="block text-xs font-semibold text-gray-700 mb-1">
+                                        Order Comments
+                                    </label>
+                                    <input id="orderComments" type="text" placeholder="e.g., Damaged Wire, Under Shipment / Over Shipment" class="w-full md3-input-field" />
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Batch Cut Form -->
-                    <div id="batchCutForm"
-                        class="hidden space-y-4 bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+                    <div id="batchCutForm" class="hidden space-y-4 bg-gray-50/80 p-4 rounded-2xl border border-gray-200">
                         <h3 class="text-sm font-bold text-gray-800">Batch Cut Entries</h3>
                         <div class="text-xs text-gray-500">Add multiple items for bulk recording</div>
                         <div class="flex gap-2">
-                            <button id="batchUndoBtn"
-                                class="flex-1 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-800 font-medium py-1.5 px-3 rounded-lg text-xs transition"
-                                disabled>
+                            <button id="batchUndoBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-800 font-medium py-1.5 px-3 rounded-xl text-xs transition" disabled>
                                 ↶ Undo Batch
                             </button>
-                            <button id="batchRedoBtn"
-                                class="flex-1 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-800 font-medium py-1.5 px-3 rounded-lg text-xs transition"
-                                disabled>
+                            <button id="batchRedoBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-800 font-medium py-1.5 px-3 rounded-xl text-xs transition" disabled>
                                 ↷ Redo Batch
                             </button>
                         </div>
                         <div id="batchCutList" class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 p-2 rounded-xl bg-white"></div>
-                        <button id="addBatchCutBtn"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium text-xs">
+                        <button id="addBatchCutBtn" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium text-xs">
                             ➕ Add Batch Cut Row
                         </button>
                     </div>
@@ -414,7 +469,7 @@
                 <!-- Accordions: Quick Calculators & Data Management -->
                 <div class="space-y-3">
                     <!-- Quick Calculators Accordion -->
-                    <div class="p-3.5 bg-gray-50/80 border border-gray-200 rounded-xl shadow-2xs">
+                    <div class="p-3.5 bg-gray-50/80 border border-gray-200 rounded-2xl shadow-2xs">
                         <label class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" id="toggleQuickCalc" class="w-4 h-4 text-green-600 rounded border-gray-300" />
                             <span class="text-xs font-bold text-gray-800">📏 Show Quick Mark Calculators</span>
@@ -476,7 +531,7 @@
                     </div>
 
                     <!-- Data Management Controls Accordion -->
-                    <div class="p-3.5 bg-gray-50/80 border border-gray-200 rounded-xl shadow-2xs">
+                    <div class="p-3.5 bg-gray-50/80 border border-gray-200 rounded-2xl shadow-2xs">
                         <label class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" id="toggleDataControls" class="w-4 h-4 text-blue-600 rounded border-gray-300" />
                             <span class="text-xs font-bold text-gray-800">💾 Show Data Management Controls</span>
@@ -510,7 +565,7 @@
 
                         <button id="recordBtn"
                             class="flex-[2] bg-[#0058B3] hover:bg-[#004690] text-white font-bold py-3.5 px-6 rounded-2xl shadow-md hover:shadow-lg transition active:scale-98 tracking-wide text-sm flex items-center justify-center gap-2">
-                            <span>RECORD CUT</span>
+                            <span>✨ RECORD CUT</span>
                         </button>
 
                         <button id="redoBtn"
@@ -523,7 +578,7 @@
 
                 <!-- Error Box -->
                 <div id="errorBox"
-                    class="mt-3 p-3 bg-red-50 border border-red-200 text-red-800 rounded-2xl shadow-sm hidden">
+                    class="mt-3 p-3 bg-red-50 border border-red-200 text-red-800 rounded-2xl shadow-xs hidden">
                     <p class="font-bold text-xs">Input Error:</p>
                     <p id="errorMessage" class="text-xs mt-0.5"></p>
                 </div>
