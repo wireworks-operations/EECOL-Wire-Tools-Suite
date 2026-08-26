@@ -47,6 +47,7 @@ let displayedRecordsCount = 0;
 let recordsPerPage = 25;
 let isLoading = false;
 let currentSortField = 'timestamp'; // Default sort by timestamp
+let historyQuickFilter = 'all';
 let lastDeltaExport = null;
 let undoStack = [];
 let redoStack = [];
@@ -1123,12 +1124,16 @@ function getFilteredRecords() {
     const dateFrom = dateFromValue ? new Date(dateFromValue).getTime() : null;
     const dateTo = dateToValue ? new Date(dateToValue).getTime() + 86399999 : null; // Include entire day
 
-    /**
-     * BOLT OPTIMIZATION: High-performance filtering
-     * Avoids creating a 'fieldsToSearch' object for every single record in the loop.
-     * Uses direct property access and short-circuiting for O(N) efficiency without object overhead.
-     */
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
     return cutRecords.filter(record => {
+        // Quick Chip Filter
+        if (historyQuickFilter === 'today' && record.timestamp < startOfToday) return false;
+        if (historyQuickFilter === 'reel' && record.coilOrReel !== 'reel') return false;
+        if (historyQuickFilter === 'fullpick' && !record.isFullPick) return false;
+        if (historyQuickFilter === 'system' && !record.isSystemCut) return false;
+
         // Date filtering
         if (dateFrom && record.timestamp < dateFrom) return false;
         if (dateTo && record.timestamp > dateTo) return false;
@@ -1141,7 +1146,7 @@ function getFilteredRecords() {
             return val && val.toLowerCase().includes(searchTerm);
         }
 
-        // Search filtering across 'all' fields - optimized short-circuiting
+        // Search filtering across 'all' fields
         return (record.wireId && record.wireId.toLowerCase().includes(searchTerm)) ||
                (record.orderNumber && record.orderNumber.toLowerCase().includes(searchTerm)) ||
                (record.cutterName && record.cutterName.toLowerCase().includes(searchTerm)) ||
@@ -1188,177 +1193,171 @@ async function toggleCutInSystem(id) {
     }
 }
 
+function initQuickHistoryFilters() {
+    const filterContainer = document.getElementById('historyQuickFilters');
+    if (!filterContainer) return;
+
+    const buttons = filterContainer.querySelectorAll('.history-chip-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const filterVal = btn.getAttribute('data-filter');
+            historyQuickFilter = filterVal;
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCutRecords();
+        });
+    });
+}
+
 function renderCutRecords() {
-    const cutHistoryList = document.getElementById('cutHistoryList');
-    const totalRecordsElement = document.getElementById('totalRecordsCount');
-    const displayedRecordsElement = document.getElementById('displayedRecordsCount');
+    const cutHistoryList = document.getElementById("cutHistoryList");
+    const totalRecordsElement = document.getElementById("totalRecordsCount");
+    const displayedRecordsElement = document.getElementById("displayedRecordsCount");
 
     const filteredRecords = getFilteredRecords();
 
-    // Update counters
     totalRecordsElement.textContent = filteredRecords.length;
-
-    cutHistoryList.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
+    cutHistoryList.replaceChildren();
 
     if (filteredRecords.length === 0) {
-        const emptyMsg = document.createElement('p');
-        emptyMsg.className = 'text-sm text-gray-500';
-        emptyMsg.textContent = 'No cut records found yet.';
+        const emptyMsg = document.createElement("div");
+        emptyMsg.className = "p-6 bg-white rounded-2xl border border-gray-200 text-center space-y-1";
+        emptyMsg.innerHTML = `
+            <p class="text-sm font-bold text-gray-700">No records found</p>
+            <p class="text-xs text-gray-400">Try adjusting your quick filters or search terms.</p>
+        `;
         cutHistoryList.appendChild(emptyMsg);
-        displayedRecordsElement.textContent = '0';
-        // BOLT: Removed redundant updateStats() call from render loop
+        displayedRecordsElement.textContent = "0";
         return;
     }
 
-    // Load more records if needed
     const recordsToShow = Math.min(displayedRecordsCount + recordsPerPage, filteredRecords.length);
     displayedRecordsCount = recordsToShow;
     displayedRecordsElement.textContent = displayedRecordsCount;
 
+    const fragment = document.createDocumentFragment();
+
     filteredRecords.slice(0, displayedRecordsCount).forEach(record => {
-        const recordDiv = document.createElement('div');
-        recordDiv.className = 'cut-record-item';
+        const card = document.createElement("div");
+        card.className = "cut-record-card space-y-2.5";
 
-        const headerP = document.createElement('p');
-        headerP.className = 'text-xs font-semibold header-gradient truncate';
-        headerP.textContent = `Wire: ${record.wireId} | Cut From ${record.lineCode || 'N/A'} | Turned To L:${record.turnedToLineCode || 'N/A'} | Order: ${record.orderNumber} | Customer: ${record.customerName}`;
-        recordDiv.appendChild(headerP);
+        // Top Row: Wire Type + Length Badge
+        const topRow = document.createElement("div");
+        topRow.className = "flex justify-between items-center gap-2";
 
-        const detailsP = document.createElement('p');
-        detailsP.className = 'text-xs text-gray-700';
+        const wireTitle = document.createElement("div");
+        wireTitle.className = "flex items-center gap-1.5 font-bold text-xs text-gray-900 truncate";
+        wireTitle.innerHTML = `<span class="text-amber-600">⚡</span> ${window.escapeHTML(record.wireId || "UNKNOWN WIRE")}`;
 
-        const lengthSpan = document.createElement('span');
-        lengthSpan.className = 'font-bold';
-        lengthSpan.textContent = `${record.cutLength.toFixed(2)} ${record.cutLengthUnit}`;
+        const lengthBadge = document.createElement("span");
+        lengthBadge.className = "px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-full font-extrabold text-xs border border-blue-200/80 shrink-0";
+        lengthBadge.textContent = `${record.cutLength.toFixed(2)} ${record.cutLengthUnit}`;
 
-        detailsP.textContent = 'Cut Length: ';
-        detailsP.appendChild(lengthSpan);
-        detailsP.appendChild(document.createTextNode(' | '));
+        topRow.appendChild(wireTitle);
+        topRow.appendChild(lengthBadge);
+        card.appendChild(topRow);
 
-        let pickFlags = [];
-        if (record.isFullPick) pickFlags.push('Full Pick');
-        if (record.isNoMarks) pickFlags.push('No Marks');
+        // Sub-header: Order & Customer
+        const subRow = document.createElement("div");
+        subRow.className = "flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-600 font-medium";
+        subRow.innerHTML = `
+            <span>📋 Order: <strong class="text-gray-800 font-mono">${window.escapeHTML(record.orderNumber || "N/A")}</strong></span>
+            <span>🏢 Customer: <strong class="text-gray-800">${window.escapeHTML(record.customerName || "N/A")}</strong></span>
+        `;
+        card.appendChild(subRow);
 
-        if (pickFlags.length > 0) {
-            const flagsSpan = document.createElement('span');
-            flagsSpan.className = 'font-bold';
-            flagsSpan.textContent = pickFlags.join(', ');
-            detailsP.appendChild(flagsSpan);
+        // Badges Row
+        const badgeRow = document.createElement("div");
+        badgeRow.className = "flex flex-wrap gap-1.5 items-center pt-0.5";
 
-            if (record.startingMark && !record.isNoMarks) {
-                detailsP.appendChild(document.createTextNode(' | Start Mark: '));
-                const startSpan = document.createElement('span');
-                startSpan.className = 'font-bold';
-                startSpan.textContent = `${record.startingMark} ${record.startingMarkUnit}`;
-                detailsP.appendChild(startSpan);
-                detailsP.appendChild(document.createTextNode(' | End Mark: '));
-                const endSpan = document.createElement('span');
-                endSpan.className = 'font-bold';
-                endSpan.textContent = record.isSingleUnitCut ? '1 unit cut' : `${record.endingMark} ${record.endingMarkUnit}`;
-                detailsP.appendChild(endSpan);
-            }
-        } else if (record.startingMark && !record.isNoMarks) {
-            detailsP.appendChild(document.createTextNode('Start Mark: '));
-            const startSpan = document.createElement('span');
-            startSpan.className = 'font-bold';
-            startSpan.textContent = `${record.startingMark} ${record.startingMarkUnit}`;
-            detailsP.appendChild(startSpan);
-            detailsP.appendChild(document.createTextNode(' | End Mark: '));
-            const endSpan = document.createElement('span');
-            endSpan.className = 'font-bold';
-            endSpan.textContent = record.isSingleUnitCut ? '1 unit cut' : `${record.endingMark} ${record.endingMarkUnit}`;
-            detailsP.appendChild(endSpan);
-        } else {
-            detailsP.appendChild(document.createTextNode('No Marks'));
+        if (record.isFullPick) {
+            badgeRow.innerHTML += `<span class="px-2 py-0.5 bg-amber-100 text-amber-900 rounded-md text-[10px] font-bold border border-amber-300/60">✨ Full Pick</span>`;
         }
-        recordDiv.appendChild(detailsP);
-
-        const cutterP = document.createElement('p');
-        cutterP.className = 'text-xs text-gray-700';
-        let cutterText = `Cutter: ${record.cutterName} | `;
-        if (record.coilOrReel === 'coil') cutterText += 'Coil: Yes';
-        if (record.coilOrReel === 'reel' && record.chargeable === 'no') cutterText += 'Non-Chargeable Reel';
-        if (record.coilOrReel === 'reel' && record.chargeable === 'yes') {
-            cutterText += ` RLS EE-${record.reelSize ? record.reelSize : 'N/A'}W | Chargeable: ${record.chargeable}`;
-        }
-        cutterP.textContent = cutterText;
         if (record.isSystemCut) {
-            const systemSpan = document.createElement('span');
-            systemSpan.className = 'font-bold';
-            systemSpan.textContent = ' | System Cut';
-            cutterP.appendChild(systemSpan);
+            badgeRow.innerHTML += `<span class="px-2 py-0.5 bg-purple-100 text-purple-900 rounded-md text-[10px] font-bold border border-purple-300/60">💻 System Cut</span>`;
         }
-        const cutInSystemSpan = document.createElement('span');
-        cutInSystemSpan.className = 'font-bold';
-        cutInSystemSpan.textContent = ` | Cut In System: ${record.isCutInSystem ? 'Yes' : 'No'}`;
-        cutterP.appendChild(cutInSystemSpan);
-        recordDiv.appendChild(cutterP);
+        if (record.isReReel) {
+            badgeRow.innerHTML += `<span class="px-2 py-0.5 bg-indigo-100 text-indigo-900 rounded-md text-[10px] font-bold border border-indigo-300/60">🔄 Re-Reel</span>`;
+        }
 
-        const commentsP = document.createElement('p');
-        commentsP.className = 'text-xs text-gray-700';
-        commentsP.textContent = `Comments: ${record.orderComments || 'N/A'}`;
-        recordDiv.appendChild(commentsP);
+        if (record.coilOrReel === "reel") {
+            const reelLabel = record.reelSize ? `RLS EE-${record.reelSize}W` : "Reel";
+            badgeRow.innerHTML += `<span class="px-2 py-0.5 bg-blue-100 text-blue-900 rounded-md text-[10px] font-bold border border-blue-300/60">📦 ${reelLabel}</span>`;
+        } else {
+            badgeRow.innerHTML += `<span class="px-2 py-0.5 bg-gray-100 text-gray-800 rounded-md text-[10px] font-medium border border-gray-200">Coil</span>`;
+        }
 
-        /**
-         * BOLT OPTIMIZATION: High-performance date formatting
-         * Uses pre-initialized Intl.DateTimeFormat instead of .toLocaleString()
-         * which is significantly faster within high-frequency render loops.
-         */
-        const date = fullDateTimeFormat.format(record.timestamp);
-        const metaP = document.createElement('p');
-        metaP.className = 'text-xs text-gray-500';
-        metaP.textContent = `@ ${date} by Local`;
-        recordDiv.appendChild(metaP);
-
-        const createdDate = fullDateTimeFormat.format(record.createdAt || record.timestamp);
-        const updatedDate = record.updatedAt && record.updatedAt !== record.createdAt ? ` | Updated: ${fullDateTimeFormat.format(record.updatedAt)}` : '';
-        const createdP = document.createElement('p');
-        createdP.className = 'text-xs text-gray-400';
-        createdP.textContent = `Created: ${createdDate}${updatedDate}`;
-        recordDiv.appendChild(createdP);
-
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'flex justify-between items-center mt-1';
-
-        const btnGroup = document.createElement('div');
-        btnGroup.className = 'flex space-x-1';
-
-        const editBtn = document.createElement('button');
-        editBtn.onclick = () => editRecord(record.id);
-        editBtn.className = 'text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded';
-        editBtn.textContent = 'Edit';
-        btnGroup.appendChild(editBtn);
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.onclick = () => deleteRecord(record.id);
-        deleteBtn.className = 'text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded';
-        deleteBtn.textContent = 'Delete';
-        btnGroup.appendChild(deleteBtn);
-
-        actionsDiv.appendChild(btnGroup);
-
-        const cutInSystemButton = document.createElement('button');
         if (record.isCutInSystem) {
             const setDate = record.cutInSystemTimestamp ? (() => {
                 const d = new Date(record.cutInSystemTimestamp);
-                return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`;
-            })() : 'Unknown';
-            cutInSystemButton.disabled = true;
-            cutInSystemButton.className = 'text-xs bg-purple-600 text-white px-2 py-1 rounded cursor-not-allowed opacity-75';
-            cutInSystemButton.textContent = `✓ Cut In System (${setDate})`;
-            cutInSystemButton.title = `Marked as Cut In System on ${setDate}`;
-        } else {
-            cutInSystemButton.onclick = () => toggleCutInSystem(record.id);
-            cutInSystemButton.className = 'text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded';
-            cutInSystemButton.textContent = 'Cut In System';
+                return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}/${d.getFullYear()}`;
+            })() : "";
+            badgeRow.innerHTML += `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded-md text-[10px] font-bold border border-emerald-300/60">✓ Cut In System (${setDate})</span>`;
         }
-        actionsDiv.appendChild(cutInSystemButton);
-        recordDiv.appendChild(actionsDiv);
 
-        cutHistoryList.appendChild(recordDiv);
+        card.appendChild(badgeRow);
+
+        // Progressive Disclosure Drawer
+        const detailsDrawer = document.createElement("div");
+        detailsDrawer.className = "mt-2 pt-2 border-t border-gray-100 text-[11px] text-gray-600 space-y-1 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100";
+
+        let marksText = "No Marks";
+        if (record.startingMark && !record.isNoMarks) {
+            marksText = `Start: ${record.startingMark} ${record.startingMarkUnit} | End: ${record.isSingleUnitCut ? "1 unit cut" : `${record.endingMark} ${record.endingMarkUnit}`}`;
+        }
+
+        const dateStr = fullDateTimeFormat.format(record.timestamp);
+
+        detailsDrawer.innerHTML = `
+            <div class="grid grid-cols-2 gap-2">
+                <div>📍 Line: <strong class="font-mono text-gray-800">${window.escapeHTML(record.lineCode || "N/A")}</strong> ${record.turnedToLineCode ? `→ L:${window.escapeHTML(record.turnedToLineCode)}` : ""}</div>
+                <div>🧑‍🔧 Cutter: <strong class="text-gray-800">${window.escapeHTML(record.cutterName || "N/A")}</strong></div>
+            </div>
+            <div>📏 Marks: <strong class="text-gray-800">${marksText}</strong></div>
+            <div>💬 Comments: <span class="italic text-gray-700">${window.escapeHTML(record.orderComments || "None")}</span></div>
+            <div class="text-[10px] text-gray-400 pt-0.5">🕒 Recorded: ${dateStr}</div>
+        `;
+
+        card.appendChild(detailsDrawer);
+
+        // Actions Row
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "flex justify-between items-center pt-1";
+
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "flex gap-1.5";
+
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.onclick = () => editRecord(record.id);
+        editBtn.className = "px-3 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl font-bold text-xs transition border border-blue-200/60 active:scale-95";
+        editBtn.textContent = "✏️ Edit";
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.onclick = () => deleteRecord(record.id);
+        deleteBtn.className = "px-3 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl font-bold text-xs transition border border-red-200/60 active:scale-95";
+        deleteBtn.textContent = "🗑️ Delete";
+
+        btnGroup.appendChild(editBtn);
+        btnGroup.appendChild(deleteBtn);
+        actionsDiv.appendChild(btnGroup);
+
+        if (!record.isCutInSystem) {
+            const cutInSysBtn = document.createElement("button");
+            cutInSysBtn.type = "button";
+            cutInSysBtn.onclick = () => toggleCutInSystem(record.id);
+            cutInSysBtn.className = "px-3 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl font-bold text-xs transition border border-purple-200/60 active:scale-95";
+            cutInSysBtn.textContent = "⚙️ Cut In System";
+            actionsDiv.appendChild(cutInSysBtn);
+        }
+
+        card.appendChild(actionsDiv);
+        fragment.appendChild(card);
     });
 
-    // Add "Load More" button if there are more records
+    cutHistoryList.appendChild(fragment);
+
     if (displayedRecordsCount < filteredRecords.length) {
         const moreDiv = document.createElement('div');
         moreDiv.className = 'text-center mt-4';
@@ -2385,6 +2384,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Wire Cut List initialization
     initWireCutList();
+    initQuickHistoryFilters();
 
     // Batch Cut List management
     const batchCutList = document.getElementById('batchCutList');
