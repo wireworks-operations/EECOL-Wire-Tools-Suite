@@ -1,3 +1,6 @@
+import { showAlert, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // DOM elements
 const printLabelBtn = document.getElementById('printLabelBtn');
 

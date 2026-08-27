@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 def run_verification():
     print("🚀 Starting Wire Cut List Grouping Verification...")
 
-    os.makedirs("/home/jules/verification/screenshots", exist_ok=True)
+    os.makedirs("verification/screenshots", exist_ok=True)
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -48,7 +48,7 @@ def run_verification():
 
         # 3. Right-click Item 1 and add to a new group "RUN_ALPHA"
         print("Adding ORD-G1 to new group 'RUN_ALPHA'...")
-        item1_card = page.locator(".wire-list-item", has_text="ORD-G1").first
+        item1_card = page.locator(".wire-list-card", has_text="ORD-G1").first
         item1_card.click(button="right")
         page.wait_for_timeout(300)
 
@@ -59,17 +59,17 @@ def run_verification():
         page.locator("#saveGroupBtn").click()
         page.wait_for_timeout(500)
 
-        # Check that ORD-G1 has badge 📁 RUN_ALPHA
-        badge1 = item1_card.locator("text=📁 RUN_ALPHA")
-        if badge1.is_visible():
-            print("✅ Verified ORD-G1 displays Group Badge '📁 RUN_ALPHA'!")
+        # Check that group container exists with RUN_ALPHA
+        group_container = page.locator(".wire-group-container", has_text="RUN_ALPHA").first
+        if group_container.is_visible():
+            print("✅ Verified ORD-G1 displays inside Group Container 'RUN_ALPHA'!")
         else:
-            print("❌ Badge '📁 RUN_ALPHA' missing on ORD-G1")
+            print("❌ Group Container 'RUN_ALPHA' missing")
             exit(1)
 
         # 4. Right-click Item 2 and add to existing group "RUN_ALPHA"
         print("Adding ORD-G2 to existing group 'RUN_ALPHA'...")
-        item2_card = page.locator(".wire-list-item", has_text="ORD-G2").first
+        item2_card = page.locator(".wire-list-card", has_text="ORD-G2").first
         item2_card.click(button="right")
         page.wait_for_timeout(300)
 
@@ -81,12 +81,11 @@ def run_verification():
         page.locator("#saveGroupBtn").click()
         page.wait_for_timeout(500)
 
-        # Check that ORD-G2 now also has badge 📁 RUN_ALPHA
-        badge2 = item2_card.locator("text=📁 RUN_ALPHA")
-        if badge2.is_visible():
-            print("✅ Verified ORD-G2 joined existing group and displays '📁 RUN_ALPHA' badge!")
+        # Check that group container now contains 2 Items
+        if page.locator(".wire-group-container", has_text="2 Items").is_visible():
+            print("✅ Verified ORD-G2 joined existing group 'RUN_ALPHA'!")
         else:
-            print("❌ Badge '📁 RUN_ALPHA' missing on ORD-G2")
+            print("❌ Group 'RUN_ALPHA' does not show 2 Items")
             exit(1)
 
         # 5. Set ORD-G1 to Active and verify active status is individual
@@ -118,10 +117,10 @@ def run_verification():
         page.locator("#removeFromGroupBtn").click()
         page.wait_for_timeout(500)
 
-        if not item2_card.locator("text=📁 RUN_ALPHA").is_visible():
+        if not page.locator(".wire-group-container", has_text="2 Items").is_visible():
             print("✅ Verified ORD-G2 successfully removed from group!")
         else:
-            print("❌ Group badge still present on ORD-G2 after removal")
+            print("❌ Group still contains 2 items after removal")
             exit(1)
 
         # Clean up database

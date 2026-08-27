@@ -29,8 +29,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="EECOL Tools">
     <link rel="apple-touch-icon" href="src/assets/icons/icon-192x192.png">
-    <script src="src/core/database/indexeddb.js"></script>
-    <script src="src/utils/mobile-menu.js"></script>
+    <script type="module" src="src/core/database/indexeddb.js"></script>
+    <script type="module" src="src/utils/mobile-menu.js"></script>
 
 </head>
 
@@ -301,7 +301,7 @@
         </div>
     </div>
 
-    <script src="src/assets/js/index.js"></script>
+    <script type="module" src="src/assets/js/index.js"></script>
     <script>
         // Register Service Worker for PWA functionality
         // Only register if running on HTTP/HTTPS (not file:// protocol)

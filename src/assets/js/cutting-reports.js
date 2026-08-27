@@ -3,6 +3,10 @@
  * Modern IndexedDB implementation for reporting and analytics
  */
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Global variables
 let cutRecords = [];
 let currentChartType = 'line';

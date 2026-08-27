@@ -50,7 +50,7 @@ function _sanitizeUrl(url) {
  * Initialize mobile menu for a page
  * @param {Object} options - Configuration options
  */
-function initMobileMenu(options = {}) {
+export function initMobileMenu(options = {}) {
     const {
         menuItems = [],
         version = 'v0.8.0.4',
@@ -281,12 +281,12 @@ function setupMobileMenuEvents() {
     }, { passive: false });
 }
 
-function toggleMobileMenu() {
+export function toggleMobileMenu() {
     if (mobileMenuOpen) closeMobileMenu();
     else openMobileMenu();
 }
 
-function openMobileMenu() {
+export function openMobileMenu() {
     const overlay = document.getElementById('mobileMenuOverlay');
     const btn = document.getElementById('mobileMenuBtn');
     const hIcon = document.getElementById('hamburgerIcon');
@@ -307,7 +307,7 @@ function openMobileMenu() {
     if (cIcon) cIcon.classList.remove('hidden');
 }
 
-function closeMobileMenu() {
+export function closeMobileMenu() {
     const overlay = document.getElementById('mobileMenuOverlay');
     const btn = document.getElementById('mobileMenuBtn');
     const hIcon = document.getElementById('hamburgerIcon');

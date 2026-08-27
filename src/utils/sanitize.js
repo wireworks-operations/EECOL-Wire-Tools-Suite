@@ -1,7 +1,7 @@
 (function () {
   // Simple HTML-escape helper to prevent injection when inserting strings into innerHTML / template HTML.
   // DEPRECATED: Use the global window.escapeHTML instead.
-  function escapeHtml(str) {
+  export function escapeHtml(str) {
     if (typeof window.escapeHTML === 'function') {
       return window.escapeHTML(str);
     }
@@ -18,7 +18,7 @@
 
   // Safe open print window helper that checks for popup blockers and closes the document stream.
   // Returns the opened window or null if popup couldn't open.
-  function safeOpenPrintWindow(title, htmlContent) {
+  export function safeOpenPrintWindow(title, htmlContent) {
     try {
       const w = window.open('', '_blank');
       if (!w) {

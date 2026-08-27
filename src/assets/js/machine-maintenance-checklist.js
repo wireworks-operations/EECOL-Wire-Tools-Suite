@@ -1,3 +1,7 @@
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, showConfirm, showDateInputModal, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Machine Maintenance Checklist - EECOL Wire Tools Suite
 
 // Custom Modal Functions

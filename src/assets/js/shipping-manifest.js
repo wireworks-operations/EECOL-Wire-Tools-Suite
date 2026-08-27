@@ -3,6 +3,10 @@
  * Enterprise PWA v0.8.0.0
  */
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Global variables
 let labelHistory = [];
 let reelConfigurations = []; // Store available reel configurations from IndexedDB

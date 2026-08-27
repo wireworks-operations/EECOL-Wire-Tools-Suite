@@ -11,6 +11,8 @@ export function escapeHTML(str) {
     .replace(/\//g, '&#x2F;');
 }
 
-// Usage:
-// import { escapeHTML } from './utils/escape-html.js';
-// container.innerHTML = `<div>${escapeHTML(userInput)}</div>`;
+if (typeof window !== 'undefined') {
+  window.escapeHTML = escapeHTML;
+}
+
+export default escapeHTML;

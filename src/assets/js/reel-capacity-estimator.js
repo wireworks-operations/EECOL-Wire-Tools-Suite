@@ -19,6 +19,10 @@ import {
     getOrganizedEecolWescoProducts
 } from '../../core/modules/wesco-eecol-products.js';
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, showConfirm, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
         // ====================================================================
         // CONSTANTS & UTILITY FUNCTIONS
         // ====================================================================

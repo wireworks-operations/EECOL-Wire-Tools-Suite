@@ -4,7 +4,7 @@
  * between Cutting Records and Standalone Wire Cut List.
  */
 
-class WireCutLinker {
+export class WireCutLinker {
     constructor() {
         this.channelName = 'eecol_wire_cut_linker';
         this.listeners = [];
@@ -93,3 +93,5 @@ class WireCutLinker {
 }
 
 window.WireCutLinker = WireCutLinker;
+
+export default WireCutLinker;
