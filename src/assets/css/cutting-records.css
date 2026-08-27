@@ -334,3 +334,149 @@ body {
     box-shadow: var(--md-elevation-3);
     border-radius: var(--md-shape-corner-medium);
 }
+
+/* Comprehensive Dark Mode Overrides for MD3 & Page Surface Elements */
+.dark-mode #recordsPage {
+    background-color: #0f172a !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark-mode .bg-white {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+.dark-mode .bg-gray-50,
+.dark-mode .bg-gray-50\/80,
+.dark-mode .bg-gray-50\/70,
+.dark-mode .bg-gray-50\/60,
+.dark-mode .bg-gray-50\/50,
+.dark-mode .bg-gray-50\/40 {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+.dark-mode .text-gray-900,
+.dark-mode .text-gray-800,
+.dark-mode .text-gray-700 {
+    color: #f8fafc !important;
+}
+
+.dark-mode .text-gray-600,
+.dark-mode .text-gray-500 {
+    color: #cbd5e1 !important;
+}
+
+.dark-mode .text-gray-400 {
+    color: #94a3b8 !important;
+}
+
+.dark-mode .border-gray-200,
+.dark-mode .border-gray-200\/80,
+.dark-mode .border-gray-200\/70,
+.dark-mode .border-gray-200\/60,
+.dark-mode .border-gray-100 {
+    border-color: #334155 !important;
+}
+
+/* MD3 Inputs in Dark Mode */
+.dark-mode .md3-input-field {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+.dark-mode .md3-input-field:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+}
+
+.dark-mode .md3-input-icon {
+    color: #94a3b8 !important;
+}
+
+/* MD3 Option Chip Buttons in Dark Mode */
+.dark-mode .md3-chip-btn {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    color: #cbd5e1 !important;
+}
+
+.dark-mode .md3-chip-btn:hover {
+    background-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+.dark-mode .md3-chip-btn.active {
+    background-color: #0369a1 !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .md3-chip-btn.purple-active.active {
+    background-color: #6b21a8 !important;
+    border-color: #c084fc !important;
+    color: #ffffff !important;
+}
+
+/* MD3 Segmented Toggle Group in Dark Mode */
+.dark-mode .md3-segmented-group {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+.dark-mode .md3-segmented-btn {
+    color: #94a3b8 !important;
+}
+
+.dark-mode .md3-segmented-btn.active {
+    background-color: #1e293b !important;
+    color: #38bdf8 !important;
+}
+
+/* History Cards & Chips in Dark Mode */
+.dark-mode .history-chip-btn {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+.dark-mode .history-chip-btn:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .history-chip-btn.active {
+    background-color: #0284c7 !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .cut-record-card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+.dark-mode .cut-record-card:hover {
+    border-color: #475569 !important;
+}
+
+/* Accordions and Modals in Dark Mode */
+.dark-mode #modalContent,
+.dark-mode #importModalContent,
+.dark-mode #reelModalContent,
+.dark-mode #removalModalContent,
+.dark-mode #wireModalContent {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+.dark-mode #wireListContextMenu {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
