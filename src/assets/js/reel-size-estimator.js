@@ -3,6 +3,10 @@
 // Adapted from reel-selector.html for EECOL Wire Tools Suite
 // ====================================================================
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // ====================================================================
 // CONSTANTS & UTILITY FUNCTIONS
 // ====================================================================

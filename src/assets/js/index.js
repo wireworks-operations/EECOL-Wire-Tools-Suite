@@ -1,3 +1,6 @@
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Maintenance notification logic
 document.addEventListener('DOMContentLoaded', function () {
     const notification = document.getElementById('maintenance-notification');

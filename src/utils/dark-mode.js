@@ -3,7 +3,7 @@
  * Handles theme toggling, persistence, and UI injection
  */
 
-const DarkMode = {
+export const DarkMode = {
     // Configuration
     config: {
         storageKey: 'eecol-theme',
@@ -142,3 +142,5 @@ if (document.readyState === 'loading') {
 
 // Expose globally
 window.DarkMode = DarkMode;
+
+export default DarkMode;

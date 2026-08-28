@@ -3,6 +3,10 @@
  * Enterprise PWA
  */
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, showConfirm, initModalSystem } from '../../utils/modals.js';
+import { WireCutLinker } from './wire-cut-linker.js';
+
 // Global variables
 let wireCutList = [];
 let wireListEditingId = null;

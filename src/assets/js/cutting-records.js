@@ -3,6 +3,11 @@
  * Modern IndexedDB implementation with P2P sync capability
  */
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, showConfirm, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+import { WireCutLinker } from './wire-cut-linker.js';
+
 // Global variables
 let cutRecords = [];
 

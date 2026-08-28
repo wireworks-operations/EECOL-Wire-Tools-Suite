@@ -3,6 +3,10 @@
  * IndexedDB implementation for inventory data persistence
  */
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, showConfirm, showDatePrompt, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Diagnostic function to test database connectivity
 async function testDatabaseConnection() {
     try {

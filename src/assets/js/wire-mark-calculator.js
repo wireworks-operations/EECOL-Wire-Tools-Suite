@@ -9,6 +9,10 @@
 // - /src/assets/js/pwa-core.js (PWA functionality)
 // - /src/core/database/indexeddb.js (data persistence)
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Wire Mark Calculator Logic - CORE BUSINESS FUNCTIONS
 const wireMarkCalculator = {
     // DOM element references

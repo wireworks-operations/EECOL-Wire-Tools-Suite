@@ -1,3 +1,7 @@
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Constants & Utility Functions
 const METERS_TO_FEET = 3.280839895;
 const FEET_TO_METERS = 0.3048;

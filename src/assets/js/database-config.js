@@ -1,3 +1,7 @@
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert, showConfirm, initModalSystem } from '../../utils/modals.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 /**
  * BOLT OPTIMIZATION: Debounce utility
  * Limits the rate at which a function can fire. Essential for search inputs to prevent

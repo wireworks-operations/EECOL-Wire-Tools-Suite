@@ -3,6 +3,9 @@
  * EECOL Wire Tools Suite
  */
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { showAlert } from '../../utils/modals.js';
+
 const machines = [
     "Manual Hand Coiler",
     "Green Electric Hand Coiler",

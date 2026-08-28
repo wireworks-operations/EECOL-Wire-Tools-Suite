@@ -3,7 +3,7 @@
  * Enterprise-grade IndexedDB implementation with singleton pattern for optimal resource management
  */
 
-class EECOLIndexedDB {
+export class EECOLIndexedDB {
   static instance = null;
   static DATABASE_VERSION = 10;
 
@@ -808,3 +808,5 @@ class EECOLIndexedDB {
 if (typeof window !== 'undefined') {
   window.EECOLIndexedDB = EECOLIndexedDB;
 }
+
+export default EECOLIndexedDB;

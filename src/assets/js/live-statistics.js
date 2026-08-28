@@ -3,6 +3,9 @@
  * Real-time analytics combining inventory and cutting data
  */
 
+import { EECOLIndexedDB } from '../../core/database/indexeddb.js';
+import { initMobileMenu } from '../../utils/mobile-menu.js';
+
 // Global variables
 let inventoryItems = [];
 let cutRecords = [];

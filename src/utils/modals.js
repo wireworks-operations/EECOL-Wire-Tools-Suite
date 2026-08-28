@@ -11,7 +11,7 @@
  */
 
 // Helper to create themed buttons securely
-function createModalButton(id, text, isPrimary, onClick) {
+export function createModalButton(id, text, isPrimary, onClick) {
     const btn = document.createElement('button');
     btn.id = id;
     btn.textContent = text;
@@ -25,7 +25,7 @@ function createModalButton(id, text, isPrimary, onClick) {
 }
 
 // Reset modal inputs and buttons
-function resetModalUI() {
+export function resetModalUI() {
     const modalInput = document.getElementById('modalInput');
     const modalButtons = document.getElementById('modalButtons');
     const modalInputValue = document.getElementById('modalInputValue');
@@ -45,7 +45,7 @@ function resetModalUI() {
 }
 
 // Custom Modal Functions for EECOL Themed Alerts/Confirmations
-function showAlert(message, title = "Notification") {
+export function showAlert(message, title = "Notification") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customModal');
         if (!modal) {
@@ -88,7 +88,7 @@ function showAlert(message, title = "Notification") {
     });
 }
 
-function showConfirm(message, title = "Confirmation") {
+export function showConfirm(message, title = "Confirmation") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customModal');
         const modalTitle = document.getElementById('modalTitle');
@@ -132,7 +132,7 @@ function showConfirm(message, title = "Confirmation") {
     });
 }
 
-function showPrompt(message, defaultValue = '', title = "Input Required") {
+export function showPrompt(message, defaultValue = '', title = "Input Required") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customModal');
         const modalTitle = document.getElementById('modalTitle');
@@ -198,7 +198,7 @@ function showPrompt(message, defaultValue = '', title = "Input Required") {
     });
 }
 
-function showDatePrompt(message, defaultValue = '', title = "Select Date") {
+export function showDatePrompt(message, defaultValue = '', title = "Select Date") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customModal');
         const modalTitle = document.getElementById('modalTitle');
@@ -269,11 +269,11 @@ function showDatePrompt(message, defaultValue = '', title = "Select Date") {
 }
 
 // Legacy wrapper for backward compatibility
-function showDateInputModal(title = "Select Date") {
+export function showDateInputModal(title = "Select Date") {
     return showDatePrompt('Select the date of the record you want to view:', '', title);
 }
 
-function hideModal() {
+export function hideModal() {
     const modal = document.getElementById('customModal');
     const modalContent = document.getElementById('modalContent');
 
@@ -289,7 +289,7 @@ function hideModal() {
 }
 
 // Initialize modal system with secure defaults
-function initModalSystem() {
+export function initModalSystem() {
     document.addEventListener('DOMContentLoaded', function() {
         const modalBackdrop = document.getElementById('modalBackdrop');
         if (modalBackdrop) {
