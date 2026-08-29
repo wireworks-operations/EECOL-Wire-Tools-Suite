@@ -194,6 +194,13 @@ function renderSingleItemCard(item) {
         orderLine.appendChild(activeBadge);
     }
 
+    if (item.coilCode) {
+        const coilBadge = document.createElement('span');
+        coilBadge.className = 'px-1 bg-emerald-100 text-emerald-800 rounded text-[8px] uppercase border border-emerald-300 font-black';
+        coilBadge.textContent = `COIL: ${item.coilCode}`;
+        orderLine.appendChild(coilBadge);
+    }
+
     if (item.isFullPick) {
         const fpBadge = document.createElement('span');
         fpBadge.className = 'px-1 bg-blue-100 text-blue-800 rounded text-[8px] uppercase border border-blue-300 font-black';
@@ -346,6 +353,7 @@ function renderWireCutList() {
                 item.orderNumber,
                 item.customerName,
                 item.wireType,
+                item.coilCode,
                 item.description,
                 item.orderComments,
                 item.shipperComments,
@@ -573,6 +581,7 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListLine').value = item.lineNumber || '';
             document.getElementById('wireListCustomer').value = item.customerName || '';
             document.getElementById('wireListWireType').value = item.wireType || '';
+            document.getElementById('wireListCoilCode').value = item.coilCode || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
             document.getElementById('wireListReelSize').value = item.reelSize || '';
             document.getElementById('wireListUrgency').value = item.urgency || 'normal';
@@ -589,6 +598,7 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListLine').value = '001';
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
+        document.getElementById('wireListCoilCode').value = '';
         document.getElementById('wireListLength').value = '';
         document.getElementById('wireListReelSize').value = '';
         document.getElementById('wireListUrgency').value = 'normal';
@@ -627,6 +637,7 @@ async function saveWireListItem() {
         lineNumber: document.getElementById('wireListLine').value.trim(),
         customerName: document.getElementById('wireListCustomer').value.trim().toUpperCase(),
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
+        coilCode: document.getElementById('wireListCoilCode').value.trim().toUpperCase(),
         lengthZ: document.getElementById('wireListLength').value.trim(),
         reelSize: document.getElementById('wireListReelSize').value.trim(),
         urgency: document.getElementById('wireListUrgency').value,
@@ -1160,7 +1171,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Modal input listeners for auto-capitalization
-    ['wireListOrder', 'wireListCustomer', 'wireListWireType'].forEach(id => {
+    ['wireListOrder', 'wireListCustomer', 'wireListWireType', 'wireListCoilCode'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('input', (e) => {
