@@ -132,10 +132,18 @@ class EECOLIndexedDB {
 
   async initialize() {
     // IDB SENTINEL: Request persistence to prevent browser eviction
-    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+    if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
+
+    if (!EECOLIndexedDB.isIndexedDBSupported()) {
+      console.warn('⚠️ IndexedDB is not supported in this environment.');
+      return Promise.reject(new Error('IndexedDB is not supported'));
+    }
 
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, this.dbVersion);
+      try {
+        const request = indexedDB.open(this.dbName, this.dbVersion);
 
       request.onerror = () => {
         const error = request.error;
@@ -195,6 +203,10 @@ class EECOLIndexedDB {
         const transaction = event.target.transaction;
         this.createObjectStores(db, transaction);
       };
+      } catch (err) {
+        console.error('❌ Synchronous failure opening IndexedDB:', err);
+        reject(err);
+      }
     });
   }
 
@@ -327,7 +339,7 @@ class EECOLIndexedDB {
    */
 
   async add(storeName, data) {
-    await this.dbInitialized;
+    await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
     /**
@@ -345,7 +357,7 @@ class EECOLIndexedDB {
   }
 
   async get(storeName, key) {
-    await this.dbInitialized;
+    await this.isReady();
     if (!this.db) throw new Error('Database not initialized');
 
     const transaction = this.db.transaction([storeName], 'readonly');
@@ -792,7 +804,12 @@ class EECOLIndexedDB {
   }
 
   async isReady() {
-    await this.dbInitialized;
+    try {
+      await this.dbInitialized;
+    } catch (e) {
+      // Return false if database initialization failed or rejected
+      return false;
+    }
     return !!this.db;
   }
 

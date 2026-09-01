@@ -110,3 +110,14 @@ The `createObjectStores` method in `EECOLIndexedDB` had a non-idempotent migrati
 3. Enhanced `_notifyChange()` to use a hybrid value: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`.
 4. Added `try-catch` around `localStorage` access for robustness.
 **Validation:** Verified via `verification/verify_idb_v10.py` (CRUD integrity) and `verification/verify_tab_sync.py` (uniqueness of sync keys).
+
+## 2026-05-18 - Harden IDB Initialization and isReady Promise Rejection Handling
+
+**Observation:** Direct awaits on `this.dbInitialized` in methods like `add()` and `get()` would throw unhandled promise rejections if `initialize()` failed (e.g. `SecurityError` in restricted environments or `VersionError`). Moreover, `isReady()` re-threw `this.dbInitialized` failure instead of returning `false`.
+**Learning:** An IDB wrapper's readiness check (`isReady()`) must safely catch initialization rejections and evaluate to boolean `false`, allowing caller methods awaiting `isReady()` to handle missing database state gracefully without crashing execution flow. Wrapping `indexedDB.open()` in `try...catch` guards against synchronous DOM exceptions.
+**Action:**
+
+1. Added `indexedDB` feature detection and wrapped `indexedDB.open()` in `try...catch` inside `initialize()`.
+2. Updated `isReady()` to catch `dbInitialized` rejections and return `false`.
+3. Aligned `add()` and `get()` methods to await `this.isReady()` instead of `this.dbInitialized` directly.
+**Validation:** Verified via `verification/verify_idb_sentinel_reliability.py` and `verification/verify_idb_v10.py`.
