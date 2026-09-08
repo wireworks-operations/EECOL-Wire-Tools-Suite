@@ -32,8 +32,8 @@ def run_verification():
         page.locator("#wireListWireType").fill("TK6/3")
         page.locator("#wireListLength").fill("100")
         page.locator("#wireListReelSize").fill("36")
-        page.locator("#wireListFullPick").check()
-        page.locator("#wireListReReel").check()
+        page.locator("#wireListFullPick").select_option("yes")
+        page.locator("#wireListReReel").select_option("yes")
         page.locator("#saveWireListItemBtn").click()
         page.wait_for_timeout(500)
 
