@@ -673,10 +673,20 @@
                     <input id="wireListLine" type="text" placeholder="1" class="w-full md3-input-field text-xs">
                 </div>
                 <div>
+                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Coil Code</label>
+                    <input id="wireListCoilCode" type="text" placeholder="e.g. A or 001" class="w-full md3-input-field text-xs">
+                </div>
+                <div>
                     <label class="block text-[11px] font-semibold text-gray-700 mb-1">Customer</label>
                     <input id="wireListCustomer" type="text" placeholder="Customer Name" class="w-full md3-input-field text-xs">
                 </div>
-                <div>
+                <div class="col-span-2">
+                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Group Name (Optional)</label>
+                    <input id="wireListGroup" type="text" placeholder="e.g. Wire Run A, Multi-Item Order 102"
+                        list="existingGroupsDatalist" class="w-full md3-input-field text-xs">
+                    <datalist id="existingGroupsDatalist"></datalist>
+                </div>
+                <div class="col-span-2">
                     <label class="block text-[11px] font-semibold text-gray-700 mb-1">Wire Type</label>
                     <input id="wireListWireType" type="text" placeholder="TK6/3CU" class="w-full md3-input-field text-xs">
                 </div>
