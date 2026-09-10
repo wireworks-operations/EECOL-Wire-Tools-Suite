@@ -86,6 +86,31 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Progressive Disclosure Sort Bar (Visible for Completed, Removed, All views) -->
+            <div id="wireListSortContainer" class="hidden mt-3 pt-3 border-t border-yellow-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="font-bold text-yellow-900 text-xs flex items-center gap-1">📊 Sort By:</span>
+                    <button id="sortByTimeBtn" type="button"
+                        class="wire-sort-btn px-2.5 py-1 rounded-md bg-yellow-600 text-white font-bold text-xs transition shadow-xs flex items-center gap-1" data-sort="time">
+                        ⏱️ Time
+                    </button>
+                    <button id="sortByOrderBtn" type="button"
+                        class="wire-sort-btn px-2.5 py-1 rounded-md bg-white text-yellow-900 border border-yellow-300 font-bold text-xs hover:bg-yellow-100 transition shadow-xs flex items-center gap-1" data-sort="order">
+                        🔢 Order #
+                    </button>
+                    <button id="sortByDateBtn" type="button"
+                        class="wire-sort-btn px-2.5 py-1 rounded-md bg-white text-yellow-900 border border-yellow-300 font-bold text-xs hover:bg-yellow-100 transition shadow-xs flex items-center gap-1" data-sort="date">
+                        📅 Date
+                    </button>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button id="sortDirectionBtn" type="button" title="Toggle Sort Direction"
+                        class="px-2.5 py-1 rounded-md bg-white text-yellow-900 border border-yellow-300 font-bold text-xs hover:bg-yellow-100 transition shadow-xs flex items-center gap-1">
+                        <span id="sortDirIcon">⬇️</span> <span id="sortDirText">Newest First</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Scrollable Cut List Container -->
