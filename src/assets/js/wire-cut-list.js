@@ -565,6 +565,18 @@ function showWireListItemModal(id = null) {
 
     wireListEditingId = id;
 
+    // Populate existing groups datalist
+    const datalist = document.getElementById('existingGroupsDatalist');
+    if (datalist) {
+        datalist.replaceChildren();
+        const uniqueGroups = [...new Set(wireCutList.map(i => i.groupName).filter(Boolean))];
+        uniqueGroups.forEach(gName => {
+            const opt = document.createElement('option');
+            opt.value = gName;
+            datalist.appendChild(opt);
+        });
+    }
+
     if (id) {
         title.textContent = 'Edit Wire Cut List Item';
         const item = wireCutList.find(i => i.id === id);
@@ -574,6 +586,8 @@ function showWireListItemModal(id = null) {
             const coilEl = document.getElementById('wireListCoilCode');
             if (coilEl) coilEl.value = item.coilCode || '';
             document.getElementById('wireListCustomer').value = item.customerName || '';
+            const groupEl = document.getElementById('wireListGroup');
+            if (groupEl) groupEl.value = item.groupName || '';
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
             document.getElementById('wireListReelSize').value = item.reelSize || '';
@@ -592,6 +606,8 @@ function showWireListItemModal(id = null) {
         const coilEl = document.getElementById('wireListCoilCode');
         if (coilEl) coilEl.value = '';
         document.getElementById('wireListCustomer').value = '';
+        const groupEl = document.getElementById('wireListGroup');
+        if (groupEl) groupEl.value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
         document.getElementById('wireListReelSize').value = '';
@@ -626,6 +642,9 @@ function hideWireListItemModal() {
 async function saveWireListItem() {
     const existing = wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId) : null;
     const coilEl = document.getElementById('wireListCoilCode');
+    const groupEl = document.getElementById('wireListGroup');
+    const groupVal = groupEl ? groupEl.value.trim() : '';
+
     const item = {
         id: wireListEditingId || crypto.randomUUID(),
         orderNumber: document.getElementById('wireListOrder').value.trim().toUpperCase(),
@@ -647,8 +666,8 @@ async function saveWireListItem() {
         color: existing ? existing.color : null,
         isActive: existing ? existing.isActive : false,
         isGroupActive: existing ? existing.isGroupActive : false,
-        groupId: existing ? existing.groupId : null,
-        groupName: existing ? existing.groupName : null
+        groupId: groupVal ? groupVal.toLowerCase().replace(/\s+/g, '_') : null,
+        groupName: groupVal || null
     };
 
     try {
@@ -792,6 +811,13 @@ function showGroupModal(id) {
     const existingContainer = document.getElementById('existingGroupContainer');
     const groupNameInput = document.getElementById('groupNameInput');
     const removeBtn = document.getElementById('removeFromGroupBtn');
+    const settingsAccordion = document.getElementById('groupSettingsAccordion');
+    const settingsContent = document.getElementById('groupSettingsContent');
+    const settingsChevron = document.getElementById('groupSettingsChevron');
+    const renameInput = document.getElementById('renameGroupNameInput');
+
+    if (settingsContent) settingsContent.classList.add('hidden');
+    if (settingsChevron) settingsChevron.textContent = '►';
 
     groupSelect.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
     const defaultOpt = document.createElement('option');
@@ -803,6 +829,7 @@ function showGroupModal(id) {
     const uniqueGroups = [...new Set(wireCutList.map(item => item.groupName).filter(Boolean))];
     if (uniqueGroups.length > 0) {
         existingContainer.classList.remove('hidden');
+        if (settingsAccordion) settingsAccordion.classList.remove('hidden');
         uniqueGroups.forEach(gName => {
             const opt = document.createElement('option');
             opt.value = gName;
@@ -811,14 +838,18 @@ function showGroupModal(id) {
         });
     } else {
         existingContainer.classList.add('hidden');
+        if (settingsAccordion) settingsAccordion.classList.add('hidden');
     }
 
     const item = wireCutList.find(i => i.id === id);
     if (item && item.groupName) {
         groupNameInput.value = item.groupName;
+        if (renameInput) renameInput.value = item.groupName;
+        if (groupSelect) groupSelect.value = item.groupName;
         removeBtn.classList.remove('hidden');
     } else {
         groupNameInput.value = '';
+        if (renameInput) renameInput.value = '';
         removeBtn.classList.add('hidden');
     }
 
@@ -828,6 +859,66 @@ function showGroupModal(id) {
         modalContent.classList.add('scale-100', 'opacity-100');
         groupNameInput.focus();
     }, 10);
+}
+
+async function renameGroupAcrossItems() {
+    const groupSelect = document.getElementById('groupSelect');
+    const groupNameInput = document.getElementById('groupNameInput');
+    const renameInput = document.getElementById('renameGroupNameInput');
+
+    const sourceGroup = groupSelect?.value.trim() || groupNameInput?.value.trim();
+    const newName = renameInput?.value.trim();
+
+    if (!sourceGroup) {
+        showAlert('Please select or enter the group you wish to rename.', 'Group Selection Required');
+        return;
+    }
+    if (!newName) {
+        showAlert('Please enter a new name for the group.', 'New Group Name Required');
+        return;
+    }
+
+    const itemsToUpdate = wireCutList.filter(item => item.groupName === sourceGroup);
+    if (itemsToUpdate.length === 0) {
+        showAlert(`No items found in group "${sourceGroup}".`, 'Group Not Found');
+        return;
+    }
+
+    const newGroupId = newName.toLowerCase().replace(/\s+/g, '_');
+    itemsToUpdate.forEach(item => {
+        item.groupName = newName;
+        item.groupId = newGroupId;
+        item.updatedAt = Date.now();
+    });
+
+    try {
+        if (window.eecolDB && await window.eecolDB.isReady()) {
+            await window.eecolDB.bulkPut('wireCutList', itemsToUpdate, false);
+            await loadWireCutList();
+            hideGroupModal();
+            showToast(`Renamed group "${sourceGroup}" to "${newName}" across ${itemsToUpdate.length} item(s)`, 'success');
+        }
+    } catch (error) {
+        console.error("Error renaming group:", error);
+        showAlert("Failed to rename group.", "Error");
+    }
+}
+
+async function deleteSelectedGroup() {
+    const groupSelect = document.getElementById('groupSelect');
+    const groupNameInput = document.getElementById('groupNameInput');
+    const sourceGroup = groupSelect?.value.trim() || groupNameInput?.value.trim();
+
+    if (!sourceGroup) {
+        showAlert('Please select the group you wish to delete/disband.', 'Group Selection Required');
+        return;
+    }
+
+    const confirmDelete = await showConfirm(`Are you sure you want to delete/disband group "${sourceGroup}"? All items inside will revert back to individual standalone list items.`, 'Delete / Disband Group');
+    if (confirmDelete) {
+        await disbandGroup(sourceGroup);
+        hideGroupModal();
+    }
 }
 
 function hideGroupModal() {
@@ -1206,10 +1297,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (groupModalBackdrop) groupModalBackdrop.addEventListener('click', hideGroupModal);
 
     const groupNameInput = document.getElementById('groupNameInput');
+    const renameGroupNameInput = document.getElementById('renameGroupNameInput');
+
     if (groupNameInput) {
         groupNameInput.addEventListener('input', (e) => {
             if (groupSelect && groupSelect.value !== e.target.value) {
                 groupSelect.value = '';
+            }
+            if (renameGroupNameInput && !renameGroupNameInput.value) {
+                renameGroupNameInput.value = e.target.value;
             }
         });
     }
@@ -1218,9 +1314,34 @@ document.addEventListener('DOMContentLoaded', async function() {
         groupSelect.addEventListener('change', (e) => {
             if (e.target.value) {
                 document.getElementById('groupNameInput').value = e.target.value;
+                if (renameGroupNameInput) renameGroupNameInput.value = e.target.value;
             }
         });
     }
+
+    // Group Settings Progressive Disclosure
+    const toggleGroupSettingsBtn = document.getElementById('toggleGroupSettingsBtn');
+    const groupSettingsContent = document.getElementById('groupSettingsContent');
+    const groupSettingsChevron = document.getElementById('groupSettingsChevron');
+
+    if (toggleGroupSettingsBtn && groupSettingsContent) {
+        toggleGroupSettingsBtn.addEventListener('click', () => {
+            const isHidden = groupSettingsContent.classList.contains('hidden');
+            if (isHidden) {
+                groupSettingsContent.classList.remove('hidden');
+                if (groupSettingsChevron) groupSettingsChevron.textContent = '▼';
+            } else {
+                groupSettingsContent.classList.add('hidden');
+                if (groupSettingsChevron) groupSettingsChevron.textContent = '►';
+            }
+        });
+    }
+
+    const renameGroupBtn = document.getElementById('renameGroupBtn');
+    if (renameGroupBtn) renameGroupBtn.addEventListener('click', renameGroupAcrossItems);
+
+    const deleteGroupBtn = document.getElementById('deleteGroupBtn');
+    if (deleteGroupBtn) deleteGroupBtn.addEventListener('click', deleteSelectedGroup);
 
     // Context menu events
     document.addEventListener('click', hideWireListContextMenu);
