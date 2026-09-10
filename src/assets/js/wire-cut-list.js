@@ -208,6 +208,13 @@ function renderSingleItemCard(item) {
         orderLine.appendChild(rrBadge);
     }
 
+    if (item.coilCode) {
+        const coilBadge = document.createElement('span');
+        coilBadge.className = 'px-1 bg-emerald-100 text-emerald-800 rounded text-[8px] uppercase border border-emerald-300 font-black';
+        coilBadge.textContent = `Coil: ${item.coilCode}`;
+        orderLine.appendChild(coilBadge);
+    }
+
     if (item.urgency && item.urgency !== 'normal') {
         const urgencyBadge = document.createElement('span');
         urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
@@ -273,19 +280,12 @@ function renderSingleItemCard(item) {
         const actionsRow = document.createElement('div');
         actionsRow.className = `flex justify-end gap-2 mt-2 pt-1 border-t ${isDarkBg ? 'border-white/20' : 'border-black/10'}`;
 
-        const autoFillBtn = document.createElement('button');
-        autoFillBtn.className = 'px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-md active:scale-95';
-        autoFillBtn.textContent = '📥 AutoFill Cut';
-        autoFillBtn.onclick = (e) => {
-            e.stopPropagation();
-            triggerAutoFill(item.id);
-        };
-
         const completeBtn = document.createElement('button');
         completeBtn.className = 'px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-md active:scale-95';
         completeBtn.textContent = '✅ Complete';
         completeBtn.onclick = (e) => {
             e.stopPropagation();
+            triggerAutoFill(item.id);
             completeWireListItem(item.id);
         };
 
@@ -297,7 +297,6 @@ function renderSingleItemCard(item) {
             showRemovalReasonModal(item.id);
         };
 
-        actionsRow.appendChild(autoFillBtn);
         actionsRow.appendChild(completeBtn);
         actionsRow.appendChild(removeBtn);
         card.appendChild(actionsRow);
@@ -349,7 +348,8 @@ function renderWireCutList() {
                 item.description,
                 item.orderComments,
                 item.shipperComments,
-                item.groupName
+                item.groupName,
+                item.coilCode
             ].map(f => (f || '').toLowerCase());
 
             if (!searchFields.some(f => f.includes(searchTerm))) return false;
@@ -571,6 +571,8 @@ function showWireListItemModal(id = null) {
         if (item) {
             document.getElementById('wireListOrder').value = item.orderNumber || '';
             document.getElementById('wireListLine').value = item.lineNumber || '';
+            const coilEl = document.getElementById('wireListCoilCode');
+            if (coilEl) coilEl.value = item.coilCode || '';
             document.getElementById('wireListCustomer').value = item.customerName || '';
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
@@ -587,6 +589,8 @@ function showWireListItemModal(id = null) {
         title.textContent = 'Add Wire Cut List Item';
         document.getElementById('wireListOrder').value = '';
         document.getElementById('wireListLine').value = '001';
+        const coilEl = document.getElementById('wireListCoilCode');
+        if (coilEl) coilEl.value = '';
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
@@ -621,10 +625,12 @@ function hideWireListItemModal() {
 
 async function saveWireListItem() {
     const existing = wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId) : null;
+    const coilEl = document.getElementById('wireListCoilCode');
     const item = {
         id: wireListEditingId || crypto.randomUUID(),
         orderNumber: document.getElementById('wireListOrder').value.trim().toUpperCase(),
         lineNumber: document.getElementById('wireListLine').value.trim(),
+        coilCode: coilEl ? coilEl.value.trim().toUpperCase() : '',
         customerName: document.getElementById('wireListCustomer').value.trim().toUpperCase(),
         wireType: document.getElementById('wireListWireType').value.trim().toUpperCase(),
         lengthZ: document.getElementById('wireListLength').value.trim(),
@@ -1160,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Modal input listeners for auto-capitalization
-    ['wireListOrder', 'wireListCustomer', 'wireListWireType'].forEach(id => {
+    ['wireListOrder', 'wireListCustomer', 'wireListWireType', 'wireListCoilCode'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('input', (e) => {
