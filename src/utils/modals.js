@@ -10,6 +10,21 @@
  * element creation for UI components to prevent XSS.
  */
 
+// Timer management for auto-closing modals
+let currentModalTimer = null;
+let currentModalInterval = null;
+
+function clearModalTimers() {
+    if (currentModalTimer) {
+        clearTimeout(currentModalTimer);
+        currentModalTimer = null;
+    }
+    if (currentModalInterval) {
+        clearInterval(currentModalInterval);
+        currentModalInterval = null;
+    }
+}
+
 // Helper to create themed buttons securely
 function createModalButton(id, text, isPrimary, onClick) {
     const btn = document.createElement('button');
@@ -26,6 +41,7 @@ function createModalButton(id, text, isPrimary, onClick) {
 
 // Reset modal inputs and buttons
 function resetModalUI() {
+    clearModalTimers();
     const modalInput = document.getElementById('modalInput');
     const modalButtons = document.getElementById('modalButtons');
     const modalInputValue = document.getElementById('modalInputValue');
@@ -45,7 +61,7 @@ function resetModalUI() {
 }
 
 // Custom Modal Functions for EECOL Themed Alerts/Confirmations
-function showAlert(message, title = "Notification") {
+function showAlert(message, title = "Notification", autoCloseMs = null) {
     return new Promise((resolve) => {
         const modal = document.getElementById('customModal');
         if (!modal) {
@@ -70,11 +86,54 @@ function showAlert(message, title = "Notification") {
         modalMessage.textContent = message;
         modalMessage.classList.add('whitespace-pre-line');
 
-        const okBtn = createModalButton('modalOKBtn', 'OK', true, () => {
-            hideModal();
-            resolve();
+        // Determine effective autoCloseMs based on parameter or user setting in Database Config
+        let effectiveDuration = 0;
+        if (typeof autoCloseMs === 'number') {
+            effectiveDuration = autoCloseMs;
+        } else if (autoCloseMs === true || autoCloseMs === null) {
+            let userPref = null;
+            try {
+                userPref = localStorage.getItem('eecol-modal-autoclose-ms');
+            } catch (e) {}
+            effectiveDuration = userPref !== null ? parseInt(userPref, 10) : 3000;
+        }
+
+        let isResolved = false;
+        const doResolve = () => {
+            if (!isResolved) {
+                isResolved = true;
+                clearModalTimers();
+                hideModal();
+                resolve();
+            }
+        };
+
+        let initialBtnText = 'OK';
+        if (effectiveDuration > 0) {
+            let remainingSec = Math.ceil(effectiveDuration / 1000);
+            initialBtnText = `OK (${remainingSec}s)`;
+        }
+
+        const okBtn = createModalButton('modalOKBtn', initialBtnText, true, () => {
+            doResolve();
         });
         modalButtons.appendChild(okBtn);
+
+        if (effectiveDuration > 0) {
+            let remainingSec = Math.ceil(effectiveDuration / 1000);
+            currentModalInterval = setInterval(() => {
+                remainingSec -= 1;
+                if (remainingSec > 0) {
+                    okBtn.textContent = `OK (${remainingSec}s)`;
+                } else {
+                    okBtn.textContent = 'OK (0s)';
+                }
+            }, 1000);
+
+            currentModalTimer = setTimeout(() => {
+                doResolve();
+            }, effectiveDuration);
+        }
 
         // Show modal with animation
         modal.classList.remove('hidden');
@@ -274,6 +333,7 @@ function showDateInputModal(title = "Select Date") {
 }
 
 function hideModal() {
+    clearModalTimers();
     const modal = document.getElementById('customModal');
     const modalContent = document.getElementById('modalContent');
 

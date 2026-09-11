@@ -177,10 +177,10 @@
                 </div>
             </div>
 
-            <!-- Database Actions -->
+            <!-- Database & Notification Actions -->
             <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 card-border-blue mb-6">
-                <h2 class="text-xl font-bold text-[#0058B3] mb-4">Database Management</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h2 class="text-xl font-bold text-[#0058B3] mb-4">Database Management & Modal Settings</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <button id="exportDbBtn"
                         class="px-4 py-2 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600">Export
                         to JSON</button>
@@ -191,6 +191,29 @@
                         class="px-4 py-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600">Delete
                         Database</button>
                     <input type="file" id="importFileInput" class="hidden" accept=".json">
+                </div>
+
+                <!-- Auto-Close Modal Preferences -->
+                <div class="pt-4 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-[#0058B3] mb-2 flex items-center gap-2">
+                        ⏱️ Confirmation Modal Auto-Close Preferences
+                    </h3>
+                    <p class="text-xs text-gray-600 mb-3">
+                        Configure the default display duration for order completion and autofill confirmation modals.
+                    </p>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <label for="autoCloseDurationSelect" class="text-sm font-medium text-gray-700">Auto-Close Timer:</label>
+                        <select id="autoCloseDurationSelect" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-800 focus:ring-2 focus:ring-blue-500">
+                            <option value="1000">1 Second</option>
+                            <option value="2000">2 Seconds</option>
+                            <option value="3000" selected>3 Seconds (Default)</option>
+                            <option value="5000">5 Seconds</option>
+                            <option value="0">Disabled (Manual Dismiss)</option>
+                        </select>
+                        <button id="saveModalSettingsBtn" class="px-4 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700 transition shadow-sm">
+                            💾 Save Setting
+                        </button>
+                    </div>
                 </div>
             </div>
 

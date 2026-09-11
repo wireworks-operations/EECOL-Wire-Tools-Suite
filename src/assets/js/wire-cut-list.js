@@ -652,7 +652,7 @@ async function completeWireListItem(id, silent = false) {
                 if (silent) {
                     showToast(`Order #${item.orderNumber} completed`, 'success');
                 } else {
-                    await showAlert('Item marked as completed!', 'Success');
+                    await showAlert('Item marked as completed!', 'Success', 3000);
                 }
             }
         } catch (error) {
