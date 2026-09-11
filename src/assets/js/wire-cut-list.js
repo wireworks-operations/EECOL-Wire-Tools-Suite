@@ -9,6 +9,8 @@ let wireListEditingId = null;
 let currentContextMenuId = null;
 let currentContextMenuType = 'item'; // 'item' or 'group'
 let draggedElementId = null;
+let wireListSortBy = 'time'; // 'time', 'order', 'date'
+let wireListSortDir = 'desc'; // 'desc' or 'asc'
 
 // Group styling palettes (Distinct Thin Borders & High Contrast Colors)
 const GROUP_PALETTES = [
@@ -325,13 +327,108 @@ function renderSingleItemCard(item) {
     return card;
 }
 
-// Render Wire Cut List (With Merged Groups)
+// Helper for sorting items canonically by time, order number, or date
+function sortWireCutListItems(items, sortBy, sortDir) {
+    const mult = sortDir === 'asc' ? 1 : -1;
+    return [...items].sort((a, b) => {
+        if (sortBy === 'order') {
+            const orderA = (a.orderNumber || '').toString();
+            const orderB = (b.orderNumber || '').toString();
+            const comp = orderA.localeCompare(orderB, undefined, { numeric: true, sensitivity: 'base' });
+            if (comp !== 0) return comp * mult;
+            const lineA = (a.lineNumber || '').toString();
+            const lineB = (b.lineNumber || '').toString();
+            const lineComp = lineA.localeCompare(lineB, undefined, { numeric: true, sensitivity: 'base' });
+            if (lineComp !== 0) return lineComp * mult;
+            return ((a.timestamp || 0) - (b.timestamp || 0)) * mult;
+        } else if (sortBy === 'date') {
+            const dateA = a.timestamp ? new Date(a.timestamp).toISOString().split('T')[0] : '';
+            const dateB = b.timestamp ? new Date(b.timestamp).toISOString().split('T')[0] : '';
+            if (dateA !== dateB) {
+                return dateA.localeCompare(dateB) * mult;
+            }
+            const orderA = (a.orderNumber || '').toString();
+            const orderB = (b.orderNumber || '').toString();
+            return orderA.localeCompare(orderB, undefined, { numeric: true, sensitivity: 'base' }) * mult;
+        } else {
+            // Default: 'time'
+            return ((a.timestamp || 0) - (b.timestamp || 0)) * mult;
+        }
+    });
+}
+
+// Update Sort Bar UI controls state
+function updateSortBarUI() {
+    const sortContainer = document.getElementById('wireListSortContainer');
+    const filter = document.getElementById('wireListStatusFilter')?.value || 'active';
+
+    if (!sortContainer) return;
+
+    if (filter === 'active') {
+        sortContainer.classList.add('hidden');
+    } else {
+        sortContainer.classList.remove('hidden');
+    }
+
+    // Update sort button active states
+    const buttons = document.querySelectorAll('.wire-sort-btn');
+    buttons.forEach(btn => {
+        const type = btn.dataset.sort;
+        if (type === wireListSortBy) {
+            btn.className = 'wire-sort-btn px-2.5 py-1 rounded-md bg-yellow-600 text-white font-bold text-xs transition shadow-xs flex items-center gap-1';
+        } else {
+            btn.className = 'wire-sort-btn px-2.5 py-1 rounded-md bg-white text-yellow-900 border border-yellow-300 font-bold text-xs hover:bg-yellow-100 transition shadow-xs flex items-center gap-1';
+        }
+    });
+
+    // Update sort direction button text & icon
+    const dirIcon = document.getElementById('sortDirIcon');
+    const dirText = document.getElementById('sortDirText');
+
+    if (dirIcon && dirText) {
+        if (wireListSortDir === 'desc') {
+            dirIcon.textContent = '⬇️';
+            if (wireListSortBy === 'order') dirText.textContent = 'Desc (9-1 / Z-A)';
+            else if (wireListSortBy === 'date') dirText.textContent = 'Newest Date';
+            else dirText.textContent = 'Newest First';
+        } else {
+            dirIcon.textContent = '⬆️';
+            if (wireListSortBy === 'order') dirText.textContent = 'Asc (1-9 / A-Z)';
+            else if (wireListSortBy === 'date') dirText.textContent = 'Oldest Date';
+            else dirText.textContent = 'Oldest First';
+        }
+    }
+}
+
+// Helper to convert list items into display blocks (single cards or grouped cards)
+function createRenderBlocksForItems(items) {
+    const renderBlocks = [];
+    const processedGroupNames = new Set();
+
+    items.forEach(item => {
+        if (item.groupName) {
+            if (!processedGroupNames.has(item.groupName)) {
+                processedGroupNames.add(item.groupName);
+                const groupItems = items.filter(i => i.groupName === item.groupName);
+                renderBlocks.push({ type: 'group', name: item.groupName, items: groupItems, position: item.position || 0 });
+            }
+        } else {
+            renderBlocks.push({ type: 'single', item: item, position: item.position || 0 });
+        }
+    });
+
+    return renderBlocks;
+}
+
+// Render Wire Cut List (With Merged Groups & Smart Sorting)
 function renderWireCutList() {
     const container = document.getElementById('wireCutListItems');
     if (!container) return;
 
     const filter = document.getElementById('wireListStatusFilter')?.value || 'active';
     const searchTerm = document.getElementById('wireListSearch')?.value.trim().toLowerCase() || '';
+
+    updateSortBarUI();
 
     container.replaceChildren(); // BOLT OPTIMIZATION: O(1) DOM clearing
 
@@ -366,21 +463,27 @@ function renderWireCutList() {
         return;
     }
 
-    // Grouping entries for merged display while respecting global order
-    const renderBlocks = [];
-    const processedGroupNames = new Set();
+    let renderBlocks = [];
 
-    filtered.forEach(item => {
-        if (item.groupName) {
-            if (!processedGroupNames.has(item.groupName)) {
-                processedGroupNames.add(item.groupName);
-                const groupItems = filtered.filter(i => i.groupName === item.groupName);
-                renderBlocks.push({ type: 'group', name: item.groupName, items: groupItems, position: item.position || 0 });
-            }
-        } else {
-            renderBlocks.push({ type: 'single', item: item, position: item.position || 0 });
-        }
-    });
+    if (filter === 'active') {
+        // Active view: manual drag-and-drop position sorting
+        const activeItems = [...filtered].sort((a, b) => (a.position || 0) - (b.position || 0));
+        renderBlocks = createRenderBlocksForItems(activeItems);
+    } else if (filter === 'completed' || filter === 'removed') {
+        // Completed/Removed view: canonical sorting by Time, Order Number, or Date
+        const sortedItems = sortWireCutListItems(filtered, wireListSortBy, wireListSortDir);
+        renderBlocks = createRenderBlocksForItems(sortedItems);
+    } else if (filter === 'all') {
+        // All view: Active items pinned at top in drag-and-drop position order, non-active sorted below
+        const activeItems = filtered.filter(i => i.status === 'active' || !i.status).sort((a, b) => (a.position || 0) - (b.position || 0));
+        const nonActiveItems = filtered.filter(i => i.status && i.status !== 'active');
+        const sortedNonActive = sortWireCutListItems(nonActiveItems, wireListSortBy, wireListSortDir);
+
+        const activeBlocks = createRenderBlocksForItems(activeItems);
+        const nonActiveBlocks = createRenderBlocksForItems(sortedNonActive);
+
+        renderBlocks = [...activeBlocks, ...nonActiveBlocks];
+    }
 
     renderBlocks.forEach(block => {
         if (block.type === 'single') {
@@ -533,6 +636,8 @@ async function completeWireListItem(id, silent = false) {
         item.status = 'completed';
         item.isActive = false;
         item.isGroupActive = false;
+        item.groupName = null;
+        item.groupId = null;
         item.updatedAt = Date.now();
         try {
             if (window.eecolDB && await window.eecolDB.isReady()) {
@@ -1026,6 +1131,8 @@ async function saveRemovalWithReason() {
         item.status = 'removed';
         item.isActive = false;
         item.isGroupActive = false;
+        item.groupName = null;
+        item.groupId = null;
         item.removalReason = reason;
         item.updatedAt = Date.now();
         try {
@@ -1216,6 +1323,40 @@ document.addEventListener('DOMContentLoaded', async function() {
     const searchInput = document.getElementById('wireListSearch');
     if (searchInput) {
         searchInput.addEventListener('input', debounce(renderWireCutList, 250));
+    }
+
+    // Sort control events
+    const sortByTimeBtn = document.getElementById('sortByTimeBtn');
+    const sortByOrderBtn = document.getElementById('sortByOrderBtn');
+    const sortByDateBtn = document.getElementById('sortByDateBtn');
+    const sortDirectionBtn = document.getElementById('sortDirectionBtn');
+
+    if (sortByTimeBtn) {
+        sortByTimeBtn.addEventListener('click', () => {
+            wireListSortBy = 'time';
+            renderWireCutList();
+        });
+    }
+
+    if (sortByOrderBtn) {
+        sortByOrderBtn.addEventListener('click', () => {
+            wireListSortBy = 'order';
+            renderWireCutList();
+        });
+    }
+
+    if (sortByDateBtn) {
+        sortByDateBtn.addEventListener('click', () => {
+            wireListSortBy = 'date';
+            renderWireCutList();
+        });
+    }
+
+    if (sortDirectionBtn) {
+        sortDirectionBtn.addEventListener('click', () => {
+            wireListSortDir = wireListSortDir === 'desc' ? 'asc' : 'desc';
+            renderWireCutList();
+        });
     }
 
     // Initialize Pastel Presets
