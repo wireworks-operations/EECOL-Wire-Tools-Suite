@@ -3532,7 +3532,7 @@ async function completeWireListItem(id, silent = false) {
                 if (silent) {
                     showToast(`Order #${item.orderNumber} auto-completed from list`, 'success');
                 } else {
-                    await showAlert('Item marked as completed!', 'Success');
+                    await showAlert('Item marked as completed!', 'Success', 3000);
                 }
             }
         } catch (error) {

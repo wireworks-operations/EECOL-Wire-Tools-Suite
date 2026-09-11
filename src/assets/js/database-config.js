@@ -855,6 +855,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Modal Auto-Close preferences handling
+    const autoCloseSelect = document.getElementById('autoCloseDurationSelect');
+    const saveModalSettingsBtn = document.getElementById('saveModalSettingsBtn');
+
+    if (autoCloseSelect && saveModalSettingsBtn) {
+        const savedDuration = localStorage.getItem('eecol-modal-autoclose-ms') || '3000';
+        autoCloseSelect.value = savedDuration;
+
+        saveModalSettingsBtn.addEventListener('click', async () => {
+            const val = autoCloseSelect.value;
+            localStorage.setItem('eecol-modal-autoclose-ms', val);
+            if (db && await db.isReady()) {
+                await db.update('settings', { name: 'modalAutoCloseMs', value: val });
+            }
+            await showAlert(`Modal auto-close preference saved (${val === '0' ? 'Disabled' : val / 1000 + 's'})!`, 'Settings Saved');
+        });
+    }
+
     // Initial Load
     loadCategories(); // Load categories first
     await loadAllRecords();
