@@ -3372,6 +3372,8 @@ function showWireListItemModal(id = null) {
         if (item) {
             document.getElementById('wireListOrder').value = item.orderNumber || '';
             document.getElementById('wireListLine').value = item.lineNumber || '';
+            const coilEl = document.getElementById('wireListCoilCode');
+            if (coilEl) coilEl.value = item.coilCode || '';
             document.getElementById('wireListCustomer').value = item.customerName || '';
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
@@ -3381,11 +3383,15 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListDescription').value = item.description || '';
             document.getElementById('wireListOrderComments').value = item.orderComments || '';
             document.getElementById('wireListShipperComments').value = item.shipperComments || '';
+            const chgEl = document.getElementById('wireListChargeable');
+            if (chgEl) chgEl.value = item.chargeable || '';
         }
     } else {
         title.textContent = 'Add Wire Cut List Item';
         document.getElementById('wireListOrder').value = '';
         document.getElementById('wireListLine').value = '1';
+        const coilEl = document.getElementById('wireListCoilCode');
+        if (coilEl) coilEl.value = '';
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
@@ -3395,6 +3401,8 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListDescription').value = '';
         document.getElementById('wireListOrderComments').value = '';
         document.getElementById('wireListShipperComments').value = '';
+        const chgEl = document.getElementById('wireListChargeable');
+        if (chgEl) chgEl.value = '';
     }
 
     modal.classList.remove('hidden');
@@ -3427,9 +3435,11 @@ async function saveWireListItem() {
         reelSize: document.getElementById('wireListReelSize').value.trim(),
         urgency: document.getElementById('wireListUrgency').value,
         status: document.getElementById('wireListStatus').value,
+        coilCode: document.getElementById('wireListCoilCode')?.value.trim().toUpperCase() || '',
         description: document.getElementById('wireListDescription').value.trim(),
         orderComments: document.getElementById('wireListOrderComments').value.trim(),
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
+        chargeable: document.getElementById('wireListChargeable')?.value || '',
         timestamp: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).timestamp : Date.now(),
         position: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).position : wireCutList.length,
         color: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).color : null,
@@ -3620,16 +3630,20 @@ async function autoFillCuttingForm(id) {
         'orderNumber': item.orderNumber || '',
         'customerName': item.customerName || '',
         'wireId': item.wireType || '',
-        'cutLength': item.lengthZ || ''
+        'cutLength': item.lengthZ || '',
+        'lineCode': item.lineNumber || '',
+        'turnedToLineCode': item.coilCode || '',
+        'chargeable': item.chargeable || '',
+        'orderComments': item.orderComments || ''
     };
 
     // Populate the fields
-    for (const [id, value] of Object.entries(fields)) {
-        const el = document.getElementById(id);
+    for (const [fieldId, value] of Object.entries(fields)) {
+        const el = document.getElementById(fieldId);
         if (el) {
             el.value = value;
             // Force uppercase for relevant fields immediately
-            if (['orderNumber', 'customerName', 'wireId'].includes(id)) {
+            if (['orderNumber', 'customerName', 'wireId', 'lineCode', 'turnedToLineCode'].includes(fieldId)) {
                 el.value = el.value.toUpperCase();
             }
             // Trigger input events for validation/dependent logic
@@ -3657,6 +3671,12 @@ async function autoFillCuttingForm(id) {
     if (reReelCheckbox) {
         reReelCheckbox.checked = !!item.isReReel;
         reReelCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const fullPickCheckbox = document.getElementById('fullPick');
+    if (fullPickCheckbox) {
+        fullPickCheckbox.checked = !!item.isFullPick;
+        fullPickCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form

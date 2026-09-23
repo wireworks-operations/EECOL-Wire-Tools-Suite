@@ -703,6 +703,8 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListShipperComments').value = item.shipperComments || '';
             document.getElementById('wireListFullPick').value = item.isFullPick ? 'yes' : 'no';
             document.getElementById('wireListReReel').value = item.isReReel ? 'yes' : 'no';
+            const chgEl = document.getElementById('wireListChargeable');
+            if (chgEl) chgEl.value = item.chargeable || '';
         }
     } else {
         title.textContent = 'Add Wire Cut List Item';
@@ -723,6 +725,8 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListShipperComments').value = '';
         document.getElementById('wireListFullPick').value = 'no';
         document.getElementById('wireListReReel').value = 'no';
+        const chgEl = document.getElementById('wireListChargeable');
+        if (chgEl) chgEl.value = '';
     }
 
     modal.classList.remove('hidden');
@@ -766,6 +770,7 @@ async function saveWireListItem() {
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
         isFullPick: document.getElementById('wireListFullPick').value === 'yes',
         isReReel: document.getElementById('wireListReReel').value === 'yes',
+        chargeable: document.getElementById('wireListChargeable')?.value || '',
         timestamp: existing ? existing.timestamp : Date.now(),
         position: existing ? existing.position : wireCutList.length,
         color: existing ? existing.color : null,
