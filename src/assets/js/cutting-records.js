@@ -3229,6 +3229,18 @@ function renderWireCutList() {
             orderLine.appendChild(activeBadge);
         }
 
+        if (item.chargeable) {
+            const chgBadge = document.createElement('span');
+            if (item.chargeable === 'yes') {
+                chgBadge.className = 'px-1 bg-teal-100 text-teal-800 rounded text-[8px] uppercase border border-teal-300 font-black';
+                chgBadge.textContent = '💲 Chargeable';
+            } else if (item.chargeable === 'no') {
+                chgBadge.className = 'px-1 bg-slate-100 text-slate-700 rounded text-[8px] uppercase border border-slate-300 font-black';
+                chgBadge.textContent = '🆓 Non-Chargeable';
+            }
+            orderLine.appendChild(chgBadge);
+        }
+
         if (item.urgency && item.urgency !== 'normal') {
             const urgencyBadge = document.createElement('span');
             urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
