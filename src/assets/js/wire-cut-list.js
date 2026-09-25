@@ -217,6 +217,18 @@ function renderSingleItemCard(item) {
         orderLine.appendChild(coilBadge);
     }
 
+    if (item.chargeable) {
+        const chgBadge = document.createElement('span');
+        if (item.chargeable === 'yes') {
+            chgBadge.className = 'px-1 bg-teal-100 text-teal-800 rounded text-[8px] uppercase border border-teal-300 font-black';
+            chgBadge.textContent = '💲 Chargeable';
+        } else if (item.chargeable === 'no') {
+            chgBadge.className = 'px-1 bg-slate-100 text-slate-700 rounded text-[8px] uppercase border border-slate-300 font-black';
+            chgBadge.textContent = '🆓 Non-Chargeable';
+        }
+        orderLine.appendChild(chgBadge);
+    }
+
     if (item.urgency && item.urgency !== 'normal') {
         const urgencyBadge = document.createElement('span');
         urgencyBadge.className = `px-1 rounded text-[8px] uppercase ${item.urgency === 'critical' ? 'bg-red-600 text-white animate-pulse' : 'bg-orange-500 text-white'}`;
@@ -703,6 +715,8 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListShipperComments').value = item.shipperComments || '';
             document.getElementById('wireListFullPick').value = item.isFullPick ? 'yes' : 'no';
             document.getElementById('wireListReReel').value = item.isReReel ? 'yes' : 'no';
+            const chgEl = document.getElementById('wireListChargeable');
+            if (chgEl) chgEl.value = item.chargeable || '';
         }
     } else {
         title.textContent = 'Add Wire Cut List Item';
@@ -723,6 +737,8 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListShipperComments').value = '';
         document.getElementById('wireListFullPick').value = 'no';
         document.getElementById('wireListReReel').value = 'no';
+        const chgEl = document.getElementById('wireListChargeable');
+        if (chgEl) chgEl.value = '';
     }
 
     modal.classList.remove('hidden');
@@ -766,6 +782,7 @@ async function saveWireListItem() {
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
         isFullPick: document.getElementById('wireListFullPick').value === 'yes',
         isReReel: document.getElementById('wireListReReel').value === 'yes',
+        chargeable: document.getElementById('wireListChargeable')?.value || '',
         timestamp: existing ? existing.timestamp : Date.now(),
         position: existing ? existing.position : wireCutList.length,
         color: existing ? existing.color : null,
