@@ -3643,8 +3643,8 @@ async function autoFillCuttingForm(id) {
         'customerName': item.customerName || '',
         'wireId': item.wireType || '',
         'cutLength': item.lengthZ || '',
-        'lineCode': item.lineNumber || '',
-        'turnedToLineCode': item.coilCode || '',
+        'lineCode': item.coilCode || item.lineNumber || '',
+        'turnedToLineCode': '',
         'chargeable': item.chargeable || '',
         'orderComments': item.orderComments || ''
     };
