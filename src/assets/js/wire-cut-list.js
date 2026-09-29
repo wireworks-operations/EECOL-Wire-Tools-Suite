@@ -186,7 +186,7 @@ function renderSingleItemCard(item) {
     detailsCol.className = 'w-1/3';
 
     const orderLine = document.createElement('div');
-    orderLine.className = 'font-bold text-sm flex items-center gap-2 flex-wrap';
+    orderLine.className = 'font-extrabold text-base sm:text-lg flex items-center gap-2 flex-wrap';
     orderLine.textContent = `${item.orderNumber || 'N/A'} / ${item.lineNumber || '1'}`;
 
     if (item.isActive) {
@@ -237,7 +237,7 @@ function renderSingleItemCard(item) {
     }
 
     const meta = document.createElement('div');
-    meta.className = `text-[9px] font-bold ${isDarkBg ? 'text-white/80' : 'text-gray-700'}`;
+    meta.className = `text-xs font-bold ${isDarkBg ? 'text-white/90' : 'text-gray-800'}`;
     const dateStr = new Date(item.timestamp).toLocaleString('en-US', {
         month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
     }).toUpperCase();
