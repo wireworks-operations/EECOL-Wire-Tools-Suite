@@ -1246,11 +1246,11 @@ function renderCutRecords() {
         topRow.className = "flex justify-between items-center gap-2";
 
         const wireTitle = document.createElement("div");
-        wireTitle.className = "flex items-center gap-1.5 font-bold text-xs text-gray-900 truncate";
+        wireTitle.className = "flex items-center gap-1.5 font-extrabold text-sm sm:text-base text-gray-900 truncate";
         wireTitle.innerHTML = `<span class="text-amber-600">⚡</span> ${window.escapeHTML(record.wireId || "UNKNOWN WIRE")}`;
 
         const lengthBadge = document.createElement("span");
-        lengthBadge.className = "px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-full font-extrabold text-xs border border-blue-200/80 shrink-0";
+        lengthBadge.className = "px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-full font-extrabold text-xs sm:text-sm border border-blue-200/80 shrink-0";
         lengthBadge.textContent = `${record.cutLength.toFixed(2)} ${record.cutLengthUnit}`;
 
         topRow.appendChild(wireTitle);
@@ -1259,10 +1259,10 @@ function renderCutRecords() {
 
         // Sub-header: Order & Customer
         const subRow = document.createElement("div");
-        subRow.className = "flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-600 font-medium";
+        subRow.className = "flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 font-medium";
         subRow.innerHTML = `
-            <span>📋 Order: <strong class="text-gray-800 font-mono">${window.escapeHTML(record.orderNumber || "N/A")}</strong></span>
-            <span>🏢 Customer: <strong class="text-gray-800">${window.escapeHTML(record.customerName || "N/A")}</strong></span>
+            <span>📋 Order: <strong class="text-gray-900 font-mono text-sm sm:text-base font-extrabold">${window.escapeHTML(record.orderNumber || "N/A")}</strong></span>
+            <span>🏢 Customer: <strong class="text-gray-900 text-xs sm:text-sm font-bold">${window.escapeHTML(record.customerName || "N/A")}</strong></span>
         `;
         card.appendChild(subRow);
 
@@ -1299,7 +1299,7 @@ function renderCutRecords() {
 
         // Progressive Disclosure Drawer
         const detailsDrawer = document.createElement("div");
-        detailsDrawer.className = "mt-2 pt-2 border-t border-gray-100 text-[11px] text-gray-600 space-y-1 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100";
+        detailsDrawer.className = "mt-2 pt-2 border-t border-gray-100 text-xs text-gray-600 space-y-1 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100";
 
         let marksText = "No Marks";
         if (record.startingMark && !record.isNoMarks) {
@@ -1310,12 +1310,12 @@ function renderCutRecords() {
 
         detailsDrawer.innerHTML = `
             <div class="grid grid-cols-2 gap-2">
-                <div>📍 Line: <strong class="font-mono text-gray-800">${window.escapeHTML(record.lineCode || "N/A")}</strong> ${record.turnedToLineCode ? `→ L:${window.escapeHTML(record.turnedToLineCode)}` : ""}</div>
-                <div>🧑‍🔧 Cutter: <strong class="text-gray-800">${window.escapeHTML(record.cutterName || "N/A")}</strong></div>
+                <div>📍 Line: <strong class="font-mono text-gray-900 text-xs sm:text-sm font-extrabold">${window.escapeHTML(record.lineCode || "N/A")}</strong> ${record.turnedToLineCode ? `→ L:${window.escapeHTML(record.turnedToLineCode)}` : ""}</div>
+                <div>🧑‍🔧 Cutter: <strong class="text-gray-900 text-xs sm:text-sm font-bold">${window.escapeHTML(record.cutterName || "N/A")}</strong></div>
             </div>
-            <div>📏 Marks: <strong class="text-gray-800">${marksText}</strong></div>
-            <div>💬 Comments: <span class="italic text-gray-700">${window.escapeHTML(record.orderComments || "None")}</span></div>
-            <div class="text-[10px] text-gray-400 pt-0.5">🕒 Recorded: ${dateStr}</div>
+            <div>📏 Marks: <strong class="text-gray-900 font-semibold">${marksText}</strong></div>
+            <div>💬 Comments: <span class="italic text-gray-800 font-medium">${window.escapeHTML(record.orderComments || "None")}</span></div>
+            <div class="text-[11px] text-gray-500 font-medium pt-0.5">🕒 Recorded: ${dateStr}</div>
         `;
 
         card.appendChild(detailsDrawer);
