@@ -200,12 +200,7 @@
                     <input id="wireListLine" type="text" placeholder="001"
                         class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1">Coil Code</label>
-                    <input id="wireListCoilCode" type="text" placeholder="e.g. A or 001"
-                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
-                </div>
-                <div>
+                <div class="col-span-2">
                     <label class="block text-xs font-semibold mb-1">Customer</label>
                     <input id="wireListCustomer" type="text" placeholder="Customer Name"
                         class="w-full p-2 border border-gray-300 rounded-lg text-sm">
@@ -216,9 +211,14 @@
                         list="existingGroupsDatalist" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                     <datalist id="existingGroupsDatalist"></datalist>
                 </div>
-                <div class="col-span-2">
+                <div>
                     <label class="block text-xs font-semibold mb-1">Wire Type</label>
                     <input id="wireListWireType" type="text" placeholder="TK6/3CU"
+                        class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Coil Code</label>
+                    <input id="wireListCoilCode" type="text" placeholder="e.g. A or 001"
                         class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <div class="col-span-2 flex gap-2">
@@ -244,6 +244,14 @@
                         <select id="wireListFullPick" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                             <option value="no">No</option>
                             <option value="yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-semibold mb-1">Chargeable</label>
+                        <select id="wireListChargeable" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="">Select...</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
                         </select>
                     </div>
                 </div>

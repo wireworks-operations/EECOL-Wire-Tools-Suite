@@ -672,11 +672,7 @@
                     <label class="block text-[11px] font-semibold text-gray-700 mb-1">Line #</label>
                     <input id="wireListLine" type="text" placeholder="1" class="w-full md3-input-field text-xs">
                 </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Coil Code</label>
-                    <input id="wireListCoilCode" type="text" placeholder="e.g. A or 001" class="w-full md3-input-field text-xs">
-                </div>
-                <div>
+                <div class="col-span-2">
                     <label class="block text-[11px] font-semibold text-gray-700 mb-1">Customer</label>
                     <input id="wireListCustomer" type="text" placeholder="Customer Name" class="w-full md3-input-field text-xs">
                 </div>
@@ -686,9 +682,13 @@
                         list="existingGroupsDatalist" class="w-full md3-input-field text-xs">
                     <datalist id="existingGroupsDatalist"></datalist>
                 </div>
-                <div class="col-span-2">
+                <div>
                     <label class="block text-[11px] font-semibold text-gray-700 mb-1">Wire Type</label>
                     <input id="wireListWireType" type="text" placeholder="TK6/3CU" class="w-full md3-input-field text-xs">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Coil Code</label>
+                    <input id="wireListCoilCode" type="text" placeholder="e.g. A or 001" class="w-full md3-input-field text-xs">
                 </div>
                 <div class="flex gap-2">
                     <div class="flex-1">
@@ -699,6 +699,14 @@
                         <label class="block text-[11px] font-semibold text-gray-700 mb-1">Reel Size (in)</label>
                         <input id="wireListReelSize" type="number" placeholder="40" class="w-full md3-input-field text-xs">
                     </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Chargeable</label>
+                    <select id="wireListChargeable" class="w-full md3-input-field text-xs bg-white">
+                        <option value="">Select...</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-700 mb-1">Urgency</label>

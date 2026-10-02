@@ -1246,11 +1246,11 @@ function renderCutRecords() {
         topRow.className = "flex justify-between items-center gap-2";
 
         const wireTitle = document.createElement("div");
-        wireTitle.className = "flex items-center gap-1.5 font-bold text-xs text-gray-900 truncate";
+        wireTitle.className = "flex items-center gap-1.5 font-extrabold text-sm sm:text-base text-gray-900 truncate";
         wireTitle.innerHTML = `<span class="text-amber-600">⚡</span> ${window.escapeHTML(record.wireId || "UNKNOWN WIRE")}`;
 
         const lengthBadge = document.createElement("span");
-        lengthBadge.className = "px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-full font-extrabold text-xs border border-blue-200/80 shrink-0";
+        lengthBadge.className = "px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-full font-extrabold text-xs sm:text-sm border border-blue-200/80 shrink-0";
         lengthBadge.textContent = `${record.cutLength.toFixed(2)} ${record.cutLengthUnit}`;
 
         topRow.appendChild(wireTitle);
@@ -1259,10 +1259,10 @@ function renderCutRecords() {
 
         // Sub-header: Order & Customer
         const subRow = document.createElement("div");
-        subRow.className = "flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-600 font-medium";
+        subRow.className = "flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 font-medium";
         subRow.innerHTML = `
-            <span>📋 Order: <strong class="text-gray-800 font-mono">${window.escapeHTML(record.orderNumber || "N/A")}</strong></span>
-            <span>🏢 Customer: <strong class="text-gray-800">${window.escapeHTML(record.customerName || "N/A")}</strong></span>
+            <span>📋 Order: <strong class="text-gray-900 font-mono text-sm sm:text-base font-extrabold">${window.escapeHTML(record.orderNumber || "N/A")}</strong></span>
+            <span>🏢 Customer: <strong class="text-gray-900 text-xs sm:text-sm font-bold">${window.escapeHTML(record.customerName || "N/A")}</strong></span>
         `;
         card.appendChild(subRow);
 
@@ -1299,7 +1299,7 @@ function renderCutRecords() {
 
         // Progressive Disclosure Drawer
         const detailsDrawer = document.createElement("div");
-        detailsDrawer.className = "mt-2 pt-2 border-t border-gray-100 text-[11px] text-gray-600 space-y-1 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100";
+        detailsDrawer.className = "mt-2 pt-2 border-t border-gray-100 text-xs text-gray-600 space-y-1 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100";
 
         let marksText = "No Marks";
         if (record.startingMark && !record.isNoMarks) {
@@ -1310,12 +1310,12 @@ function renderCutRecords() {
 
         detailsDrawer.innerHTML = `
             <div class="grid grid-cols-2 gap-2">
-                <div>📍 Line: <strong class="font-mono text-gray-800">${window.escapeHTML(record.lineCode || "N/A")}</strong> ${record.turnedToLineCode ? `→ L:${window.escapeHTML(record.turnedToLineCode)}` : ""}</div>
-                <div>🧑‍🔧 Cutter: <strong class="text-gray-800">${window.escapeHTML(record.cutterName || "N/A")}</strong></div>
+                <div>📍 Line: <strong class="font-mono text-gray-900 text-xs sm:text-sm font-extrabold">${window.escapeHTML(record.lineCode || "N/A")}</strong> ${record.turnedToLineCode ? `→ L:${window.escapeHTML(record.turnedToLineCode)}` : ""}</div>
+                <div>🧑‍🔧 Cutter: <strong class="text-gray-900 text-xs sm:text-sm font-bold">${window.escapeHTML(record.cutterName || "N/A")}</strong></div>
             </div>
-            <div>📏 Marks: <strong class="text-gray-800">${marksText}</strong></div>
-            <div>💬 Comments: <span class="italic text-gray-700">${window.escapeHTML(record.orderComments || "None")}</span></div>
-            <div class="text-[10px] text-gray-400 pt-0.5">🕒 Recorded: ${dateStr}</div>
+            <div>📏 Marks: <strong class="text-gray-900 font-semibold">${marksText}</strong></div>
+            <div>💬 Comments: <span class="italic text-gray-800 font-medium">${window.escapeHTML(record.orderComments || "None")}</span></div>
+            <div class="text-[11px] text-gray-500 font-medium pt-0.5">🕒 Recorded: ${dateStr}</div>
         `;
 
         card.appendChild(detailsDrawer);
@@ -3219,7 +3219,7 @@ function renderWireCutList() {
         detailsCol.className = 'w-1/3';
 
         const orderLine = document.createElement('div');
-        orderLine.className = 'font-bold text-sm flex items-center gap-2';
+        orderLine.className = 'font-extrabold text-base sm:text-lg flex items-center gap-2 flex-wrap';
         orderLine.textContent = `${item.orderNumber || 'N/A'} / ${item.lineNumber || '1'}`;
 
         if (item.isActive) {
@@ -3227,6 +3227,18 @@ function renderWireCutList() {
             activeBadge.className = 'px-1 bg-amber-100 text-amber-800 rounded text-[8px] uppercase border border-amber-300 font-black';
             activeBadge.textContent = '🌟 Active';
             orderLine.appendChild(activeBadge);
+        }
+
+        if (item.chargeable) {
+            const chgBadge = document.createElement('span');
+            if (item.chargeable === 'yes') {
+                chgBadge.className = 'px-1 bg-teal-100 text-teal-800 rounded text-[8px] uppercase border border-teal-300 font-black';
+                chgBadge.textContent = '💲 Chargeable';
+            } else if (item.chargeable === 'no') {
+                chgBadge.className = 'px-1 bg-slate-100 text-slate-700 rounded text-[8px] uppercase border border-slate-300 font-black';
+                chgBadge.textContent = '🆓 Non-Chargeable';
+            }
+            orderLine.appendChild(chgBadge);
         }
 
         if (item.urgency && item.urgency !== 'normal') {
@@ -3237,7 +3249,7 @@ function renderWireCutList() {
         }
 
         const meta = document.createElement('div');
-        meta.className = `text-[9px] font-bold ${isDarkBg ? 'text-white/80' : 'text-gray-700'}`;
+        meta.className = `text-xs font-bold ${isDarkBg ? 'text-white/90' : 'text-gray-800'}`;
         const dateStr = new Date(item.timestamp).toLocaleString('en-US', {
             month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
         }).toUpperCase();
@@ -3372,6 +3384,8 @@ function showWireListItemModal(id = null) {
         if (item) {
             document.getElementById('wireListOrder').value = item.orderNumber || '';
             document.getElementById('wireListLine').value = item.lineNumber || '';
+            const coilEl = document.getElementById('wireListCoilCode');
+            if (coilEl) coilEl.value = item.coilCode || '';
             document.getElementById('wireListCustomer').value = item.customerName || '';
             document.getElementById('wireListWireType').value = item.wireType || '';
             document.getElementById('wireListLength').value = item.lengthZ || '';
@@ -3381,11 +3395,15 @@ function showWireListItemModal(id = null) {
             document.getElementById('wireListDescription').value = item.description || '';
             document.getElementById('wireListOrderComments').value = item.orderComments || '';
             document.getElementById('wireListShipperComments').value = item.shipperComments || '';
+            const chgEl = document.getElementById('wireListChargeable');
+            if (chgEl) chgEl.value = item.chargeable || '';
         }
     } else {
         title.textContent = 'Add Wire Cut List Item';
         document.getElementById('wireListOrder').value = '';
         document.getElementById('wireListLine').value = '1';
+        const coilEl = document.getElementById('wireListCoilCode');
+        if (coilEl) coilEl.value = '';
         document.getElementById('wireListCustomer').value = '';
         document.getElementById('wireListWireType').value = '';
         document.getElementById('wireListLength').value = '';
@@ -3395,6 +3413,8 @@ function showWireListItemModal(id = null) {
         document.getElementById('wireListDescription').value = '';
         document.getElementById('wireListOrderComments').value = '';
         document.getElementById('wireListShipperComments').value = '';
+        const chgEl = document.getElementById('wireListChargeable');
+        if (chgEl) chgEl.value = '';
     }
 
     modal.classList.remove('hidden');
@@ -3427,9 +3447,11 @@ async function saveWireListItem() {
         reelSize: document.getElementById('wireListReelSize').value.trim(),
         urgency: document.getElementById('wireListUrgency').value,
         status: document.getElementById('wireListStatus').value,
+        coilCode: document.getElementById('wireListCoilCode')?.value.trim().toUpperCase() || '',
         description: document.getElementById('wireListDescription').value.trim(),
         orderComments: document.getElementById('wireListOrderComments').value.trim(),
         shipperComments: document.getElementById('wireListShipperComments').value.trim(),
+        chargeable: document.getElementById('wireListChargeable')?.value || '',
         timestamp: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).timestamp : Date.now(),
         position: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).position : wireCutList.length,
         color: wireListEditingId ? wireCutList.find(i => i.id === wireListEditingId).color : null,
@@ -3620,16 +3642,20 @@ async function autoFillCuttingForm(id) {
         'orderNumber': item.orderNumber || '',
         'customerName': item.customerName || '',
         'wireId': item.wireType || '',
-        'cutLength': item.lengthZ || ''
+        'cutLength': item.lengthZ || '',
+        'lineCode': item.coilCode || item.lineNumber || '',
+        'turnedToLineCode': '',
+        'chargeable': item.chargeable || '',
+        'orderComments': item.orderComments || ''
     };
 
     // Populate the fields
-    for (const [id, value] of Object.entries(fields)) {
-        const el = document.getElementById(id);
+    for (const [fieldId, value] of Object.entries(fields)) {
+        const el = document.getElementById(fieldId);
         if (el) {
             el.value = value;
             // Force uppercase for relevant fields immediately
-            if (['orderNumber', 'customerName', 'wireId'].includes(id)) {
+            if (['orderNumber', 'customerName', 'wireId', 'lineCode', 'turnedToLineCode'].includes(fieldId)) {
                 el.value = el.value.toUpperCase();
             }
             // Trigger input events for validation/dependent logic
@@ -3657,6 +3683,12 @@ async function autoFillCuttingForm(id) {
     if (reReelCheckbox) {
         reReelCheckbox.checked = !!item.isReReel;
         reReelCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const fullPickCheckbox = document.getElementById('fullPick');
+    if (fullPickCheckbox) {
+        fullPickCheckbox.checked = !!item.isFullPick;
+        fullPickCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Ensure Batch Entry Mode is OFF for this autofill to work as expected on the main form
