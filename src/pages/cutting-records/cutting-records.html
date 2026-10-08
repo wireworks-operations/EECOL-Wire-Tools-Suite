@@ -612,10 +612,10 @@
         </div>
     </div>
 
-    <div id="importCalculatorModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+    <div id="importCalculatorModal" class="fixed inset-0 z-50 hidden flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="importCalcModalTitle">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-xs" id="importModalBackdrop"></div>
         <div class="relative bg-white rounded-3xl shadow-2xl p-6 max-w-lg w-full mx-4 border border-gray-100 transform scale-95 opacity-0 transition-all duration-200" id="importModalContent">
-            <h3 class="text-base font-bold text-center mb-4 text-gray-900">📥 Import Marks from Calculator</h3>
+            <h3 id="importCalcModalTitle" class="text-base font-bold text-center mb-4 text-gray-900">📥 Import Marks from Calculator</h3>
             <div class="mb-4 p-4 bg-blue-50/60 rounded-2xl border border-blue-100">
                 <h4 class="text-xs font-bold text-blue-900 mb-2">Mark Calculator History</h4>
                 <select id="markCalculatorDropdown" class="w-full md3-input-field text-xs mb-3 bg-white"></select>
@@ -632,10 +632,10 @@
         </div>
     </div>
 
-    <div id="importReelModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+    <div id="importReelModal" class="fixed inset-0 z-50 hidden flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="importReelModalTitle">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-xs" id="reelModalBackdrop"></div>
         <div class="relative bg-white rounded-3xl shadow-2xl p-6 max-w-md w-full mx-4 border border-gray-100 transform scale-95 opacity-0 transition-all duration-200" id="reelModalContent">
-            <h3 class="text-base font-bold text-center mb-4 text-gray-900">📥 Import Flange Size</h3>
+            <h3 id="importReelModalTitle" class="text-base font-bold text-center mb-4 text-gray-900">📥 Import Flange Size</h3>
             <div class="mb-4 p-4 bg-blue-50/60 rounded-2xl border border-blue-100">
                 <select id="flangeSizeDropdown" class="w-full md3-input-field text-xs mb-3 bg-white"></select>
                 <button id="importFlangeBtn" type="button" class="w-full px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-xl hover:bg-blue-700 transition">Import Selected Flange Size</button>

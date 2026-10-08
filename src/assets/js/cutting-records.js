@@ -2240,6 +2240,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     const batchRedoBtn = document.getElementById('batchRedoBtn');
     if (batchRedoBtn) batchRedoBtn.addEventListener('click', batchRedo);
 
+    // Keyboard Escape handler for import modals
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const importCalcModal = document.getElementById('importCalculatorModal');
+            const importReelModal = document.getElementById('importReelModal');
+
+            if (importCalcModal && !importCalcModal.classList.contains('hidden')) {
+                hideImportModal();
+            } else if (importReelModal && !importReelModal.classList.contains('hidden')) {
+                hideReelModal();
+            }
+        }
+    });
+
     // Keyboard shortcuts for undo/redo
     document.addEventListener('keydown', function(event) {
         // Ctrl+Z for undo (Cmd+Z on Mac, but we use Ctrl for simplicity)
@@ -2766,6 +2780,8 @@ async function showImportCalculatorModal() {
     setTimeout(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
         modalContent.classList.add('scale-100', 'opacity-100');
+        const markDropdown = document.getElementById('markCalculatorDropdown');
+        if (markDropdown) markDropdown.focus();
     }, 10);
 
     // Populate dropdowns with history
@@ -3805,6 +3821,8 @@ async function showImportReelModal() {
     setTimeout(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
         modalContent.classList.add('scale-100', 'opacity-100');
+        const flangeDropdown = document.getElementById('flangeSizeDropdown');
+        if (flangeDropdown) flangeDropdown.focus();
     }, 10);
 
     // Populate dropdown with saved reel configurations
