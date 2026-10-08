@@ -73,6 +73,21 @@ function getContrastColor(color) {
     return luminance > 0.179 ? '#1f2937' : '#ffffff';
 }
 
+// HTML Escape Helper for XSS Prevention
+function _esc(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof window !== 'undefined' && typeof window.escapeHTML === 'function') {
+        return window.escapeHTML(v);
+    }
+    return String(v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\//g, '&#x2F;');
+}
+
 // Debounce utility for search input
 function debounce(func, wait) {
     let timeout;
@@ -542,7 +557,7 @@ function renderWireCutList() {
 
             const headerTitle = document.createElement('div');
             headerTitle.className = 'flex items-center gap-2 text-xs uppercase tracking-wide';
-            headerTitle.innerHTML = `<span>📁 Group: <strong>${block.name}</strong></span> <span class="px-2 py-0.5 rounded-full bg-white/70 text-[10px] font-black shadow-xs">${block.items.length} Items</span>`;
+            headerTitle.innerHTML = `<span>📁 Group: <strong>${_esc(block.name)}</strong></span> <span class="px-2 py-0.5 rounded-full bg-white/70 text-[10px] font-black shadow-xs">${block.items.length} Items</span>`;
 
             if (isGroupActive) {
                 const groupActiveBadge = document.createElement('span');

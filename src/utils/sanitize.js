@@ -27,6 +27,9 @@
         return null;
       }
 
+      // Prevent reverse tabnabbing
+      w.opener = null;
+
       // Give the window a title (for some browsers)
       try {
         w.document.title = title || 'Print';

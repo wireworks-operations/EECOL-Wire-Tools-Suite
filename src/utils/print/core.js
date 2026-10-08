@@ -46,6 +46,7 @@ export function _openPrint(title, html) {
         alert('Unable to open print window. Please allow popups for this site.');
         return null;
     }
+    w.opener = null;
     try {
         w.document.title = title || 'Print';
     } catch (e) {
