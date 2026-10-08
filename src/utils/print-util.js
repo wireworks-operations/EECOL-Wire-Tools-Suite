@@ -5,6 +5,7 @@ export function safeOpenPrintWindow(title, htmlContent) {
     alert('Unable to open print window. Please allow popups for this site to print.');
     return null;
   }
+  w.opener = null;
   w.document.write(htmlContent);
   try { w.document.close(); } catch (e) { /* ignore */ }
   return w;
