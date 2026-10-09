@@ -143,6 +143,7 @@ function showAlert(message, title = "Notification", autoCloseMs = null) {
                 modalContent.classList.remove('scale-95', 'opacity-0');
                 modalContent.classList.add('scale-100', 'opacity-100');
             }
+            if (okBtn) okBtn.focus();
         }, 10);
     });
 }
@@ -187,6 +188,7 @@ function showConfirm(message, title = "Confirmation") {
                 modalContent.classList.remove('scale-95', 'opacity-0');
                 modalContent.classList.add('scale-100', 'opacity-100');
             }
+            if (okBtn) okBtn.focus();
         }, 10);
     });
 }
@@ -347,6 +349,24 @@ function hideModal() {
         resetModalUI();
     }, 200);
 }
+
+// Global Escape key handler for custom modals
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('customModal');
+        if (modal && !modal.classList.contains('hidden')) {
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            const okBtn = document.getElementById('modalOKBtn');
+            if (cancelBtn) {
+                cancelBtn.click();
+            } else if (okBtn) {
+                okBtn.click();
+            } else {
+                hideModal();
+            }
+        }
+    }
+});
 
 // Initialize modal system with secure defaults
 function initModalSystem() {

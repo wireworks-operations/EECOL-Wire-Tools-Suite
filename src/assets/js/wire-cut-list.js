@@ -760,6 +760,8 @@ function showWireListItemModal(id = null) {
     setTimeout(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
         modalContent.classList.add('scale-100', 'opacity-100');
+        const orderInput = document.getElementById('wireListOrder');
+        if (orderInput) orderInput.focus();
     }, 10);
 }
 
@@ -1438,6 +1440,53 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
     });
+
+    // Keyboard Escape and Enter handlers for modals
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const itemModal = document.getElementById('wireListItemModal');
+            const removalModal = document.getElementById('removalReasonModal');
+            const groupModal = document.getElementById('groupModal');
+
+            if (itemModal && !itemModal.classList.contains('hidden')) {
+                hideWireListItemModal();
+            } else if (removalModal && !removalModal.classList.contains('hidden')) {
+                hideRemovalReasonModal();
+            } else if (groupModal && !groupModal.classList.contains('hidden')) {
+                hideGroupModal();
+            }
+        }
+    });
+
+    const wireModalContent = document.getElementById('wireModalContent');
+    if (wireModalContent) {
+        wireModalContent.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA') {
+                event.preventDefault();
+                saveWireListItem();
+            }
+        });
+    }
+
+    const removalModalContent = document.getElementById('removalModalContent');
+    if (removalModalContent) {
+        removalModalContent.addEventListener('keydown', function(event) {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                saveRemovalWithReason();
+            }
+        });
+    }
+
+    const groupModalContent = document.getElementById('groupModalContent');
+    if (groupModalContent) {
+        groupModalContent.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                saveGroupAssignment();
+            }
+        });
+    }
 
     // Modal events
     const cancelBtn = document.getElementById('cancelWireListItemBtn');
